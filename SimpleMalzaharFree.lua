@@ -25,7 +25,9 @@ if autoupdateenabled then
 			end
 
 			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
-				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
+				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () PrintChat("<font color=\"#FF0000\"> >> 
+
+"..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
 			elseif ServerVersion then
 				PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": You have got the latest version: <b>"..ServerVersion.."</b></font>")
 			end		
@@ -37,8 +39,6 @@ end
 --AUTOUPDATE END
 
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
-
-require "VPrediction"
 
 local ServerVersion = "0.1"
 local version = "0.1"
