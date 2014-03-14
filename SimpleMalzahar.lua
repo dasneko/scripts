@@ -192,13 +192,13 @@ if not myHero.dead then
    end	   
    if JMenu.cfg.RCombo and rReady then
     CastR(Target)
-   end 
-   OrbWalk(Target)   
+   end       
   end
  end  
 end
  
 if JMenu.cfg.CKey then --combo
+OrbWalk(Target)
  if not myHero.dead then
   if Target ~= nil then
    if JMenu.cfg.ECombo and eReady then
