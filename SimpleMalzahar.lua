@@ -7,7 +7,7 @@ local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "SimpleMalzahar"
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzahar.lua"
-local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_FILE_PATH = SCRIPT_PATH.."SimpleMalzahar.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 -- / Auto-Update Function / --
