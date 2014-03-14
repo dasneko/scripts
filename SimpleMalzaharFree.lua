@@ -2,11 +2,12 @@
 -- E + Q + W + R = Full Combo
 
 --AUTOUPDATE
+local version = "0.1"
 local autoupdateenabled = true
-local UPDATE_SCRIPT_NAME = "SimpleMalzahar"
+local UPDATE_SCRIPT_NAME = "SimpleMalzaharFree"
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzahar.lua"
-local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharFree.lua"
+local UPDATE_FILE_PATH = SCRIPT_PATH.."SimpleMalzaharFree.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 -- / Auto-Update Function / --
@@ -25,9 +26,7 @@ if autoupdateenabled then
 			end
 
 			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
-				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () PrintChat("<font color=\"#FF0000\"> >> 
-
-"..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
+				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
 			elseif ServerVersion then
 				PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": You have got the latest version: <b>"..ServerVersion.."</b></font>")
 			end		
@@ -40,8 +39,9 @@ end
 
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
-local ServerVersion = "0.1"
-local version = "0.1"
+require "VPrediction"
+
+local VP = nil
 
 function OnLoad()
  Menu()
@@ -81,7 +81,7 @@ JMenu:addParam("orbW", "OrbWalk Key", SCRIPT_PARAM_ONKEYDOWN, false, 74)
 		
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 900, DAMAGE_MAGIC)
 	JMenu.trgt:addTS(Alvo)
-	
+VP = VPrediction()	
 end
 
 function OnDraw()
@@ -192,12 +192,13 @@ if not myHero.dead then
    end	   
    if JMenu.cfg.RCombo and rReady then
     CastR(Target)
-   end  
+   end       
   end
  end  
 end
  
 if JMenu.cfg.CKey then --combo
+OrbWalk(Target)
  if not myHero.dead then
   if Target ~= nil then
    if JMenu.cfg.ECombo and eReady then
