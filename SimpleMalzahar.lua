@@ -25,9 +25,9 @@ if autoupdateenabled then
 			end
 
 			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
-				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
+				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
 			elseif ServerVersion then
-				print("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": You have got the latest version: <b>"..ServerVersion.."</b></font>")
+				PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": You have got the latest version: <b>"..ServerVersion.."</b></font>")
 			end		
 			ServerData = nil
 		end
@@ -36,15 +36,12 @@ if autoupdateenabled then
 end
 --AUTOUPDATE END
 
-if myHero.charName ~= "Malzahar" then return end
+if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
-if VP_USER then
- require "VPrediction"
- local VP = nil
- UsuarioVip = true
- end
+require "VPrediction"
 
 local ServerVersion = "0.1"
+local version = "0.1"
 
 function OnLoad()
  Menu()
@@ -89,16 +86,16 @@ end
 
 function OnDraw()
  if JMenu.paint.Qpaint then
-  DrawCircle(myHero.x, myHero.y, myHero.z, 900, 0xFFFFFF00)
+  DrawCircle(myHero.x, myHero.y, myHero.z, 900, 0x000FFF00)
  end 
  if JMenu.paint.Wpaint then
-  DrawCircle(myHero.x, myHero.y, myHero.z, 800, 0xFFFFFF00)
+  DrawCircle(myHero.x, myHero.y, myHero.z, 800, 0xF0FFFF00)
  end 
  if JMenu.paint.Epaint then
   DrawCircle(myHero.x, myHero.y, myHero.z, 650, 0xFFFFFF00)
  end 
  if JMenu.paint.Rpaint then
-  DrawCircle(myHero.x, myHero.y, myHero.z, 700, 0xFFFFFF00)
+  DrawCircle(myHero.x, myHero.y, myHero.z, 700, 0xFFF0FF00)
  end	
 end
 
@@ -111,7 +108,6 @@ lastAttack = 0
 lastWindUpTime = 0
 lastAttackCD = 0 
 Ulted = 0
-UsuarioVip = false
 --VP = VPrediction()
 end
 
