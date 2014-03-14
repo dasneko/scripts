@@ -1,7 +1,46 @@
 -- [[ Simple Malzahar by Jus v0.1 ]]
 -- E + Q + W + R = Full Combo
 
+--AUTOUPDATE
+local autoupdateenabled = true
+local UPDATE_SCRIPT_NAME = "SimpleMalzahar"
+local UPDATE_HOST = "raw.github.com"
+local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzahar.lua"
+local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+
+-- / Auto-Update Function / --
+local ServerData
+if autoupdateenabled then
+	GetAsyncWebResult(UPDATE_HOST, UPDATE_PATH, function(d) ServerData = d end)
+	function update()
+		if ServerData ~= nil then
+			local ServerVersion
+			local send, tmp, sstart = nil, string.find(ServerData, "local version = \"")
+			if sstart then
+				send, tmp = string.find(ServerData, "\"", sstart+1)
+			end
+			if send then
+				ServerVersion = tonumber(string.sub(ServerData, sstart+1, send-1))
+			end
+
+			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
+				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
+			elseif ServerVersion then
+				print("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": You have got the latest version: <b>"..ServerVersion.."</b></font>")
+			end		
+			ServerData = nil
+		end
+	end
+	AddTickCallback(update)
+end
+--AUTOUPDATE END
+
 if myHero.charName ~= "Malzahar" then return end
+
+local version = "0.1"
+
+require "VPrediction"
 
 function OnLoad()
  Menu()
