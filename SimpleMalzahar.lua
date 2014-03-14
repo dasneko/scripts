@@ -2,6 +2,7 @@
 -- E + Q + W + R = Full Combo
 
 --AUTOUPDATE
+local version = "0.1"
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "SimpleMalzahar"
 local UPDATE_HOST = "raw.github.com"
@@ -40,8 +41,6 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 require "VPrediction"
 
-local ServerVersion = "0.1"
-local version = "0.1"
 local VP = nil
 
 function OnLoad()
@@ -193,7 +192,8 @@ if not myHero.dead then
    end	   
    if JMenu.cfg.RCombo and rReady then
     CastR(Target)
-   end  
+   end 
+   OrbWalk(Target)   
   end
  end  
 end
