@@ -38,9 +38,13 @@ end
 
 if myHero.charName ~= "Malzahar" then return end
 
-local version = "0.1"
+if VP_USER then
+ require "VPrediction"
+ local VP = nil
+ UsuarioVip = true
+ end
 
-require "VPrediction"
+local ServerVersion = "0.1"
 
 function OnLoad()
  Menu()
@@ -75,6 +79,9 @@ JMenu:addParam("orbW", "OrbWalk Key", SCRIPT_PARAM_ONKEYDOWN, false, 74)
 		
 		JMenu:addSubMenu("Target Mode", "trgt")	
 		
+		JMenu:addSubMenu("Other", "upt")
+			JMenu.upt:addParam("up", "Auto Update", SCRIPT_PARAM_ONOFF, true)
+		
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 900, DAMAGE_MAGIC)
 	JMenu.trgt:addTS(Alvo)
 	
@@ -104,6 +111,8 @@ lastAttack = 0
 lastWindUpTime = 0
 lastAttackCD = 0 
 Ulted = 0
+UsuarioVip = false
+--VP = VPrediction()
 end
 
 function Verificar()
@@ -113,6 +122,7 @@ function Verificar()
     rReady = (myHero:CanUseSpell(_R) == READY) or (myHero:GetSpellData(_R).currentCd < 1) 	
 	Alvo:update()
     Target = Alvo.target
+	autoupdateenabled = JMenu.upt.up
 end
 
 function OrbWalk(Target)
