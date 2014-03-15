@@ -2,7 +2,7 @@ local version = "0.1"
 
 -- [[ Simple Malzahar by Jus v0.1 ]]
 -- Orbwalk - Combo and harass
--- Combo and harass configurable
+-- Combo and auto harass configurable
 -- Draw with lag free
 -- VPredicition Q and W
 -- Minion last hit indicator
@@ -33,9 +33,9 @@ if autoupdateenabled then
 			end
 
 			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
-				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
+				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": successfully updated. Reload (double F9) Please. ("..version.." => "..ServerVersion..")</font>") end)     
 			elseif ServerVersion then
-				PrintChat("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": You have got the latest version: <b>"..ServerVersion.."</b></font>")
+				print("<font color=\"#FF0000\"> >> "..UPDATE_SCRIPT_NAME..": You have got the latest version: <b>"..ServerVersion.."</b></font>")
 			end		
 			ServerData = nil
 		end
@@ -57,7 +57,7 @@ function OnLoad()
  Menu()
  Variaveis()
  OnDraw()
- PrintChat("-[ <font color='#000FFF'> -|- Malzahar by Jus -|- </font> ]-")
+ PrintChat("-[ <font color='#000FFF'> -|- Malzahar by Jus loaded -|- </font> ]-")
 end
 
 -----------------------------------------------------END HEAD
@@ -67,7 +67,6 @@ end
 function Menu()
 JMenu = scriptConfig(myHero.charName.." by Jus", "Jus")
 JMenu:addParam("ligado", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
---JMenu:addParam("orbW", "OrbWalk Key", SCRIPT_PARAM_ONKEYDOWN, false, 74) 
 JMenu:addParam("ver", "Version", SCRIPT_PARAM_INFO, version)
 
 		JMenu:addSubMenu("Combo Settings", "cfg")				
@@ -78,11 +77,12 @@ JMenu:addParam("ver", "Version", SCRIPT_PARAM_INFO, version)
 		    --JMenu.cfg:addParam("UIgnite", "Use Ignite", SCRIPT_PARAM_ONOFF, false)
 			JMenu.cfg:addParam("CKey", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 			
-		JMenu:addSubMenu("Harass Settings", "harass")
+			
+		JMenu:addSubMenu("Auto Harass Settings", "harass")
 			JMenu.harass:addParam("Qharass", "Use Q Harass", SCRIPT_PARAM_ONOFF, false)
 			JMenu.harass:addParam("Wharras", "Use W Harass", SCRIPT_PARAM_ONOFF, false)
 			JMenu.harass:addParam("Eharras", "Use E Harass", SCRIPT_PARAM_ONOFF, true)
-			JMenu.harass:addParam("orbW", "Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, 74) 
+			JMenu.harass:addParam("autoh", "Auto Harass ON/OFF", SCRIPT_PARAM_ONOFF, true) 
 			
 		JMenu:addSubMenu("Draw Settings", "paint")
 			JMenu.paint:addParam("Qpaint", "Draw Q Range", SCRIPT_PARAM_ONOFF, false)
@@ -97,7 +97,7 @@ JMenu:addParam("ver", "Version", SCRIPT_PARAM_INFO, version)
 			JMenu.upt:addParam("manaa", "Show Mana", SCRIPT_PARAM_ONOFF, true)
 			JMenu.upt:addParam("aa", "Auto Attack OrbWalk", SCRIPT_PARAM_ONOFF, true)
 			JMenu.upt:addParam("mini", "Minion Indicator", SCRIPT_PARAM_ONOFF, true)
-			
+		
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 900, DAMAGE_MAGIC)
 	JMenu.trgt:addTS(Alvo)
 	enemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_HEALTH_ASC)
@@ -169,13 +169,14 @@ function round(num)
  if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
 end
 
+
 -------------------------------------------------------END DRAW
 
 -------------------------------------------------------ORBWALK
 
 function OrbWalk()
-
-if ValidTarget(Target) and GetDistance(Target) <= trueRange() then
+if not isChanneling("Spell4") then
+if ValidTarget(Target) and GetDistance(Target) <=  myHero.range + GetDistance(myHero.minBBox) then
  if timeToShoot() and JMenu.upt.aa then
    myHero:Attack(Target)
   else
@@ -186,7 +187,7 @@ if ValidTarget(Target) and GetDistance(Target) <= trueRange() then
 else
 moveToCursor() 
 end
-
+end
 end
 
 function OnProcessSpell(object,spell)
@@ -201,10 +202,6 @@ end
 
 end
 
-function trueRange()
-return myHero.range + GetDistance(myHero.minBBox)
-end
- 
 function heroCanMove()
 return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
 end
@@ -225,26 +222,17 @@ end
 -----------------------------------------------------MISC
 
 function isChanneling(animationName)
-     if lastAnimation == animationName then
-         return true
-     else
-         return false
-     end
+ if lastAnimation == animationName then
+  return true
+ else
+  return false
+ end
 end
 
 function OnAnimation(unit, animationName)
-     if unit.isMe and lastAnimation ~= animationName then lastAnimation = animationName end
-end
-
-function OnCreateObj(obj)      
-                if obj~= nil and obj.name:find("AlZaharNetherGrasp_tar.troy") then
-                        UltStarted = true
-        end    
-end
-function OnDeleteObj(obj)
-        if obj~= nil and obj.name:find("AlZaharNetherGrasp_tar.troy") then
-                        UltStarted = false
-        end
+ if unit.isMe and lastAnimation ~= animationName then
+  lastAnimation = animationName
+ end
 end
 
 function Variaveis()
@@ -255,7 +243,6 @@ Rrange = 700
 lastAttack = 0
 lastWindUpTime = 0
 lastAttackCD = 0 
-UltStarted = false
 --Qdamage = {80, 135, 190, 245, 300}
 --Qscal = 0.8
 --Wdamage = {4, 5, 6, 7, 8} -- + 0.01
@@ -264,14 +251,21 @@ Qmana = {80, 85, 90, 95, 100}
 Wmana = {90, 95, 100, 105, 110}
 Emana = {60, 75, 90, 105, 120}
 Rmana = {150, 150, 150}
-TheCombo = {_Q, _E, _W, _R}
+TCombo = {_Q, _E, _W, _R}
+
+--if VIP_USER then
+-- _G.oldDrawCircle = rawget(_G, 'DrawCircle')
+-- _G.DrawCircle = DrawCircle2	
+--end
+
 end
 
 function Verificar()
 	qReady = (myHero:CanUseSpell(_Q) == READY) or (myHero:GetSpellData(_Q).currentCd < 1)
     wReady = (myHero:CanUseSpell(_W) == READY) or (myHero:GetSpellData(_W).currentCd < 1)
     eReady = (myHero:CanUseSpell(_E) == READY) or (myHero:GetSpellData(_E).currentCd < 1)
-    rReady = (myHero:CanUseSpell(_R) == READY) or (myHero:GetSpellData(_R).currentCd < 1) 	
+    rReady = (myHero:CanUseSpell(_R) == READY) or (myHero:GetSpellData(_R).currentCd < 1) 
+		
 	Alvo:update()
     Target = Alvo.target
 	autoupdateenabled = JMenu.upt.up
@@ -283,86 +277,49 @@ end
 --------------------------------------------------------COMBOS
 
 function Combo()
-if JMenu.cfg.CKey and JMenu.harass.orbW then --orb+combo
 if not myHero.dead then
-  if Target ~= nil then
-  
-    if JMenu.cfg.QCombo and qReady then
-    CastQ(Target) 
+   if not isChanneling("Spell4") then
+    OrbWalk(Target)
    end
-
-   if JMenu.cfg.ECombo and eReady then
-    CastE(Target)
-   end 
-  
-   if JMenu.cfg.WCombo and wReady then
-    CastW(Target)	
-   end 
-  
-   if JMenu.cfg.RCombo and rReady then
-    CastR(Target)
-   end    
-   
-  end
-  if not isChanneling("Spell4") then
-   OrbWalk(Target)
-  else
-  end
- end  
-end
- 
-if JMenu.cfg.CKey then --combo
- if not myHero.dead then
-  if Target ~= nil then
-   
+ if Target ~= nil then
+  if not isChanneling("Spell4") then  
    if JMenu.cfg.QCombo and qReady then
     CastQ(Target) 
-   end
-
-   if JMenu.cfg.ECombo and eReady then
+    end
+    if JMenu.cfg.ECombo and eReady then
     CastE(Target)
-   end 
-  
-   if JMenu.cfg.WCombo and wReady then
+    end   
+    if JMenu.cfg.WCombo and wReady then
     CastW(Target)	
-   end 
-  
-   if JMenu.cfg.RCombo and rReady then
+    end     
+    if JMenu.cfg.RCombo and rReady and not qReady and not eReady and not wReady then
     CastR(Target)
-   end 
-   
-  end
-  if not isChanneling("Spell4") then
-   OrbWalk(Target)
+    end 	
+   end    
   else
-  end
- end
-
- 
-end
- 
-if JMenu.harass.orbW then --orb
- OrbWalk(Target)
-end 
-end
+   OrbWalk(Target)
+  end 
+ end  
+end  
 
 function harrass()
 if not myHero.dead then
- if JMenu.harass.orbW then
-  if Target ~= nil then
-  if JMenu.harass.Qharass and qReady then
-   CastQ(Target)
-  end
-  if JMenu.harass.Wharras and wReady then
-   CastW(Target)
-  end 
-  if JMenu.harass.Eharras and eReady then
-   CastE(Target)
-  end
-  end  
+  if Target ~= nil then  
+   if not isChanneling("Spell4") then    
+	if JMenu.harass.Qharass and qReady and GetDistance(Target) < Qrange then
+	 CastQ(Target)
+	end
+	if JMenu.harass.Wharras and wReady and GetDistance(Target) < Wrange then
+	 CastW(Target)
+	end 
+	if JMenu.harass.Eharras and eReady and GetDistance(Target) < Erange then
+     CastE(Target)
+	end   
+   end    
  end
 end
 end
+
 
 --[[ FREE VERSION
 function CastQ(enemy)
@@ -390,6 +347,7 @@ local CastPosition, HitChance, Postion = VP:GetCircularCastPosition(enemy, 0.5, 
  end 
 end
 
+
 function CastE(enemy)
 if GetDistance(enemy) <= Erange then CastSpell(_E, enemy) end
 end
@@ -402,11 +360,17 @@ end
 
 function OnTick()
 if JMenu.ligado then
- --Variaveis()
- Verificar()
- Combo()
- harrass()
-else
+Verificar()
+
+ if JMenu.cfg.CKey then
+  Combo()
+ end 
+ 
+ if JMenu.harass.autoh then
+  harrass()
  end
+ 
+else end
+ 
 end
 
