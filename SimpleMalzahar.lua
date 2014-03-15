@@ -1,6 +1,13 @@
+local version = "0.1"
+
 -- [[ Simple Malzahar by Jus v0.1 ]]
--- Full Combo
+-- Orbwalk - Combo and harass
+-- Combo and harass configurable
+-- Draw with lag free
 -- VPredicition Q and W
+-- Minion last hit indicator
+-- Mana alert
+-- auto-update
 
 -----------------------------------------------------AUTOUPDATE
 
@@ -8,7 +15,7 @@ local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "SimpleMalzahar"
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzahar.lua"
-local UPDATE_FILE_PATH = SCRIPT_PATH.."SimpleMalzahar.lua"
+local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 local ServerData
@@ -41,12 +48,12 @@ end
 ------------------------------------------------------HEAD
 
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
-local version = "0.1"
 require "VPrediction"
 
 local VP = nil
 
 function OnLoad()
+ --Update()
  Menu()
  Variaveis()
  OnDraw()
