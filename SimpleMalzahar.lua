@@ -1,14 +1,17 @@
 local version = "0.1"
 
--- [[ Simple Malzahar by Jus v0.1 VIP]]
--- Orbwalk with auto-attack - Combo
+--  Simple Malzahar by Jus v0.1 VIP
+-- Orbwalk with auto-attack - Combo 
 -- Combo and auto harass configurable
+-- Flash to Combo
 -- Draw with lag free
--- VPredicition Q and W - HitChance 2
+-- VPredicition Q and W
 -- Minion last hit indicator
+-- Turrent hits to kill
+-- Draw Current Target
 -- Mana alert (blue circle)
 -- Target draw
--- Auto-update
+-- Auto-update not working
 
 -- Encrypt here until the end. Encrypt here until the end. Encrypt here until the end.
 
@@ -77,7 +80,8 @@ JMenu:addParam("ver", "Version", SCRIPT_PARAM_INFO, version)
 			JMenu.cfg:addParam("ECombo", "Use E Combo", SCRIPT_PARAM_ONOFF, true)
 			JMenu.cfg:addParam("RCombo", "Use R Commbo", SCRIPT_PARAM_ONOFF, true)
 		    JMenu.cfg:addParam("UIgnite", "Use Ignite", SCRIPT_PARAM_ONOFF, false)
-			JMenu.cfg:addParam("CKey", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)			
+			JMenu.cfg:addParam("CKey", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+			JMenu.cfg:addParam("fUlt", "Flash to Combo", SCRIPT_PARAM_ONKEYDOWN, false, 42)	
 			
 		JMenu:addSubMenu("Auto Harass Settings", "harass")
 			JMenu.harass:addParam("Qharass", "Use Q Harass", SCRIPT_PARAM_ONOFF, false)
@@ -86,25 +90,30 @@ JMenu:addParam("ver", "Version", SCRIPT_PARAM_INFO, version)
 			JMenu.harass:addParam("autoh", "Auto Harass ON/OFF", SCRIPT_PARAM_ONOFF, true) 
 			
 		JMenu:addSubMenu("Draw Settings", "paint")
+			JMenu.paint:addParam("SkillInfo", "Draw Skills Range", SCRIPT_PARAM_INFO, "-")
 			JMenu.paint:addParam("Qpaint", "Draw Q Range", SCRIPT_PARAM_ONOFF, false)
 			JMenu.paint:addParam("Wpaint", "Draw W Range", SCRIPT_PARAM_ONOFF, false)
 			JMenu.paint:addParam("Epaint", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 			JMenu.paint:addParam("Rpaint", "Draw R Range", SCRIPT_PARAM_ONOFF, false)
+			JMenu.paint:addParam("MiscDraw", "Misc Draw :D", SCRIPT_PARAM_INFO, "-")
+			JMenu.paint:addParam("flashh", "Draw Flash Range", SCRIPT_PARAM_ONOFF, false)
+			JMenu.paint:addParam("mini", "Minion Indicator", SCRIPT_PARAM_ONOFF, true)
+			JMenu.paint:addParam("trt", "Turrent Hits to Kill", SCRIPT_PARAM_ONOFF, true)
+			JMenu.paint:addParam("dTgt", "Draw Current Target", SCRIPT_PARAM_ONOFF, false)
+			JMenu.paint:addParam("msg", "Turn off all if fps lag. =[", SCRIPT_PARAM_INFO, "")
 		
 		JMenu:addSubMenu("Target Mode", "trgt")	
 		
 		JMenu:addSubMenu("Other", "upt")
-			JMenu.upt:addParam("up", "Auto Update", SCRIPT_PARAM_ONOFF, true)						
-			JMenu.upt:addParam("aa", "Auto Attack OrbWalk", SCRIPT_PARAM_ONOFF, true)
-			JMenu.upt:addParam("mini", "Minion Indicator", SCRIPT_PARAM_ONOFF, true)
-			JMenu.upt:addParam("aLvl", "Auto Level Skills", SCRIPT_PARAM_ONOFF, true)
-			JMenu.upt:addParam("dTgt", "Draw Target", SCRIPT_PARAM_ONOFF, false)
-			JMenu.upt:addParam("mn", "Mana Manager", SCRIPT_PARAM_SLICE, 10, 10, 100, 0)
-			JMenu.upt:addParam("trt", "Turrent Hits to Kill", SCRIPT_PARAM_ONOFF, true)
-			
+			JMenu.upt:addParam("up", "Auto Update - Not working", SCRIPT_PARAM_ONOFF, true)						
+			JMenu.upt:addParam("aa", "Auto Attack OrbWalk", SCRIPT_PARAM_ONOFF, true)			
+			JMenu.upt:addParam("aLvl", "Auto Level Skills R-E-Q-W", SCRIPT_PARAM_ONOFF, true)			
+			JMenu.upt:addParam("mn", "Mana Indicator", SCRIPT_PARAM_SLICE, 10, 10, 100, 0)			
 		
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 900, DAMAGE_MAGIC)
 	JMenu.trgt:addTS(Alvo)
+	JMenu.trgt:addParam("Inf", "LessCastPriority is the best!", SCRIPT_PARAM_INFO, "")
+	Alvo.name = "Choose a"
 	enemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_HEALTH_ASC)
 	
 VP = VPrediction()	
@@ -133,18 +142,22 @@ if not myHero.dead then
   DrawCircle2(myHero.x, myHero.y, myHero.z, 45, ARGB(255, 000, 000, 255))
  end
  
- if JMenu.upt.dTgt then
+ if JMenu.paint.flashh then
+  DrawCircle2(myHero.x, myHero.y, myHero.z, Frange, ARGB(255, 000, 000, 255))
+ end 
+ 
+ if JMenu.paint.dTgt then
  if Target ~= nil and not Target.dead then
   for _, enemy in pairs(GetEnemyHeroes()) do
         local pos= WorldToScreen(D3DXVECTOR3(enemy.x, enemy.y, enemy.z))
         local posX = pos.x - 35
         local posY = pos.y - 50
-        DrawText(">TARGET<",15,posX ,posY  ,ARGB(255,0,255,0))    
+        DrawText(">TARGET<", 14, posX, posY, ARGB(255,0,255,0))    
     end 
  end
  end
  
- if JMenu.upt.mini then
+ if JMenu.paint.mini then
   if enemyMinions ~= nil then
    for i, Minion in pairs(enemyMinions.objects) do
     if Minion ~= nil and not Minion.dead then
@@ -156,7 +169,7 @@ if not myHero.dead then
   end    
  end
 
- if JMenu.upt.trt then
+ if JMenu.paint.trt then
   local turrets = GetTurrets();
   local targetTurret = nil;
   local hitsToTurret = 0;
@@ -273,6 +286,7 @@ Qrange = 900
 Wrange = 800
 Erange = 650
 Rrange = 700
+Frange = 410
 lastAttack = 0
 lastWindUpTime = 0
 lastAttackCD = 0 
@@ -286,18 +300,19 @@ Emana = {60, 75, 90, 105, 120}
 Rmana = {150, 150, 150}
 TCombo = {_Q, _E, _W, _R}
 abilitySequence = {1,3,3,2,3,4,3,1,3,1,4,1,1,2,2,4,2,2}
---if VIP_USER then
--- _G.oldDrawCircle = rawget(_G, 'DrawCircle')
--- _G.DrawCircle = DrawCircle2	
---end
-
+Flsh = nil
 end
 
 function Verificar()
 	qReady = (myHero:CanUseSpell(_Q) == READY) 
     wReady = (myHero:CanUseSpell(_W) == READY) 
     eReady = (myHero:CanUseSpell(_E) == READY) 
-    rReady = (myHero:CanUseSpell(_R) == READY)	
+    rReady = (myHero:CanUseSpell(_R) == READY)
+	if myHero:GetSpellData(SUMMONER_1).name:find("SummonerFlash") then
+	 Flsh = SUMMONER_1
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerFlash") then
+     Flsh = SUMMONER_2
+    end	
 	Alvo:update()
     Target = Alvo.target
 	autoupdateenabled = JMenu.upt.up
@@ -330,59 +345,54 @@ end
 --------------------------------------------------------COMBOS
 
 function Combo()
-if not myHero.dead then
-   if not isChanneling("Spell4") then
-    OrbWalk(Target)
-   end
- if Target ~= nil and not Target.dead then
-  if not isChanneling("Spell4") then  
-   if JMenu.cfg.QCombo and qReady then
-    CastQ(Target) 
-    end
-    if JMenu.cfg.ECombo and eReady then
+ if not myHero.dead then
+  if Target ~= nil and ValidTarget(Target, Erange) then
+   if qReady and JMenu.cfg.QCombo then
+    CastQ(Target)
+   elseif eReady and JMenu.cfg.ECombo then
     CastE(Target)
-    end   
-    if JMenu.cfg.WCombo and wReady then
-    CastW(Target)	
-    end     
-    if JMenu.cfg.RCombo and rReady and not qReady and not eReady and not wReady then
-    CastR(Target)
-    end 	
-   end    
+   elseif wReady and JMenu.cfg.ECombo then
+    CastW(Target)
+   elseif rReady and JMenu.cfg.RCombo then
+    CastR(Target)   
+   end
   else
    OrbWalk(Target)
-  end 
- end  
-end  
+  end
+ end 
+end
 
 function harrass()
+if not JMenu.cfg.CKey then
+
 if not myHero.dead then
-  if Target ~= nil and not Target.dead then  
-   if not isChanneling("Spell4") then    
-	if JMenu.harass.Qharass and qReady and GetDistance(Target) <= Qrange then
-	 CastQ(Target)
-	end
-	if JMenu.harass.Wharras and wReady and GetDistance(Target) <= Wrange then
-	 CastW(Target)
-	end 
-	if JMenu.harass.Eharras and eReady and GetDistance(Target) <= Erange then
-     CastE(Target)
-	end   
-   end    
+ if Target ~= nil and not Target.dead then
+  if qReady and JMenu.harass.Qharass then
+   CastQ(Target)
+  elseif wReady and JMenu.harass.Wharras then
+   CastW(Target)
+  elseif eReady and JMenu.harass.Eharras then
+   CastE(Target)
  end
 end
 end
 
+else
+ Combo()
+ end
+end
+ 
 function CastQ(enemy)
-local CastPosition, HitChance, Postion = VP:GetLineCastPosition(enemy, 0.4, 400, Qrange, 1600, myHero, false)
- if HitChance >= 2 and GetDistance(CastPosition) <= Qrange then
+local CastPosition, HitChance, Postion = VP:GetLineCastPosition(enemy, 0.38, 400, Qrange, 1600, myHero, false)
+ if HitChance >= 2 and GetDistance(CastPosition) < Qrange then
   CastSpell(_Q, CastPosition.x, CastPosition.z)
  end 
 end
 
 function CastW(enemy)
-local CastPosition, HitChance, Postion = VP:GetCircularCastPosition(enemy, 0.37, 250, Wrange, 20, myHero, false)
- if HitChance >= 2 and GetDistance(CastPosition) <= Wrange then
+--local CastPosition, HitChance, Position = VP:GetCircularCastPosition(enemy, 0.37, 250, Wrange, 20, myHero, false)
+  local CastPosition, HitChance, Position = VP:GetCircularAOECastPosition(enemy, 0.38, 250, Wrange, 20, myHero) 
+ if HitChance >= 2 and GetDistance(CastPosition) < Wrange then
   CastSpell(_W, CastPosition.x, CastPosition.z)
  end 
 end
@@ -393,6 +403,13 @@ end
 
 function CastR(enemy)
 if GetDistance(enemy) <= Rrange then CastSpell(_R, enemy) end
+end
+
+function CombofUlt()
+ if Flsh ~= nil then
+  CastSpell(Flsh, mousePos.x, mousePos.z)
+  Combo()
+ end
 end
 
 ------------------------------------------------------END COMBOS
@@ -412,7 +429,12 @@ Verificar()
  if JMenu.harass.autoh then
   harrass()
  end
- 
+
+ if JMenu.cfg.fUlt then
+  CombofUlt()
+ end
+
+
 else end
  
 end
