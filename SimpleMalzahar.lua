@@ -1,4 +1,4 @@
-local version = "0.2"
+local version = "0.1"
 
 -- [[ Simple Malzahar by Jus v0.1 VIP]]
 -- Orbwalk with auto-attack - Combo
