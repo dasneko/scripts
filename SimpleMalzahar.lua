@@ -47,8 +47,6 @@ local version = "0.1"
 
 -- Ty to Honda7: Help with E Farm.
 
--- Encrypt here until the end. Encrypt here until the end. Encrypt here until the end.
-
 -----------------------------------------------------AUTOUPDATE
 --[[
 local autoupdateenabled = true
