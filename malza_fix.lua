@@ -21,7 +21,7 @@ if autoupdateenabled then
 			end
 
 			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
-				DownloadFile(UPDATE_URL.."?rand="..math.random(1,1000), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>Simple Malzahar (reload F9 2x):</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)	 
+				DownloadFile(UPDATE_URL.."?rand="..math.random(1,1000), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>Simple Malzahar(reload F9 2x):</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)	 
 			elseif ServerVersion then
 				print("<font color=\"#FF0000\"><b>Simple Malzahar:</b> You have got the latest version: <u><b>"..version.."</b></u></font>")
 			end
@@ -50,7 +50,7 @@ function Menu()
 --Menu Principal
 JMenu = scriptConfig(myHero.charName.." by Jus", "Menu")
 JMenu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-JMenu:addParam("Versao", "Version", SCRIPT_PARAM_INFO, version)
+JMenu:addParam("Versao", "VersionInfo", SCRIPT_PARAM_INFO, version)
 		--Combo Options
 		JMenu:addSubMenu("Combo Settings", "combo") -- OK		
 			JMenu.combo:addParam("QCombo", "Use Q Combo", SCRIPT_PARAM_ONOFF, true)
