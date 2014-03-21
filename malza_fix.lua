@@ -55,7 +55,7 @@ JMenu:addParam("Versao", "Version", SCRIPT_PARAM_INFO, version)
 			JMenu.combo:addParam("WCombo", "Use W Combo", SCRIPT_PARAM_ONOFF, true)	
 			JMenu.combo:addParam("ECombo", "Use E Combo", SCRIPT_PARAM_ONOFF, true)
 			JMenu.combo:addParam("RCombo", "Use R Commbo", SCRIPT_PARAM_ONOFF, true)
-		    --JMenu.combo:addParam("SIgnite", "Use Ignite", SCRIPT_PARAM_ONOFF, true)
+		    JMenu.combo:addParam("SIgnite", "Use Ignite", SCRIPT_PARAM_ONOFF, true)
 			JMenu.combo:addParam("ComboMode", "Combo Mode", SCRIPT_PARAM_SLICE, 1, 1, 7, 0)
 			JMenu.combo:addParam("TFkey", "Combo/team fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)				
 		--Harass Options	
@@ -90,7 +90,7 @@ JMenu:addParam("Versao", "Version", SCRIPT_PARAM_INFO, version)
 		--Others
 		JMenu:addSubMenu("Others", "diversos") --OK
 			JMenu.diversos:addParam("InformacaoDiversosGame" , "Gamming", SCRIPT_PARAM_INFO, "---")
-			--JMenu.diversos:addParam("KsIgnite", "KS with Ignite", SCRIPT_PARAM_ONOFF, false)				
+			--JMenu.diversos:addParam("KsIgnite", "KS with Ignite", SCRIPT_PARAM_ONOFF, true)				
 			JMenu.diversos:addParam("AutoLevel", "Auto Level Skills R-E-W-Q", SCRIPT_PARAM_ONOFF, true)
 			JMenu.diversos:addParam("FarmWithE", "Auto E to farm", SCRIPT_PARAM_ONOFF, true)
 			JMenu.diversos:addParam("StopHarassPorcentagem", "Stop harass/E farm if mana below %", SCRIPT_PARAM_SLICE, 40, 10, 80, 0)
@@ -630,14 +630,12 @@ if JMenu.diversos.UsarOrbwalking and not usingUlt then
  if Target ~= nil and not Target.dead then OrbWalking(Target) else moveToCursor() end
 end 
 
---[[
-
-  if JMenu.combo.SIgnite then
+  if JMenu.combo.SIgnite and not usingUlt then
    UseIgnt()
   end
-  ]]
+  if not usingUlt then
   AutoDFG()
-  
+  end
 -- FULL COMBO 
   if JMenu.combo.ComboMode == 1 then
     NormalCastAreaShot(qReady, _Q, Qrange, Target)
@@ -708,15 +706,15 @@ end
 end
 
 function FullHarass() 
-  if JMenu.combo.ECombo then
+  if JMenu.combo.ECombo and not usingUlt then
    NormalCast(eReady, _E, Erange, Target)
   end
  
-  if JMenu.combo.WCombo then
+  if JMenu.combo.WCombo and not usingUlt then
    NormalCastAreaShot(wReady, _W, Wrange, Target)
   end
 
-  if JMenu.combo.QCombo then
+  if JMenu.combo.QCombo and not usingUlt then
    NormalCastAreaShot(qReady, _Q, Qrange, Target)
   end
 end
