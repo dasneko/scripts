@@ -1,3 +1,5 @@
+local version = "0.4"
+
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -706,15 +708,15 @@ end
 end
 
 function FullHarass() 
-  if JMenu.combo.ECombo and not usingUlt then
+  if JMenu.combo.ECombo then
    NormalCast(eReady, _E, Erange, Target)
   end
  
-  if JMenu.combo.WCombo and not usingUlt then
+  if JMenu.combo.WCombo then
    NormalCastAreaShot(wReady, _W, Wrange, Target)
   end
 
-  if JMenu.combo.QCombo and not usingUlt then
+  if JMenu.combo.QCombo then
    NormalCastAreaShot(qReady, _Q, Qrange, Target)
   end
 end
