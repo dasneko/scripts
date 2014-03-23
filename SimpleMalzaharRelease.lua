@@ -1,4 +1,4 @@
-local version = "0.603" 
+local version = "0.605" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -44,7 +44,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.603")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.605")
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -188,9 +188,9 @@ function OnDraw()
 		DrawCircle2(myHero.x, myHero.y, myHero.z, 550, ARGB(255,255,255,255))
 	end
 	if Menu.Paint.PaintMana and ManaBaixa() then
-		for i=0, 4 do
-		DrawCircle2(myHero.x, myHero.y, myHero.z, i*1.5, ARGB(255, 000, 000, 255))
-		end
+		--for i=0, 4 do
+		DrawCircle2(myHero.x, myHero.y, myHero.z, 35, ARGB(255, 000, 000, 255))
+		--end
 	end
 	if Menu.Paint.PaintTarget then
 		if Target ~= nil and not Target.dead then
@@ -380,6 +380,24 @@ function OnProcessSpell(object,spell)
 	end	
 end
 
+function OnRecall(hero, channelTimeInMs)
+	if hero.networkID == player.networkID then
+		Recalling = true
+	end
+end
+
+function OnAbortRecall(hero)
+	if hero.networkID == player.networkID then
+		Recalling = false
+	end
+end
+
+function OnFinishRecall(hero)
+	if hero.networkID == player.networkID then
+		Recalling = false
+	end
+end
+
 function OnGainBuff(unit, buff)
 	--if myHero.dead then return end
 	if unit == nil or buff == nil then return end
@@ -432,7 +450,7 @@ function CalcularDano()
 					local DanoTotal = 0
 		--local ComboMode2 = 0
 		--local ComboMode3 = 0
-	 				DanoTotal = qDmg + wDmg+ eDmg + rDmg + iDmg + dfgDmg
+	 				DanoTotal = qDmg + wDmg+ eDmg + rDmg + iDmg + dfgDmg					
 		--ComboMode2 = wDmg + eDmg + rDmg + iDmg + dfgDmg
 		--ComboMode3 = eDmg + rDmg + iDmg + dfgDmg
 					--if enemy.health <= DanoTotal then
@@ -592,7 +610,7 @@ end
 function FullHarass()
 	if not Menu.Harass.HarassSystem then return end
 	if ManaBaixa() or usingUlt then return end
-	if Target ~= nil and ValidTarget(Target) then
+	if Target ~= nil and ValidTarget(Taget) then
 	if Menu.Harass.UseE then
 		NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Target)
 	end 
