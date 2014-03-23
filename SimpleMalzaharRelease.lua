@@ -1,4 +1,4 @@
-local version = "0.610" 
+local version = "0.611" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -44,7 +44,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.610")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -136,6 +136,7 @@ lastAttackCD = 0
 Recalling = false
 PassiveTracked = false
 UsingHP = false
+MinionWithE = false
 end
 
 function AtualizarVariaveis()
@@ -407,7 +408,8 @@ function OnFinishRecall(hero)
 end
 
 function OnGainBuff(unit, buff)
-	--if myHero.dead then return end
+	if myHero.dead then return end
+	--PrintChat(tostring(buff.name))
 	if unit == nil or buff == nil then return end
 	if unit == myHero then 
 	
@@ -427,10 +429,15 @@ function OnGainBuff(unit, buff)
 			UsingHP = true
 		end
 	end
+	--if unit == MinionsInimigos then
+	-- if buff.name == "AlZaharMaleficVision" then
+	--  MinionWithE = true
+	-- end
+	--end
 end
 
 function OnLoseBuff(unit, buff)
-	--if myHero.dead then return end
+	if myHero.dead then return end
 	if unit == nil or buff == nil then return end
 		if unit == myHero then
 			if buff.name == "Recall" then
@@ -448,7 +455,12 @@ function OnLoseBuff(unit, buff)
 			if buff.name == "RegenerationPotion" then --FlaskOfCrystalWater
 				UsingHP = false
 			end
-		end  
+		end
+		--if unit == MinionsInimigos then
+		--	if buff.name == "AlZaharMaleficVision" then
+		--		MinionWithE = false
+		--	end
+		--end
 end
 
 function CalcularDano()
@@ -585,13 +597,14 @@ end
 
 function FarmE()
 	if Recalling and ManaBaixa() then return end
+	if MinionWithE then return end
 	if not Menu.General.FarmESkill then return end	
 		local TimeToTheFirstDamageTick  = 0.3
 		local EProjectileSpeed = 1400 --The E projectile Speed
-		local Edelay = 0.25 + TimeToTheFirstDamageTick -- The E spell delay
+		local Edelay = 0.15 + TimeToTheFirstDamageTick -- The E spell delay
 			if MinionsInimigos ~= nil then
 				for i, Minion in pairs(MinionsInimigos.objects) do
-					if Minion ~= nil and not Minion.dead then
+					if Minion ~= nil and not Minion.dead and not TargetHaveBuff("AlZaharMaleficVision", Minion) then
 						local Healthh = VP:GetPredictedHealth(Minion, Edelay + GetDistance(Minion, myHero) / EProjectileSpeed)
 							if Healthh ~= nil and ValidTarget(Minion, 1100) and Healthh <= getDmg("E", Minion, myHero)/5 and AlZaharMaleficVision.ready then
 								NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Minion)								
@@ -617,22 +630,22 @@ function FullCombo()
 	if Target ~= nil and ValidTarget(Target) then
 		UseIgnt()	
 		AutoDFG()   	
-		if Menu.Combo.UseQ then
+		if Menu.Combo.UseQ and not usingUlt then
 			NormalCastAreaShot(AlZaharCalloftheVoid.ready, AlZaharCalloftheVoid.packetslot, AlZaharCalloftheVoid.range, Target)
 		end
-		if Menu.Combo.UseW then
+		if Menu.Combo.UseW and not usingUlt then
 			NormalCastAreaShot(AlZaharNullZone.ready, AlZaharNullZone.packetslot, AlZaharNullZone.range, Target)
 		end
-		if Menu.Combo.UseE then
+		if Menu.Combo.UseE and not usingUlt then
 			NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Target)	
 		end
-		if Menu.Combo.UseR then 
-			if Menu.Combo.UseQ and not AlZaharCalloftheVoid.ready and not usingUlt then
-				elseif Menu.Combo.UseW and not AlZaharNullZone.ready and not usingUlt then
-					elseif Menu.Combo.UseE and not AlZaharMaleficVision.ready and not usingUlt then	
+		if Menu.Combo.UseR and not AlZaharCalloftheVoid.ready and not AlZaharNullZone.ready and not AlZaharMaleficVision.ready then 
+			--if Menu.Combo.UseQ and not AlZaharCalloftheVoid.ready and not usingUlt then
+			--	elseif Menu.Combo.UseW and not AlZaharNullZone.ready and not usingUlt then
+			--		elseif Menu.Combo.UseE and not AlZaharMaleficVision.ready and not usingUlt then	
 						--if Target.health < getDmg("E", Target, myHero) then
 						NormalCast(AlZaharNetherGrasp.ready, AlZaharNetherGrasp.packetslot, AlZaharNetherGrasp.range, Target)
-			end
+			--end
 		end	
 	end
 end
