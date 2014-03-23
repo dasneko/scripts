@@ -1,4 +1,4 @@
-local version = "0.607" 
+local version = "0.608" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -44,7 +44,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.607")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.608")
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -559,7 +559,7 @@ if not Menu.General.LevelSkill then return end
 end 
 
 function FarmE()
-	--if Recalling or ManaBaixa() then return end
+	if Recalling or ManaBaixa() then return end
 	if not Menu.General.FarmESkill then return end	
 		local TimeToTheFirstDamageTick  = 0.3
 		local EProjectileSpeed = 1400 --The E projectile Speed
@@ -633,7 +633,7 @@ if not Menu.LigarScript then return end
 		ZhoniaCC()
 	end
 	if Menu.General.LevelSkill then AutoSkillLevel() end
-	if Menu.General.FarmE then FarmE() end
+	if Menu.General.FarmESkill then FarmE() end
 	
 	if Menu.Combo.ComboKey then
 		FullCombo()
