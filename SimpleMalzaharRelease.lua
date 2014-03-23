@@ -1,4 +1,4 @@
-local version = "0.609" 
+local version = "0.610" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -44,7 +44,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.609")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.610")
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -584,7 +584,7 @@ if not Menu.General.LevelSkill then return end
 end 
 
 function FarmE()
-	if Recalling or ManaBaixa() then return end
+	if Recalling and ManaBaixa() then return end
 	if not Menu.General.FarmESkill then return end	
 		local TimeToTheFirstDamageTick  = 0.3
 		local EProjectileSpeed = 1400 --The E projectile Speed
@@ -615,20 +615,25 @@ function FullCombo()
 		moveToCursor()
 	end
 	if Target ~= nil and ValidTarget(Target) then
-	UseIgnt()	
-	AutoDFG()   	
-	if Menu.Combo.UseQ then
-		NormalCastAreaShot(AlZaharCalloftheVoid.ready, AlZaharCalloftheVoid.packetslot, AlZaharCalloftheVoid.range, Target)
-	end
-	if Menu.Combo.UseW then
-		NormalCastAreaShot(AlZaharNullZone.ready, AlZaharNullZone.packetslot, AlZaharNullZone.range, Target)
-	end
-	if Menu.Combo.UseE then
-		NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Target)	
-	end
-	if Menu.Combo.UseR then --and not AlZaharMaleficVision.ready and not AlZaharNullZone.ready and not AlZaharCalloftheVoid.ready then
-		NormalCast(AlZaharNetherGrasp.ready, AlZaharNetherGrasp.packetslot, AlZaharNetherGrasp.range, Target)
-    end	
+		UseIgnt()	
+		AutoDFG()   	
+		if Menu.Combo.UseQ then
+			NormalCastAreaShot(AlZaharCalloftheVoid.ready, AlZaharCalloftheVoid.packetslot, AlZaharCalloftheVoid.range, Target)
+		end
+		if Menu.Combo.UseW then
+			NormalCastAreaShot(AlZaharNullZone.ready, AlZaharNullZone.packetslot, AlZaharNullZone.range, Target)
+		end
+		if Menu.Combo.UseE then
+			NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Target)	
+		end
+		if Menu.Combo.UseR then 
+			if Menu.Combo.UseQ and not AlZaharCalloftheVoid.ready and not usingUlt then
+				elseif Menu.Combo.UseW and not AlZaharNullZone.ready and not usingUlt then
+					elseif Menu.Combo.UseE and not AlZaharMaleficVision.ready and not usingUlt then	
+						--if Target.health < getDmg("E", Target, myHero) then
+						NormalCast(AlZaharNetherGrasp.ready, AlZaharNetherGrasp.packetslot, AlZaharNetherGrasp.range, Target)
+			end
+		end	
 	end
 end
 
