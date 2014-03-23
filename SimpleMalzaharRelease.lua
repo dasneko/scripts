@@ -1,4 +1,4 @@
-local version = "0.608" 
+local version = "0.609" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -44,7 +44,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.608")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.609")
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -54,7 +54,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.608")
 		Menu.Combo:addParam("UseR", "Use "..myHero:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
-		--Menu.Combo:addParam("ComboMode", "Combo Mode", SCRIPT_PARAM_SLICE, 1, 1, 7, 0)
+		--Menu.Combo:addParam("UltimateProtection", "Ultimate Overkill Protection", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	Menu:addSubMenu("Auto Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Auto Harass System", SCRIPT_PARAM_ONOFF, true)
@@ -74,7 +74,12 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.608")
 		Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC and low health", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseBarreira", "Auto Barrier", SCRIPT_PARAM_ONOFF, true)
-		Menu.Items:addParam("BarreiraPorcentagem", "Barrier Missing Health %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1)		
+		Menu.Items:addParam("BarreiraPorcentagem", "Barrier Missing Health %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1)
+		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Items:addParam("AutoHP", "Auto HP Potion", SCRIPT_PARAM_ONOFF, true)
+		Menu.Items:addParam("AutoHPPorcentagem", "Use HP Potion if health %", SCRIPT_PARAM_SLICE, 60, 20, 80, -1)
+		--Menu.items:addParam("AutoMANA", "Auto Mana Potion", SCRIPT_PARAM_ONOFF, true)
+		--Menu.items:addParam("AutoMANAPorcentagem", "Use MANA Potion if mana %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1)
 	Menu:addSubMenu("Draw System", "Paint")
 		Menu.Paint:addParam("DrawSystem", "Use Draw System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -88,8 +93,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.608")
 		Menu.Paint:addParam("PaintTurrent", "Turrent Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false)
-		Menu.Paint:addParam("PaintMana", "Low Mana Indicator", SCRIPT_PARAM_ONOFF, true)
-		--Menu.Paint:addParam("PaintPassive", "Passive Indicator", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("PaintMana", "Low Mana Indicator (Blue Circle)", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("PaintPassive", "Passive Indicator (White Circle)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintFlash", "Flash Range", SCRIPT_PARAM_ONOFF, false)
 	Menu:addSubMenu("General System", "General")
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -121,6 +126,7 @@ BarreiraSpell = {spellSlot = "SummonerBarrier", bSlot = nil, bReady = false, ran
 FlashSpell = {spellSlot = "SummonerFlash", fSlot = nil, fReady = false, range = 400}
 DFG = {id = 3128, ready = false, range = 600, slot = nil}
 ZHONIA = {id = 3157, ready = false, range = 0, slot = nil}
+Hppotion = {id = 2003, ready = false, slot = nil}
 --misc
 SequenciaHabilidades = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
 TextAlvo = nil
@@ -129,6 +135,7 @@ lastWindUpTime = 0
 lastAttackCD = 0 
 Recalling = false
 PassiveTracked = false
+UsingHP = false
 end
 
 function AtualizarVariaveis()
@@ -149,9 +156,11 @@ function AtualizarVariaveis()
 	
 	DFG.slot = GetInventorySlotItem(DFG.id)	
 	ZHONIA.slot = GetInventorySlotItem(ZHONIA.id)
+	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
 	
 	DFG.ready = (DFG.slot ~= nil and myHero:CanUseSpell(DFG.slot) == READY)
 	ZHONIA.ready = (ZHONIA.slot ~= nil and myHero:CanUseSpell(ZHONIA.slot) == READY)
+	Hppotion.ready = (Hppotion.slot ~= nil and myHero:CanUseSpell(Hppotion.slot) == READY)	
 
 	if Menu.General.UseOrb then
 		Menu.General.MoveToMouse = false
@@ -243,14 +252,13 @@ function OnDraw()
 				end
 			end
 	end
---	if Menu.Paint.PaintPassive then
---		if PassiveTracked then
---			for i=0, 4 do
---				DrawCircle2(myHero.x, myHero.y, myHero.z, i*1.5, ARGB(255,255,255,255))
---			end
---		end	
---	end
+	if Menu.Paint.PaintPassive then
+		if PassiveTracked then			
+			DrawCircle2(myHero.x, myHero.y, myHero.z, 65, ARGB(255,255,255,255))
+		end
+	end	
 end
+
 
 function DrawCircle2(x, y, z, radius, color)
     local vPos1 = Vector(x, y, z)
@@ -402,10 +410,11 @@ function OnGainBuff(unit, buff)
 	--if myHero.dead then return end
 	if unit == nil or buff == nil then return end
 	if unit == myHero then 
+	
 		if buff.name == "Recall" then
 			Recalling = true 
 		end		
-		if buff.name == "alazaharsummonvoidling" then
+		if buff.name == "alzaharsummonvoidling" then
 		 PassiveTracked = true
 		end
 		if buff.name == "alzaharnethergraspsound" then
@@ -413,6 +422,9 @@ function OnGainBuff(unit, buff)
 		end
 		if buff.type == 5 or 7 or 19 or 21 or 24 or 28 or 31 then
 		 GotCC = true
+		end
+		if buff.name == "RegenerationPotion" then
+			UsingHP = true
 		end
 	end
 end
@@ -424,7 +436,7 @@ function OnLoseBuff(unit, buff)
 			if buff.name == "Recall" then
 				Recalling = false   
 			end 
-				if buff.name == "alazaharsummonvoidling" then
+				if buff.name == "alzaharsummonvoidling" then
 					PassiveTracked = false
 			end
 			if buff.name == "alzaharnethergraspsound" then
@@ -432,6 +444,9 @@ function OnLoseBuff(unit, buff)
 			end
 			if buff.type == 5 or 7 or 19 or 21 or 24 or 28 or 29 or 30 or 31 then
 				GotCC = false
+			end
+			if buff.name == "RegenerationPotion" then --FlaskOfCrystalWater
+				UsingHP = false
 			end
 		end  
 end
@@ -544,6 +559,16 @@ function ManaBaixa()
  end
 end
 
+function AutoVidaBaixa()
+	if not Menu.Items.AutoHP then return end
+	if UsingHP then return end
+	if myHero.health < (myHero.maxHealth * ( Menu.Items.AutoHPPorcentagem / 100)) then
+		if Hppotion.ready then
+			CastSpell(Hppotion.slot)
+		end
+	end
+end
+
 function AutoSkillLevel()
 if not Menu.General.LevelSkill then return end
  if myHero:GetSpellData(_Q).level + myHero:GetSpellData(_W).level + myHero:GetSpellData(_E).level + myHero:GetSpellData(_R).level < myHero.level then
@@ -601,7 +626,7 @@ function FullCombo()
 	if Menu.Combo.UseE then
 		NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Target)	
 	end
-	if Menu.Combo.UseR and not AlZaharMaleficVision.ready and not AlZaharNullZone.ready and not AlZaharCalloftheVoid.ready then
+	if Menu.Combo.UseR then --and not AlZaharMaleficVision.ready and not AlZaharNullZone.ready and not AlZaharCalloftheVoid.ready then
 		NormalCast(AlZaharNetherGrasp.ready, AlZaharNetherGrasp.packetslot, AlZaharNetherGrasp.range, Target)
     end	
 	end
@@ -631,6 +656,7 @@ if not Menu.LigarScript then return end
 		AutoBarr()
 		AutoZhonia()	
 		ZhoniaCC()
+		AutoVidaBaixa()
 	end
 	if Menu.General.LevelSkill then AutoSkillLevel() end
 	if Menu.General.FarmESkill then FarmE() end
