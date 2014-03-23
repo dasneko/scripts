@@ -1,4 +1,4 @@
-local version = "0.601" 
+local version = "0.602" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -44,7 +44,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.601")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.602")
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -591,7 +591,7 @@ end
 
 function FullHarass()
 	if not Menu.Harass.HarassSystem then return end
-	--if Recalling or ManaBaixa() or usingUlt then return end
+	if ManaBaixa() or usingUlt then return end
 	if Menu.Harass.UseE then
 		NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Target)
 	end 
