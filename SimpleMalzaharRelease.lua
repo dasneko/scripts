@@ -1,4 +1,4 @@
-local version = "0.611" 
+local version = "0.612" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -36,6 +36,7 @@ require "VPrediction"
 
 function OnLoad()
 	Variaveis()
+	PriorityOnLoad()
 	Menu1()
 	OnDraw()
 	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
@@ -44,7 +45,8 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.612")
+
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -56,6 +58,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
 		--Menu.Combo:addParam("UltimateProtection", "Ultimate Overkill Protection", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+		
 	Menu:addSubMenu("Auto Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Auto Harass System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -65,6 +68,13 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Harass:addParam("ParaComRecall", "Stop if Recall", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("ParaComManaBaixa", "Stop Cast if mana below %", SCRIPT_PARAM_SLICE, 40, 10, 80, 0)
+	
+	Menu:addSubMenu("Farm Helper System", "Farmerr")
+		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
+		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
+		Menu.Farmerr:addParam("LastHit1", "Last Hit (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte('C'))
+		
 	Menu:addSubMenu("Items Helper System", "Items")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -80,6 +90,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
 		Menu.Items:addParam("AutoHPPorcentagem", "Use HP Potion if health %", SCRIPT_PARAM_SLICE, 60, 20, 80, -1)
 		--Menu.items:addParam("AutoMANA", "Auto Mana Potion", SCRIPT_PARAM_ONOFF, true)
 		--Menu.items:addParam("AutoMANAPorcentagem", "Use MANA Potion if mana %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1)
+		
 	Menu:addSubMenu("Draw System", "Paint")
 		Menu.Paint:addParam("DrawSystem", "Use Draw System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -88,6 +99,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
 		Menu.Paint:addParam("PaintE", "Draw "..myHero:GetSpellData(_E).name.." (E) Range", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintR", "Draw "..myHero:GetSpellData(_R).name.." (R) Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONFF, true)
 		Menu.Paint:addParam("PaintAA", "Draw Auto Attack Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTurrent", "Turrent Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
@@ -96,10 +108,10 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
 		Menu.Paint:addParam("PaintMana", "Low Mana Indicator (Blue Circle)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintPassive", "Passive Indicator (White Circle)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintFlash", "Flash Range", SCRIPT_PARAM_ONOFF, false)
+		
 	Menu:addSubMenu("General System", "General")
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.General:addParam("LevelSkill", "Auto Level Skills R-E-W-Q", SCRIPT_PARAM_ONOFF, true)
-		Menu.General:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
+		Menu.General:addParam("LevelSkill", "Auto Level Skills R-E-W-Q", SCRIPT_PARAM_ONOFF, true)		
 		Menu.General:addParam("UseOrb", "Use Orbwalking", SCRIPT_PARAM_ONOFF, true)
 		Menu.General:addParam("MoveToMouse", "Only Move to Mouse Position", SCRIPT_PARAM_ONOFF, false)
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -117,8 +129,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.611")
 end
 
 function Variaveis()
-AlZaharCalloftheVoid = {ready = nil, spellSlot = "Q", packetslot = _Q, range = 900, width = 110, speed = math.huge, delay = .48, spellType = "skillShot", hitLineCheck = false}
-AlZaharNullZone = {ready = nil, spellSlot = "W", packetslot = _W, range = 800, width = 250, speed = math.huge, delay = .48, spellType = "skillShot", hitLineCheck = false}
+AlZaharCalloftheVoid = {ready = nil, spellSlot = "Q", packetslot = _Q, range = 900, width = 110, speed = math.huge, delay = .5, spellType = "skillShot", hitLineCheck = false}
+AlZaharNullZone = {ready = nil, spellSlot = "W", packetslot = _W, range = 800, width = 250, speed = math.huge, delay = .5, spellType = "skillShot", hitLineCheck = false}
 AlZaharMaleficVision = {ready = nil, spellSlot = "E", packetslot = _E, range = 650, width = 0, speed = math.huge, delay = .5, spellType = "enemyCast", hitLineCheck = false}
 AlZaharNetherGrasp = {ready = nil, spellSlot = "R", packetslot = _R, range = 700, width = 0, speed = math.huge, delay = .5, spellType = "enemyCast", hitLineCheck = false}
 IgniteSpell = {spellSlot = "SummonerDot", iSlot = nil, iReady = false, range = 600}
@@ -248,7 +260,7 @@ function OnDraw()
 							local pos= WorldToScreen(D3DXVECTOR3(targetTurret.x, targetTurret.y, targetTurret.z))
 							local posX = pos.x - 35
 							local posY = pos.y - 50
-								DrawText("Hits: "..hitsToTurret,15,posX ,posY  ,ARGB(255,0,255,0))  
+								DrawText("AA Hits: "..hitsToTurret,15,posX ,posY  ,ARGB(255,0,255,0))  
 						end
 				end
 			end
@@ -598,10 +610,10 @@ end
 function FarmE()
 	if Recalling and ManaBaixa() then return end
 	if MinionWithE then return end
-	if not Menu.General.FarmESkill then return end	
+	if not Menu.Farmerr.FarmESkill then return end	
 		local TimeToTheFirstDamageTick  = 0.3
 		local EProjectileSpeed = 1400 --The E projectile Speed
-		local Edelay = 0.15 + TimeToTheFirstDamageTick -- The E spell delay
+		local Edelay = 0.25 + TimeToTheFirstDamageTick -- The E spell delay
 			if MinionsInimigos ~= nil then
 				for i, Minion in pairs(MinionsInimigos.objects) do
 					if Minion ~= nil and not Minion.dead and not TargetHaveBuff("AlZaharMaleficVision", Minion) then
@@ -613,6 +625,21 @@ function FarmE()
 				end
 			end
 end
+
+function FarmAndWalk()
+	if not Menu.Farmerr.LastHit1 then return end
+			if MinionsInimigos ~= nil then
+				for i, Minion in pairs(MinionsInimigos.objects) do
+					if GetDistance(myHero, Minion) < 550 then
+						if getDmg("AD", Minion, myHero) + 2 >= Minion.health and myHero:GetSpellData(_E).currentCd > 1 then
+							myHero:Attack(Minion)
+						end
+					--else
+					--	moveToCursor()
+					end
+			end
+	end
+end				
 
 function FullCombo()
 	if not Menu.Combo.ComboSystem then return end
@@ -677,7 +704,13 @@ if not Menu.LigarScript then return end
 		AutoVidaBaixa()
 	end
 	if Menu.General.LevelSkill then AutoSkillLevel() end
-	if Menu.General.FarmESkill then FarmE() end
+	
+	if Menu.Farmerr.FarmerrSystem then
+		FarmE()
+		if Menu.Farmerr.LastHit1 then
+			FarmAndWalk()
+		end
+	end
 	
 	if Menu.Combo.ComboKey then
 		FullCombo()
@@ -685,4 +718,62 @@ if not Menu.LigarScript then return end
 	if Menu.Harass.HarassSystem then
 			FullHarass()
 	end
+end
+
+--[[ SIDA'S REVAMPED]]
+
+local priorityTable = {
+ 
+    AP = {
+        "Annie", "Ahri", "Akali", "Anivia", "Annie", "Brand", "Cassiopeia", "Diana", "Evelynn", "FiddleSticks", "Fizz", "Gragas", "Heimerdinger", "Karthus",
+        "Kassadin", "Katarina", "Kayle", "Kennen", "Leblanc", "Lissandra", "Lux", "Malzahar", "Mordekaiser", "Morgana", "Nidalee", "Orianna",
+        "Rumble", "Ryze", "Sion", "Swain", "Syndra", "Teemo", "TwistedFate", "Veigar", "Vel'koz", "Viktor", "Vladimir", "Xerath", "Ziggs", "Zyra", "MasterYi",
+    },
+    Support = {
+        "Alistar", "Blitzcrank", "Janna", "Karma", "Leona", "Lulu", "Nami", "Nunu", "Sona", "Soraka", "Taric", "Thresh", "Zilean",
+    },
+ 
+    Tank = {
+        "Amumu", "Chogath", "DrMundo", "Galio", "Hecarim", "Malphite", "Maokai", "Nasus", "Rammus", "Sejuani", "Shen", "Singed", "Skarner", "Volibear",
+        "Warwick", "Yorick", "Zac",
+    },
+ 
+    AD_Carry = {
+        "Ashe", "Caitlyn", "Corki", "Draven", "Ezreal", "Graves", "Jayce", "KogMaw", "MissFortune", "Pantheon", "Quinn", "Shaco", "Sivir",
+        "Talon", "Tristana", "Twitch", "Urgot", "Varus", "Vayne", "Zed",
+ 
+    },
+ 
+    Bruiser = {
+        "Aatrox", "Darius", "Elise", "Fiora", "Gangplank", "Garen", "Irelia", "JarvanIV", "Jax", "Khazix", "LeeSin", "Nautilus", "Nocturne", "Olaf", "Poppy",
+        "Renekton", "Rengar", "Riven", "Shyvana", "Trundle", "Tryndamere", "Udyr", "Vi", "MonkeyKing", "XinZhao",
+    },
+ 
+}
+ 
+function SetPriority(table, hero, priority)
+        for i=1, #table, 1 do
+                if hero.charName:find(table[i]) ~= nil then
+                        TS_SetHeroPriority(priority, hero.charName)
+                end
+        end
+end
+ 
+function arrangePrioritys()
+        for i, enemy in ipairs(AutoCarry.EnemyTable) do
+                SetPriority(priorityTable.AD_Carry, enemy, 1)
+                SetPriority(priorityTable.AP,       enemy, 2)
+                SetPriority(priorityTable.Support,  enemy, 3)
+                SetPriority(priorityTable.Bruiser,  enemy, 4)
+                SetPriority(priorityTable.Tank,     enemy, 5)
+        end
+end
+ 
+function PriorityOnLoad()
+        if heroManager.iCount < 10 then
+                PrintChat(" >> Too few champions to arrange priority")
+        else
+                TargetSelector(TARGET_LESS_CAST_PRIORITY, 0)
+                arrangePrioritys()
+        end
 end
