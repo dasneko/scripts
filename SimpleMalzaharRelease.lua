@@ -1,4 +1,4 @@
-local version = "0.612" 
+local version = "0.613" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.612")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.613")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -99,7 +99,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.612")
 		Menu.Paint:addParam("PaintE", "Draw "..myHero:GetSpellData(_E).name.." (E) Range", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintR", "Draw "..myHero:GetSpellData(_R).name.." (R) Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONFF, true)
+		--Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONFF, true)
 		Menu.Paint:addParam("PaintAA", "Draw Auto Attack Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTurrent", "Turrent Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
@@ -633,9 +633,11 @@ function FarmAndWalk()
 					if GetDistance(myHero, Minion) < 550 then
 						if getDmg("AD", Minion, myHero) + 2 >= Minion.health and myHero:GetSpellData(_E).currentCd > 1 then
 							myHero:Attack(Minion)
+						else
+							moveToCursor()
 						end
-					--else
-					--	moveToCursor()
+					else
+						moveToCursor()
 					end
 			end
 	end
