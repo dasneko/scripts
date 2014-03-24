@@ -1,4 +1,4 @@
-local version = "0.613" 
+local version = "0.614" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.613")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.614")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -102,7 +102,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.613")
 		--Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONFF, true)
 		Menu.Paint:addParam("PaintAA", "Draw Auto Attack Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
-		Menu.Paint:addParam("PaintTurrent", "Turrent Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("PaintTurrent", "Turret Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("PaintTurrentRange", "Enemy Turret Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMana", "Low Mana Indicator (Blue Circle)", SCRIPT_PARAM_ONOFF, true)
@@ -259,8 +260,11 @@ function OnDraw()
 						if hitsToTurret ~= 0 then
 							local pos= WorldToScreen(D3DXVECTOR3(targetTurret.x, targetTurret.y, targetTurret.z))
 							local posX = pos.x - 35
-							local posY = pos.y - 50
-								DrawText("AA Hits: "..hitsToTurret,15,posX ,posY  ,ARGB(255,0,255,0))  
+							local posY = pos.y - 50							
+								DrawText("AA Hits: "..hitsToTurret,15,posX ,posY  ,ARGB(255,0,255,0))
+								if Menu.Paint.PaintTurrentRange then
+									DrawCircle2(targetTurret.x, targetTurret.y, targetTurret.z, 930, ARGB(255,0,255,0))
+								end
 						end
 				end
 			end
@@ -486,15 +490,8 @@ function CalcularDano()
 				rDmg = ((AlZaharNetherGrasp.ready and getDmg("R", enemy, myHero)) or 0)
 				dfgDmg = ((DFG.ready and getDmg("DFG", enemy, myHero)) or 0)
 				iDmg = ((IgniteSpell.iReady and getDmg("IGNITE", enemy, myHero)) or 0)
-					local DanoTotal = 0
-		--local ComboMode2 = 0
-		--local ComboMode3 = 0
-	 				DanoTotal = qDmg + wDmg+ eDmg + rDmg + iDmg + dfgDmg					
-		--ComboMode2 = wDmg + eDmg + rDmg + iDmg + dfgDmg
-		--ComboMode3 = eDmg + rDmg + iDmg + dfgDmg
-					--if enemy.health <= DanoTotal then
-					--	TextoAlvo = "Full Combo"
-					--end
+					local DanoTotal = 0	
+	 				DanoTotal = qDmg + wDmg+ eDmg + rDmg + iDmg + dfgDmg		
 					if enemy.health <= eDmg + rDmg then
 					 return "E+R"
 					end
@@ -504,10 +501,18 @@ function CalcularDano()
 					if enemy.health <= wDmg + eDmg + rDmg then
 						return "W+E+R"
 					end
-	  --elseif enemy.health <= ComboMode2 then
-	   --TextoAlvo = "W+E+R"
-	  --elseif enemy.health <= ComboMode3 then
-	   --TextoAlvo = "E+R"
+					if enemy.health <= eDmg then
+						return "E"
+					end
+					if enemy.health <= rDmg then
+						return "R"
+					end
+					if enemy.health <= wDmg then
+						return "W"
+					end
+					if enemy.health <= qDmg then
+						return "Q"
+					end	
 					if enemy.health > DanoTotal then
 						return "Harass"
 					end
@@ -636,8 +641,8 @@ function FarmAndWalk()
 						else
 							moveToCursor()
 						end
-					else
-						moveToCursor()
+					--else
+					--	moveToCursor()
 					end
 			end
 	end
