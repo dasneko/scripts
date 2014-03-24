@@ -1,4 +1,4 @@
-local version = "0.614" 
+local version = "0.615" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.614")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.615")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -56,6 +56,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.614")
 		Menu.Combo:addParam("UseR", "Use "..myHero:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
+		Menu.Combo:addParam("CheckInsideW", "Cast R only above W", SCRIPT_PARAM_ONOFF, false)
+		Menu.Combo:addParam("CheckifE", "Cast R only if target have E", SCRIPT_PARAM_ONOFF, false)
 		--Menu.Combo:addParam("UltimateProtection", "Ultimate Overkill Protection", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 		
@@ -78,7 +80,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.614")
 	Menu:addSubMenu("Items Helper System", "Items")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp", SCRIPT_PARAM_ONOFF, true)
+		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp", SCRIPT_PARAM_ONOFF, true)		
 		Menu.Items:addParam("UseZhonia", "Auto Zhonias", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("ZhoniaPorcentagem", "Zhonias Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)
 		Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC and low health", SCRIPT_PARAM_ONOFF, true)
@@ -312,8 +314,25 @@ function NormalCast(SReady, Skill, Range, Enemy) --_E/_R
 			end
 		end 
 		if Menu.General.UseVPred or Menu.General.UsePacket then
-			if SReady and GetDistance(Enemy) <= Range and ValidTarget(Enemy, Range) and not usingUlt then
-				Packet('S_CAST', { spellId = Skill, targetNetworkId = Enemy.networkID }):send() 
+			if SReady and GetDistance(Enemy) <= Range and ValidTarget(Enemy, Range) and not usingUlt then			 
+				if Skill == AlZaharNetherGrasp.packetslot then
+					if Menu.Combo.CheckInsideW then
+						if GetDistance(Enemy) <= (AlZaharNullZone.range/1.2) then
+							Packet('S_CAST', { spellId = Skill, targetNetworkId = Enemy.networkID }):send()
+						end
+					else
+						Packet('S_CAST', { spellId = Skill, targetNetworkId = Enemy.networkID }):send()
+					end
+					if Menu.Combo.CheckifE then
+						if TargetHaveBuff("AlZaharMaleficVision", Enemy) then
+							Packet('S_CAST', { spellId = Skill, targetNetworkId = Enemy.networkID }):send()
+						end
+					else
+						Packet('S_CAST', { spellId = Skill, targetNetworkId = Enemy.networkID }):send()
+					end
+				else
+					Packet('S_CAST', { spellId = Skill, targetNetworkId = Enemy.networkID }):send()
+				end
 			end
 		end
 	end
@@ -701,7 +720,7 @@ end
 
 function OnTick()
 if not Menu.LigarScript then return end
-
+if myHero.dead then return end
 	AtualizarVariaveis()
 	--FullHarass()
 	if Menu.Items.ItemsSystem then
