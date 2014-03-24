@@ -1,4 +1,4 @@
-local version = "0.615" 
+local version = "0.616" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.615")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.616")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -76,11 +76,14 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.615")
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("LastHit1", "Last Hit (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte('C'))
+		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Farmerr:addParam("ArcaneON", "Use Arcane Blade Mastery", SCRIPT_PARAM_ONOFF, true)
+		Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
 		
 	Menu:addSubMenu("Items Helper System", "Items")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp", SCRIPT_PARAM_ONOFF, true)		
+		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp with Combo", SCRIPT_PARAM_ONOFF, true)		
 		Menu.Items:addParam("UseZhonia", "Auto Zhonias", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("ZhoniaPorcentagem", "Zhonias Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)
 		Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC and low health", SCRIPT_PARAM_ONOFF, true)
@@ -101,7 +104,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.615")
 		Menu.Paint:addParam("PaintE", "Draw "..myHero:GetSpellData(_E).name.." (E) Range", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintR", "Draw "..myHero:GetSpellData(_R).name.." (R) Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
-		--Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONFF, true)
+		--Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintAA", "Draw Auto Attack Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTurrent", "Turret Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
@@ -242,9 +245,18 @@ function OnDraw()
 	end
 	if Menu.Paint.PaintMinion then
 		if MinionsInimigos ~= nil then
+		local DamageArcane1 = myHero.ap * 0.05
+		local DamageButcher1 = 2
+		local MasteryDamage1 = 0
+			if Menu.Farmerr.ArcaneON then
+				MasteryDamage1 = MasteryDamage1 + DamageArcane1
+			end
+			if Menu.Farmerr.ButcherON then
+				MasteryDamage1 = MasteryDamage1 + DamageButcher1
+			end
 			for i, Minion in pairs(MinionsInimigos.objects) do
 				if Minion ~= nil and not Minion.dead then
-					if ValidTarget(Minion, 1100) and Minion.health <= getDmg("AD", Minion, myHero) + 2 then
+					if ValidTarget(Minion, 1100) and Minion.health <= getDmg("AD", Minion, myHero) + MasteryDamage1 then
 						DrawCircle2(Minion.pos.x, Minion.pos.y, Minion.pos.z, 85, ARGB(255, 255, 255, 000))
 					end
 				end
@@ -263,7 +275,7 @@ function OnDraw()
 							local pos= WorldToScreen(D3DXVECTOR3(targetTurret.x, targetTurret.y, targetTurret.z))
 							local posX = pos.x - 35
 							local posY = pos.y - 50							
-								DrawText("AA Hits: "..hitsToTurret,15,posX ,posY  ,ARGB(255,0,255,0))
+								DrawText("AA Hits: "..hitsToTurret + 1,15,posX ,posY  ,ARGB(255,0,255,0))
 								if Menu.Paint.PaintTurrentRange then
 									DrawCircle2(targetTurret.x, targetTurret.y, targetTurret.z, 930, ARGB(255,0,255,0))
 								end
@@ -637,7 +649,7 @@ function FarmE()
 	if not Menu.Farmerr.FarmESkill then return end	
 		local TimeToTheFirstDamageTick  = 0.3
 		local EProjectileSpeed = 1400 --The E projectile Speed
-		local Edelay = 0.25 + TimeToTheFirstDamageTick -- The E spell delay
+		local Edelay = 0.25 + TimeToTheFirstDamageTick -- The E spell delay		
 			if MinionsInimigos ~= nil then
 				for i, Minion in pairs(MinionsInimigos.objects) do
 					if Minion ~= nil and not Minion.dead and not TargetHaveBuff("AlZaharMaleficVision", Minion) then
