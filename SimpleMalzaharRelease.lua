@@ -1,4 +1,4 @@
-local version = "0.617" 
+local version = "0.618" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -38,14 +38,14 @@ function OnLoad()
 	Variaveis()
 	PriorityOnLoad()
 	Menu1()
-	OnDraw()
+	OnDraw()	
 	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
 end
 
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.617")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.618")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -83,14 +83,15 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.617")
 	Menu:addSubMenu("Items Helper System", "Items")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp with Combo", SCRIPT_PARAM_ONOFF, true)		
+		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp with Combo", SCRIPT_PARAM_ONOFF, true)
+		Menu.Items:addParam("UseDfgR", "Deathfire Grasp only if R is ready", SCRIPT_PARAM_ONOFF, true) --?
 		Menu.Items:addParam("UseZhonia", "Auto Zhonias", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("ZhoniaPorcentagem", "Zhonias Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)
 		Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC and low health", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseBarreira", "Auto Barrier", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("BarreiraPorcentagem", "Barrier Missing Health %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1)
-		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
+		--Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("AutoHP", "Auto HP Potion", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("AutoHPPorcentagem", "Use HP Potion if health %", SCRIPT_PARAM_SLICE, 60, 20, 80, -1)
 		--Menu.items:addParam("AutoMANA", "Auto Mana Potion", SCRIPT_PARAM_ONOFF, true)
@@ -547,6 +548,9 @@ function CalcularDano()
 					if enemy.health > DanoTotal then
 						return "Harass"
 					end
+					if enemy.health < DanoTotal then
+						return "Full Combo"
+					end
 			end
 	end
 end
@@ -591,7 +595,7 @@ end
 
 function ZhoniaCC()
 	if not Menu.Items.ZhoniaCC then return end
-		if ZHONIA.ready and GotCC and myHero.health < myHero.Health * (Menu.Items.ZhoniaPorcentagem /100) then
+		if ZHONIA.ready and GotCC and myHero.health < myHero.health * (Menu.Items.ZhoniaPorcentagem /100) then
 			if Menu.General.UsePacket then
 				Packet('S_CAST', { spellId = ZHONIA.slot, targetNetworkId = myHero.networkID }):send()
 			else
@@ -601,13 +605,21 @@ function ZhoniaCC()
 end
 
 function AutoDFG()
- if not Menu.Items.UseDfg then return end
-  if DFG.ready and Target ~= nil and GetDistance(Target) <= DFG.range and not usingUlt then
-   if Menu.General.UsePacket then
-    Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
-   else   
-    CastSpell(DFG.slot, Target)
-   end
+	if not Menu.Items.UseDfg then return end
+	if DFG.ready and Target ~= nil and GetDistance(Target) <= DFG.range and not usingUlt then
+		if Menu.General.UsePacket then
+			if Menu.Items.UseDfgR and AlZaharNetherGrasp.ready then
+				Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+			else 
+				Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+			end
+		else
+			if Menu.Items.UseDfgR and AlZaharNetherGrasp.ready then
+				CastSpell(DFG.slot, Target)
+			else
+				CastSpell(DFG.slot, Target)
+			end
+		end
   end
 end
 
@@ -709,7 +721,10 @@ function FullCombo()
 			--	elseif Menu.Combo.UseW and not AlZaharNullZone.ready and not usingUlt then
 			--		elseif Menu.Combo.UseE and not AlZaharMaleficVision.ready and not usingUlt then	
 						--if Target.health < getDmg("E", Target, myHero) then
-						NormalCast(AlZaharNetherGrasp.ready, AlZaharNetherGrasp.packetslot, AlZaharNetherGrasp.range, Target)
+			--if Menu.Items.UseDfgR then
+			--	AutoDFG()
+			--else
+				NormalCast(AlZaharNetherGrasp.ready, AlZaharNetherGrasp.packetslot, AlZaharNetherGrasp.range, Target)						
 			--end
 		end	
 	end
