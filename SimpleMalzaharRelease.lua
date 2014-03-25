@@ -1,4 +1,4 @@
-local version = "0.619" 
+local version = "0.620" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.619")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.620")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -56,8 +56,16 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.619")
 		Menu.Combo:addParam("UseR", "Use "..myHero:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
-		Menu.Combo:addParam("CheckInsideW", "Cast R only above W", SCRIPT_PARAM_ONOFF, false)
-		Menu.Combo:addParam("CheckifE", "Cast R only if target have E", SCRIPT_PARAM_ONOFF, false)
+		Menu.Combo:addParam("CheckInsideW", "Only Cast R above W", SCRIPT_PARAM_ONOFF, false)
+		Menu.Combo:addParam("CheckifE", "Only Cast R if target have E", SCRIPT_PARAM_ONOFF, false)
+			Menu.Combo:addSubMenu("Custom Combo System (not working)", "CustomCombo")
+				Menu.Combo.CustomCombo:addParam("UseCustom", "Use Custom Combo System", SCRIPT_PARAM_ONOFF, false)
+				Menu.Combo.CustomCombo:addParam("", "", SCRIPT_PARAM_INFO, "")
+				Menu.Combo.CustomCombo:addParam("QPriority", myHero:GetSpellData(_Q).name.. "(Q) Priority", SCRIPT_PARAM_SLICE, 4, 0, 4, 0)
+				Menu.Combo.CustomCombo:addParam("WPriority", myHero:GetSpellData(_W).name.."(W) Priority", SCRIPT_PARAM_SLICE, 2, 0, 4, 0)
+				Menu.Combo.CustomCombo:addParam("EPriority", myHero:GetSpellData(_E).name.."(E) Priority", SCRIPT_PARAM_SLICE, 1, 0, 4, 0)
+				Menu.Combo.CustomCombo:addParam("RPriority", myHero:GetSpellData(_R).name.."(R) Priority", SCRIPT_PARAM_SLICE, 3, 0, 4, 0)
+				
 		--Menu.Combo:addParam("UltimateProtection", "Ultimate Overkill Protection", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 		
@@ -91,7 +99,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.619")
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseBarreira", "Auto Barrier", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("BarreiraPorcentagem", "Barrier Missing Health %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1)
-		Menu.Items:addParam("AntiDoubleIgnite", "Anti Double Ignite", SCRIPT_PARAM_ONOFF, true) --NEED WORK
+		Menu.Items:addParam("AntiDoubleIgnite", "Anti Double Ignite", SCRIPT_PARAM_ONOFF, true) 
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("AutoHP", "Auto HP Potion", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("AutoHPPorcentagem", "Use HP Potion if health %", SCRIPT_PARAM_SLICE, 60, 20, 80, -1)
@@ -106,7 +114,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.619")
 		Menu.Paint:addParam("PaintE", "Draw "..myHero:GetSpellData(_E).name.." (E) Range", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintR", "Draw "..myHero:GetSpellData(_R).name.." (R) Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
-		--Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintAA", "Draw Auto Attack Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTurrent", "Turret Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
@@ -150,6 +158,7 @@ Hppotion = {id = 2003, ready = false, slot = nil}
 --misc
 SequenciaHabilidades = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
 TextAlvo = nil
+ManaAdvice = nil
 lastAttack = 0
 lastWindUpTime = 0
 lastAttackCD = 0 
@@ -189,6 +198,7 @@ function AtualizarVariaveis()
 		Menu.General.MoveToMouse = true
 	end
 	TextoAlvo = CalcularDano()
+	ManaAdvice = ManaCast()
 		
 	Alvo:update()
 	Target = Alvo.target
@@ -222,6 +232,13 @@ function OnDraw()
 		DrawCircle2(myHero.x, myHero.y, myHero.z, 35, ARGB(255, 000, 000, 255))
 		--end
 	end
+	
+	if Menu.Paint.ManaCheck then
+		if ManaAdvice ~= nil and not myHero.dead then
+			DrawText3D(tostring(ManaAdvice), myHero.x, myHero.y, myHero.z, 16, ARGB(255, 000, 255, 255))
+		end
+	end
+	
 	if Menu.Paint.PaintTarget then
 		if Target ~= nil and not Target.dead then
 			--for _, enemy in pairs(GetEnemyHeroes()) do
@@ -512,6 +529,23 @@ function OnLoseBuff(unit, buff)
 		--end
 end
 
+function ManaCast()
+	if myHero.dead then return end
+		local qMana = myHero:GetSpellData(_Q).mana or 0
+		local wMana = myHero:GetSpellData(_W).mana or 0
+		local eMana = myHero:GetSpellData(_E).mana or 0
+		local rMana = myHero:GetSpellData(_R).mana or 0
+		local ManaTotal = 0
+			if Menu.Combo.UseQ then ManaTotal = ManaTotal + qMana end
+			if Menu.Combo.UseW then ManaTotal = ManaTotal + wMana end
+			if Menu.Combo.UseE then ManaTotal = ManaTotal + eMana end
+			if Menu.Combo.UseR then ManaTotal = ManaTotal + rMana end
+				if myHero.mana < ManaTotal and AlZaharCalloftheVoid.ready and AlZaharNullZone.ready and AlZaharMaleficVision.ready and AlZaharNetherGrasp.ready then
+					return "Not Enought Mana."
+				end
+end
+
+
 function CalcularDano()
 	if not Menu.Paint.PaintTarget2 then return end
 	for i=1, heroManager.iCount do
@@ -697,13 +731,14 @@ function FarmAndWalk()
 			end
 			if MinionsInimigos ~= nil then
 				for i, Minion in pairs(MinionsInimigos.objects) do
-					if Minion ~= nil and not Minion.dead and GetDistance(myHero, Minion) < 550 then
+					if Minion ~= nil and not Minion.dead and GetDistance(myHero, Minion) <= 700 then
 						if getDmg("AD", Minion, myHero) + MasteryDamage1 > Minion.health and myHero:GetSpellData(_E).currentCd > 1 then
 							myHero:Attack(Minion)
 						end
-					--else
-					--	moveToCursor()
+					else
+						myHero:MoveTo(mousePos.x, mousePos.z)
 					end
+					--end
 			end
 	end
 end				
