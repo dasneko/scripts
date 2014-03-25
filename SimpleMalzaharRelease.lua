@@ -1,4 +1,4 @@
-local version = "0.620" 
+local version = "0.621" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.620")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.621")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -114,7 +114,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.620")
 		Menu.Paint:addParam("PaintE", "Draw "..myHero:GetSpellData(_E).name.." (E) Range", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintR", "Draw "..myHero:GetSpellData(_R).name.." (R) Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("EnemyDamage", "Current Enemy Damage", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintAA", "Draw Auto Attack Range", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTurrent", "Turret Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
@@ -122,6 +122,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.620")
 		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMana", "Low Mana Indicator (Blue Circle)", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintPassive", "Passive Indicator (White Circle)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintFlash", "Flash Range", SCRIPT_PARAM_ONOFF, false)
 		
@@ -135,7 +136,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.620")
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true)
 		Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true)
 	
-	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1100, DAMAGE_MAGIC)
+	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200, DAMAGE_MAGIC)
 	Alvo.name = "Malzahar"
 	Menu:addTS(Alvo)	
 	
@@ -159,6 +160,7 @@ Hppotion = {id = 2003, ready = false, slot = nil}
 SequenciaHabilidades = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
 TextAlvo = nil
 ManaAdvice = nil
+DanoInimigoEmMim = nil
 lastAttack = 0
 lastWindUpTime = 0
 lastAttackCD = 0 
@@ -199,6 +201,7 @@ function AtualizarVariaveis()
 	end
 	TextoAlvo = CalcularDano()
 	ManaAdvice = ManaCast()
+	DanoInimigoEmMim = CalcularDanoInimigo()
 		
 	Alvo:update()
 	Target = Alvo.target
@@ -231,6 +234,12 @@ function OnDraw()
 		--for i=0, 4 do
 		DrawCircle2(myHero.x, myHero.y, myHero.z, 35, ARGB(255, 000, 000, 255))
 		--end
+	end
+	
+	if Menu.Paint.EnemyDamage then
+		if not myHero.dead then
+			DrawText3D(tostring(DanoInimigoEmMim), myHero.x +30, myHero.y, myHero.z, 16, ARGB(255,255,255,000))
+		end
 	end
 	
 	if Menu.Paint.ManaCheck then
@@ -335,6 +344,10 @@ end
 
 function round(num) 
 	if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
+end
+
+function round1(num, idp)
+ return string.format("%." .. (idp or 0) .. "f", num)
 end
 
 function NormalCast(SReady, Skill, Range, Enemy) --_E/_R
@@ -548,47 +561,69 @@ end
 
 function CalcularDano()
 	if not Menu.Paint.PaintTarget2 then return end
-	for i=1, heroManager.iCount do
-		local enemy = heroManager:GetHero(i)
-			if ValidTarget(enemy) and GetDistance(enemy) <= 1100 then
-				qDmg = ((AlZaharCalloftheVoid.ready and getDmg("Q", enemy, myHero)) or 0)
-				wDmg = ((AlZaharNullZone.ready and getDmg("W", enemy, myHero)) or 0)
-				eDmg = ((AlZaharMaleficVision.ready and getDmg("E", enemy, myHero)) or 0)
-				rDmg = ((AlZaharNetherGrasp.ready and getDmg("R", enemy, myHero)) or 0)
-				dfgDmg = ((DFG.ready and getDmg("DFG", enemy, myHero)) or 0)
-				iDmg = ((IgniteSpell.iReady and getDmg("IGNITE", enemy, myHero)) or 0)
+	--for i=1, heroManager.iCount do
+	--	local enemy = heroManager:GetHero(i)
+			if ValidTarget(Target) and GetDistance(Target) <= 1100 then
+				qDmg = ((AlZaharCalloftheVoid.ready and getDmg("Q", Target, myHero)) or 0)
+				wDmg = ((AlZaharNullZone.ready and getDmg("W", Target, myHero)) or 0)
+				eDmg = ((AlZaharMaleficVision.ready and getDmg("E", Target, myHero)) or 0)
+				rDmg = ((AlZaharNetherGrasp.ready and getDmg("R", Target, myHero)) or 0)
+				dfgDmg = ((DFG.ready and getDmg("DFG", Target, myHero)) or 0)
+				iDmg = ((IgniteSpell.iReady and getDmg("IGNITE", Target, myHero)) or 0)
 					local DanoTotal = 0	
 	 				DanoTotal = qDmg + wDmg+ eDmg + rDmg + iDmg + dfgDmg		
-					if enemy.health <= eDmg + rDmg then
+					if Target.health <= eDmg + rDmg then
 					 return "E+R"
 					end
-					if enemy.health <= wDmg + rDmg then
+					if Target.health <= wDmg + rDmg then
 						return "W+R"
 					end
-					if enemy.health <= wDmg + eDmg + rDmg then
+					if Target.health <= wDmg + eDmg + rDmg then
 						return "W+E+R"
 					end
-					if enemy.health <= eDmg then
+					if Target.health <= eDmg then
 						return "E"
 					end
-					if enemy.health <= rDmg then
+					if Target.health <= rDmg then
 						return "R"
 					end
-					if enemy.health <= wDmg then
+					if Target.health <= wDmg then
 						return "W"
 					end
-					if enemy.health <= qDmg then
+					if Target.health <= qDmg then
 						return "Q"
 					end	
-					if enemy.health > DanoTotal then
+					if Target.health > DanoTotal then
 						return "Harass"
 					end
-					if enemy.health < DanoTotal then
+					if Target.health < DanoTotal then
 						return "Full Combo"
 					end
 			end
-	end
+	--end
 end
+
+function CalcularDanoInimigo()
+	if myHero.dead then return end
+	if Target ~= nil and Target.visible and GetDistance(Target) < 1200 then
+		--qDmgE = (Target:GetSpellData(_Q).currentCd ~= 0 and (getDmg("Q", myHero, Target) or 0))
+		--wDmgE = (Target:GetSpellData(_W).currentCd ~= 0 and (getDmg("W", myHero, Target) or 0))
+		--eDmgE = (Target:GetSpellData(_E).currentCd ~= 0 and (getDmg("E", myHero, Target) or 0))
+		--rDmgE = (Target:GetSpellData(_R).currentCd ~= 0 and (getDmg("R", myHero, Target) or 0))
+		adDmgE = (getDmg("AD", myHero, Target) or 0)		
+		qDmgE = (getDmg("Q", myHero, Target) or 0)
+		wDmgE =  (getDmg("W", myHero, Target) or 0)
+		eDmgE = (getDmg("E", myHero, Target) or 0)
+		rDmgE = (getDmg("R", myHero, Target) or 0)
+			local DanoInimigo = qDmg + wDmgE + eDmgE + rDmgE +adDmgE
+			local PorcentagemQueVouFicar = ((((myHero.maxHealth - DanoInimigo)/myHero.maxHealth)*100) or 0)
+			--local Porcentagem = DanoInimigo/myHero.Healt
+			--if DanoInimigo > myHero.health then
+				return "Damage:"..round1(DanoInimigo).."("..round1(PorcentagemQueVouFicar).."%)/My HP:"..round1(myHero.health).."/"..round1(myHero.maxHealth)
+	else
+		return "No enemy in range"
+	end
+end		
 
 function UseIgnt()
 if Menu.Combo.UseIgnite and usingUlt then return end
