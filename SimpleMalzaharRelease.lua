@@ -1,4 +1,4 @@
-local version = "0.621" 
+local version = "0.622" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.621")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.622")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -78,6 +78,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.621")
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Harass:addParam("ParaComRecall", "Stop if Recall", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("ParaComManaBaixa", "Stop Cast if mana below %", SCRIPT_PARAM_SLICE, 40, 10, 80, 0)
+		Menu.Harass:addParam("KSWithQ", "Try KS with Q", SCRIPT_PARAM_ONOFF, true)
 	
 	Menu:addSubMenu("Farm Helper System", "Farmerr")
 		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
@@ -542,6 +543,14 @@ function OnLoseBuff(unit, buff)
 		--end
 end
 
+function KSQ()
+	if myHero.dead then return end
+		if Target ~= nil and not Target.dead and GetDistance(Target) <= AlZaharCalloftheVoid.range and not usingUlt then
+			NormalCastAreaShot(AlZaharCalloftheVoid.ready, AlZaharCalloftheVoid.packetslot, AlZaharCalloftheVoid.range, Target)
+		end
+end
+			
+
 function ManaCast()
 	if myHero.dead then return end
 		local qMana = myHero:GetSpellData(_Q).mana or 0
@@ -557,7 +566,6 @@ function ManaCast()
 					return "Not Enought Mana."
 				end
 end
-
 
 function CalcularDano()
 	if not Menu.Paint.PaintTarget2 then return end
@@ -856,7 +864,10 @@ if myHero.dead then return end
 		FullCombo()
 	end 
 	if Menu.Harass.HarassSystem then
-			FullHarass()
+		FullHarass()
+		if Menu.Harass.KSWithQ then
+			KSQ()
+		end
 	end
 end
 
