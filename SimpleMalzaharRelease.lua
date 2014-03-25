@@ -1,4 +1,4 @@
-local version = "0.618" 
+local version = "0.619" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.618")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.619")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -75,7 +75,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.618")
 		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
-		Menu.Farmerr:addParam("LastHit1", "Last Hit (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte('C'))
+		Menu.Farmerr:addParam("LastHit1", "Last Hit (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte('C')) --bad
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("ArcaneON", "Use Arcane Blade Mastery", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
@@ -84,14 +84,15 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.618")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp with Combo", SCRIPT_PARAM_ONOFF, true)
-		Menu.Items:addParam("UseDfgR", "Deathfire Grasp only if R is ready", SCRIPT_PARAM_ONOFF, true) --?
+		Menu.Items:addParam("UseDfgR", "Deathfire Grasp only if R is ready", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("UseZhonia", "Auto Zhonias", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("ZhoniaPorcentagem", "Zhonias Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)
 		Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC and low health", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseBarreira", "Auto Barrier", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("BarreiraPorcentagem", "Barrier Missing Health %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1)
-		--Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Items:addParam("AntiDoubleIgnite", "Anti Double Ignite", SCRIPT_PARAM_ONOFF, true) --NEED WORK
+		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("AutoHP", "Auto HP Potion", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("AutoHPPorcentagem", "Use HP Potion if health %", SCRIPT_PARAM_SLICE, 60, 20, 80, -1)
 		--Menu.items:addParam("AutoMANA", "Auto Mana Potion", SCRIPT_PARAM_ONOFF, true)
@@ -560,8 +561,17 @@ if Menu.Combo.UseIgnite and usingUlt then return end
 if not Menu.Combo.UseIgnite then return end
 	if IgniteSpell.iReady and Target ~= nil then
 		if Menu.General.UsePacket then
-			Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = Target.networkID }):send()
+			if Menu.Items.AntiDoubleIgnite and TargetHaveBuff("SummonerDot", Target) then
+			--Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = Target.networkID }):send()
+			else
+				Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = Target.networkID }):send()
+			end
 		else
+			if Menu.Items.AntiDoubleIgnite and TargetHaveBuff("SummonerDot", Target) then
+			--Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = Target.networkID }):send()
+			else
+				CastSpell(IgniteSpell.iSlot, Target)
+			end
 			CastSpell(IgniteSpell.iSlot, Target)
 		end
 	end
@@ -666,7 +676,7 @@ function FarmE()
 				for i, Minion in pairs(MinionsInimigos.objects) do
 					if Minion ~= nil and not Minion.dead and not TargetHaveBuff("AlZaharMaleficVision", Minion) then
 						local Healthh = VP:GetPredictedHealth(Minion, Edelay + GetDistance(Minion, myHero) / EProjectileSpeed)
-							if Healthh ~= nil and ValidTarget(Minion, 1100) and Healthh <= getDmg("E", Minion, myHero)/5 and AlZaharMaleficVision.ready then
+							if Healthh ~= nil and ValidTarget(Minion, 1100) and Healthh <= getDmg("E", Minion, myHero)/4 and AlZaharMaleficVision.ready then
 								NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Minion)								
 							end
 					end
@@ -676,13 +686,20 @@ end
 
 function FarmAndWalk()
 	if not Menu.Farmerr.LastHit1 then return end
+		local DamageArcane1 = myHero.ap * 0.05
+		local DamageButcher1 = 2
+		local MasteryDamage1 = 0
+			if Menu.Farmerr.ArcaneON then
+				MasteryDamage1 = MasteryDamage1 + DamageArcane1
+			end
+			if Menu.Farmerr.ButcherON then
+				MasteryDamage1 = MasteryDamage1 + DamageButcher1
+			end
 			if MinionsInimigos ~= nil then
 				for i, Minion in pairs(MinionsInimigos.objects) do
-					if GetDistance(myHero, Minion) < 550 then
-						if getDmg("AD", Minion, myHero) + 2 >= Minion.health and myHero:GetSpellData(_E).currentCd > 1 then
+					if Minion ~= nil and not Minion.dead and GetDistance(myHero, Minion) < 550 then
+						if getDmg("AD", Minion, myHero) + MasteryDamage1 > Minion.health and myHero:GetSpellData(_E).currentCd > 1 then
 							myHero:Attack(Minion)
-						else
-							moveToCursor()
 						end
 					--else
 					--	moveToCursor()
