@@ -1,4 +1,4 @@
-local version = "0.623" 
+local version = "0.624" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.623")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.624")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -245,14 +245,14 @@ function OnDraw()
 	
 	if Menu.Paint.ManaCheck then
 		if ManaAdvice ~= nil and not myHero.dead then
-			DrawText3D(tostring(ManaAdvice), myHero.x, myHero.y, myHero.z, 16, ARGB(255, 000, 255, 255))
+			DrawText3D(tostring(ManaAdvice), myHero.x, myHero.y + 75, myHero.z, 16, ARGB(255, 000, 255, 255))
 		end
 	end
 	
 	if Menu.Paint.PaintTarget then
 		if Target ~= nil and not Target.dead then
 			--for _, enemy in pairs(GetEnemyHeroes()) do
-				if ValidTarget(Target, 1100) then    
+				if ValidTarget(Target, 1200) then    
 					local pos= WorldToScreen(D3DXVECTOR3(Target.x, Target.y, Target.z))
 					local posX = pos.x - 35
 					local posY = pos.y - 50
@@ -268,7 +268,7 @@ function OnDraw()
 				local barPos = WorldToScreen(D3DXVECTOR3(Target.x, Target.y, Target.z))
 				local PosX = Target.x + 35
 				local PosY = Target.y + 150
-				if ValidTarget(Target, 1100) then  
+				if ValidTarget(Target, 1200) then  
 					DrawText3D(tostring(TextoAlvo), PosX, PosY, Target.z, 16, ARGB(255, 255, 000, 255), true)
 				end
 			
@@ -287,7 +287,7 @@ function OnDraw()
 			end
 			for i, Minion in pairs(MinionsInimigos.objects) do
 				if Minion ~= nil and not Minion.dead then
-					if ValidTarget(Minion, 1100) and Minion.health <= getDmg("AD", Minion, myHero) + MasteryDamage1 then
+					if ValidTarget(Minion, 1200) and Minion.health <= getDmg("AD", Minion, myHero) + MasteryDamage1 then
 						DrawCircle2(Minion.pos.x, Minion.pos.y, Minion.pos.z, 85, ARGB(255, 255, 255, 000))
 					end
 				end
@@ -471,24 +471,6 @@ function OnProcessSpell(object,spell)
 	end	
 end
 
-function OnRecall(hero, channelTimeInMs)
-	if hero.networkID == player.networkID then
-		Recalling = true
-	end
-end
-
-function OnAbortRecall(hero)
-	if hero.networkID == player.networkID then
-		Recalling = false
-	end
-end
-
-function OnFinishRecall(hero)
-	if hero.networkID == player.networkID then
-		Recalling = false
-	end
-end
-
 function OnGainBuff(unit, buff)
 	if myHero.dead then return end
 	--PrintChat(tostring(buff.name))
@@ -573,7 +555,7 @@ function CalcularDano()
 	if not Menu.Paint.PaintTarget2 then return end
 	--for i=1, heroManager.iCount do
 	--	local enemy = heroManager:GetHero(i)
-			if ValidTarget(Target) and GetDistance(Target) <= 1100 then
+			if ValidTarget(Target) and GetDistance(Target) <= 1200 then
 				qDmg = ((AlZaharCalloftheVoid.ready and getDmg("Q", Target, myHero)) or 0)
 				wDmg = ((AlZaharNullZone.ready and getDmg("W", Target, myHero)) or 0)
 				eDmg = ((AlZaharMaleficVision.ready and getDmg("E", Target, myHero)) or 0)
