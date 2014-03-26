@@ -1,4 +1,4 @@
-local version = "0.626" 
+local version = "0.627" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.626")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.627")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -120,12 +120,14 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.626")
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTurrent", "Turret Last Hit Indicator", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintTurrentRange", "Enemy Turret Range", SCRIPT_PARAM_ONOFF, false)
-		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true)
-		Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false)
 		Menu.Paint:addParam("PaintMana", "Low Mana Indicator (Blue Circle)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("ManaCheck", "Draw Mana Advice Combo", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintPassive", "Passive Indicator (White Circle)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("PaintFlash", "Flash Range", SCRIPT_PARAM_ONOFF, false)
+		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Paint:addParam("PredInimigo", "Enemy Moviment Prediction", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false)
 		
 	Menu:addSubMenu("General System", "General")
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -142,8 +144,9 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.626")
 	Menu:addTS(Alvo)	
 	
 	MinionsInimigos = minionManager(MINION_ENEMY, 1100, myHero, MINION_SORT_HEALTH_ASC)
-	
+	wayPointManager = WayPointManager()
 	VP = VPrediction()
+	
 end
 
 function Variaveis()
@@ -229,12 +232,18 @@ function OnDraw()
 		DrawCircle2(myHero.x, myHero.y, myHero.z, IgniteSpell.range, ARGB(255, 000, 000, 255))
 	end 
 	if Menu.Paint.PaintAA then
-		DrawCircle2(myHero.x, myHero.y, myHero.z, 550, ARGB(255,255,255,255))
+		DrawCircle2(myHero.x, myHero.y, myHero.z, myHero.range, ARGB(255,255,255,255))
 	end
 	if Menu.Paint.PaintMana and ManaBaixa() then
 		--for i=0, 4 do
 		DrawCircle2(myHero.x, myHero.y, myHero.z, 35, ARGB(255, 000, 000, 255))
 		--end
+	end
+	
+	if Menu.Paint.PredInimigo then
+		if Target ~= nil and not Target.dead and Target.visible then
+		wayPointManager:DrawWayPoints(Target)
+		end
 	end
 	
 	if Menu.Paint.EnemyDamage then
@@ -763,7 +772,7 @@ function FarmAndWalk()
 			end
 			if MinionsInimigos ~= nil then
 				for i, Minion in pairs(MinionsInimigos.objects) do
-					if Minion ~= nil and not Minion.dead and GetDistance(myHero, Minion) <= 700 then
+					if Minion ~= nil and not Minion.dead and GetDistance(myHero, Minion) <= myHero.range then
 						if getDmg("AD", Minion, myHero) + MasteryDamage1 > Minion.health and myHero:GetSpellData(_E).currentCd > 1 then
 							OrbWalking(Minion)
 						end
