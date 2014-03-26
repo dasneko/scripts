@@ -1,4 +1,4 @@
-local version = "0.624" 
+local version = "0.625" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.624")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.625")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -244,7 +244,7 @@ function OnDraw()
 	end
 	
 	if Menu.Paint.ManaCheck then
-		if ManaAdvice ~= nil and not myHero.dead then
+		if ManaAdvice ~= nil and not myHero.dead then		
 			DrawText3D(tostring(ManaAdvice), myHero.x, myHero.y + 75, myHero.z, 16, ARGB(255, 000, 255, 255))
 		end
 	end
@@ -266,10 +266,11 @@ function OnDraw()
 	if Menu.Paint.PaintTarget2 then  
 		if Target ~= nil and not Target.dead then
 				local barPos = WorldToScreen(D3DXVECTOR3(Target.x, Target.y, Target.z))
-				local PosX = Target.x + 35
-				local PosY = Target.y + 150
+				local PosX = barPos.x - 35
+				local PosY = barPos.y - 50
+				local PosZ = barPos.z
 				if ValidTarget(Target, 1200) then  
-					DrawText3D(tostring(TextoAlvo), PosX, PosY, Target.z, 16, ARGB(255, 255, 000, 255), true)
+					DrawText(tostring(TextoAlvo), 16, PosX, PosY, ARGB(255, 255, 000, 255))
 				end
 			
 		end
@@ -424,9 +425,9 @@ end
 end 
 
 
-function OrbWalking(Target)
-	if Target ~= nil and TimeToAttack() and GetDistance(Target) <= myHero.range + GetDistance(myHero.minBBox) then
-		myHero:Attack(Target)
+function OrbWalking(enemy1)
+	if enemy1 ~= nil and TimeToAttack() and GetDistance(enemy1) <= myHero.range + GetDistance(myHero.minBBox) then
+		myHero:Attack(enemy1)
     elseif heroCanMove() then
         moveToCursor()
     end
@@ -679,16 +680,20 @@ function AutoDFG()
 	if not Menu.Items.UseDfg then return end
 	if DFG.ready and Target ~= nil and GetDistance(Target) <= DFG.range and not usingUlt then
 		if Menu.General.UsePacket then
-			if Menu.Items.UseDfgR and AlZaharNetherGrasp.ready then
+			if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
 				Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
 			else 
-				Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+				if not Menu.Items.UseDfgR then
+					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+				end
 			end
 		else
-			if Menu.Items.UseDfgR and AlZaharNetherGrasp.ready then
+			if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
 				CastSpell(DFG.slot, Target)
 			else
-				CastSpell(DFG.slot, Target)
+				if not Menu.Items.UseDfgR then
+					CastSpell(DFG.slot, Target)
+				end
 			end
 		end
   end
@@ -760,10 +765,10 @@ function FarmAndWalk()
 				for i, Minion in pairs(MinionsInimigos.objects) do
 					if Minion ~= nil and not Minion.dead and GetDistance(myHero, Minion) <= 700 then
 						if getDmg("AD", Minion, myHero) + MasteryDamage1 > Minion.health and myHero:GetSpellData(_E).currentCd > 1 then
-							myHero:Attack(Minion)
+							OrbWalking(Minion)
 						end
 					else
-						myHero:MoveTo(mousePos.x, mousePos.z)
+						moveToCursor()
 					end
 					--end
 			end
