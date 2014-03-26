@@ -1,4 +1,4 @@
-local version = "0.625" 
+local version = "0.626" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.625")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.626")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -397,7 +397,7 @@ function NormalCastAreaShot(SReady, Skill, Range, Enemy) --_Q/_W
 		if Menu.General.UseVPred or Menu.General.UsePacket then
 			if Skill == _Q then
 				if SReady and GetDistance(Enemy) <= Range and ValidTarget(Enemy, Range) and not usingUlt then
-					local CastPosition, HitChance, Position = VP:GetLineCastPosition(Enemy, AlZaharCalloftheVoid.delay + GetLatency()/2, AlZaharCalloftheVoid.width, Range, 1600, myHero, false)   
+					local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Enemy, (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, Range, math.huge, myHero, false)   
 						if HitChance >= 2  then
 							CastSpell(Skill, CastPosition.x, CastPosition.z)
 						end 
@@ -406,7 +406,7 @@ function NormalCastAreaShot(SReady, Skill, Range, Enemy) --_Q/_W
   
 			if Skill == _W then
 				if SReady and GetDistance(Enemy) <= Range and ValidTarget(Enemy, Range) and not usingUlt then
-					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Enemy, AlZaharNullZone.delay + GetLatency()/2, AlZaharNullZone.width, Range, 20, myHero) 
+					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Enemy, AlZaharNullZone.delay, AlZaharNullZone.width, Range, math.huge, myHero) 
 						if CountEnemyHeroInRange(Range, myHero) >= 3 then
 							if MainTargetHitChance >= 1 then
 								CastSpell(_W, AOECastPosition.x , AOECastPosition.z)
