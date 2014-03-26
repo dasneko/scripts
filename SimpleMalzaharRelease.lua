@@ -1,4 +1,4 @@
-local version = "0.622" 
+local version = "0.623" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.622")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.623")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -265,11 +265,13 @@ function OnDraw()
 	end
 	if Menu.Paint.PaintTarget2 then  
 		if Target ~= nil and not Target.dead then
-			--for _, enemy in pairs(GetEnemyHeroes()) do
+				local barPos = WorldToScreen(D3DXVECTOR3(Target.x, Target.y, Target.z))
+				local PosX = Target.x + 35
+				local PosY = Target.y + 150
 				if ValidTarget(Target, 1100) then  
-					DrawText3D(tostring(TextoAlvo), Target.x, Target.y , Target.z, 16, ARGB(255, 255, 000, 255), true)
+					DrawText3D(tostring(TextoAlvo), PosX, PosY, Target.z, 16, ARGB(255, 255, 000, 255), true)
 				end
-			--end
+			
 		end
 	end
 	if Menu.Paint.PaintMinion then
@@ -623,7 +625,7 @@ function CalcularDanoInimigo()
 		wDmgE =  (getDmg("W", myHero, Target) or 0)
 		eDmgE = (getDmg("E", myHero, Target) or 0)
 		rDmgE = (getDmg("R", myHero, Target) or 0)
-			local DanoInimigo = qDmg + wDmgE + eDmgE + rDmgE +adDmgE
+			local DanoInimigo = qDmgE + wDmgE + eDmgE + rDmgE +adDmgE
 			local PorcentagemQueVouFicar = ((((myHero.maxHealth - DanoInimigo)/myHero.maxHealth)*100) or 0)
 			--local Porcentagem = DanoInimigo/myHero.Healt
 			--if DanoInimigo > myHero.health then
