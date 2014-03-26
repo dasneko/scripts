@@ -1,4 +1,4 @@
-local version = "0.627" 
+local version = "0.628" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -36,7 +36,7 @@ require "VPrediction"
 
 function OnLoad()
 	Variaveis()
-	PriorityOnLoad()
+	--PriorityOnLoad()
 	Menu1()
 	OnDraw()	
 	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
@@ -45,7 +45,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.627")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.628")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -144,6 +144,10 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.627")
 	Menu:addTS(Alvo)	
 	
 	MinionsInimigos = minionManager(MINION_ENEMY, 1100, myHero, MINION_SORT_HEALTH_ASC)
+	
+
+
+
 	wayPointManager = WayPointManager()
 	VP = VPrediction()
 	
