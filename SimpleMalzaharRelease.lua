@@ -1,4 +1,4 @@
-local version = "0.628" 
+local version = "0.629" 
 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
@@ -36,7 +36,6 @@ require "VPrediction"
 
 function OnLoad()
 	Variaveis()
-	--PriorityOnLoad()
 	Menu1()
 	OnDraw()	
 	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
@@ -45,7 +44,7 @@ end
 function Menu1()
 Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.628")
+Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.629")
 
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -58,13 +57,13 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.628")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("CheckInsideW", "Only Cast R above W", SCRIPT_PARAM_ONOFF, false)
 		Menu.Combo:addParam("CheckifE", "Only Cast R if target have E", SCRIPT_PARAM_ONOFF, false)
-			Menu.Combo:addSubMenu("Custom Combo System (not working)", "CustomCombo")
-				Menu.Combo.CustomCombo:addParam("UseCustom", "Use Custom Combo System", SCRIPT_PARAM_ONOFF, false)
-				Menu.Combo.CustomCombo:addParam("", "", SCRIPT_PARAM_INFO, "")
-				Menu.Combo.CustomCombo:addParam("QPriority", myHero:GetSpellData(_Q).name.. "(Q) Priority", SCRIPT_PARAM_SLICE, 4, 0, 4, 0)
-				Menu.Combo.CustomCombo:addParam("WPriority", myHero:GetSpellData(_W).name.."(W) Priority", SCRIPT_PARAM_SLICE, 2, 0, 4, 0)
-				Menu.Combo.CustomCombo:addParam("EPriority", myHero:GetSpellData(_E).name.."(E) Priority", SCRIPT_PARAM_SLICE, 1, 0, 4, 0)
-				Menu.Combo.CustomCombo:addParam("RPriority", myHero:GetSpellData(_R).name.."(R) Priority", SCRIPT_PARAM_SLICE, 3, 0, 4, 0)
+			--Menu.Combo:addSubMenu("Custom Combo System (not working)", "CustomCombo")
+			--	Menu.Combo.CustomCombo:addParam("UseCustom", "Use Custom Combo System", SCRIPT_PARAM_ONOFF, false)
+			--	Menu.Combo.CustomCombo:addParam("", "", SCRIPT_PARAM_INFO, "")
+			--	Menu.Combo.CustomCombo:addParam("QPriority", myHero:GetSpellData(_Q).name.. "(Q) Priority", SCRIPT_PARAM_SLICE, 4, 0, 4, 0)
+			--	Menu.Combo.CustomCombo:addParam("WPriority", myHero:GetSpellData(_W).name.."(W) Priority", SCRIPT_PARAM_SLICE, 2, 0, 4, 0)
+			--	Menu.Combo.CustomCombo:addParam("EPriority", myHero:GetSpellData(_E).name.."(E) Priority", SCRIPT_PARAM_SLICE, 1, 0, 4, 0)
+			--	Menu.Combo.CustomCombo:addParam("RPriority", myHero:GetSpellData(_R).name.."(R) Priority", SCRIPT_PARAM_SLICE, 3, 0, 4, 0)
 				
 		--Menu.Combo:addParam("UltimateProtection", "Ultimate Overkill Protection", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
@@ -84,7 +83,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.628")
 		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
-		Menu.Farmerr:addParam("LastHit1", "Last Hit (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte('C')) --bad
+		--Menu.Farmerr:addParam("LastHit1", "Last Hit (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte('C')) --bad
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("ArcaneON", "Use Arcane Blade Mastery", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
@@ -94,6 +93,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, "0.628")
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseDfg", "Auto Deathfire Grasp with Combo", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("UseDfgR", "Deathfire Grasp only if R is ready", SCRIPT_PARAM_ONOFF, true)
+		Menu.Items:addParam("UseDfgRrange", "Deathfire Grasp only in R range", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("UseZhonia", "Auto Zhonias", SCRIPT_PARAM_ONOFF, true)
 		Menu.Items:addParam("ZhoniaPorcentagem", "Zhonias Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)
 		Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC and low health", SCRIPT_PARAM_ONOFF, true)
@@ -161,7 +161,7 @@ AlZaharNetherGrasp = {ready = nil, spellSlot = "R", packetslot = _R, range = 700
 IgniteSpell = {spellSlot = "SummonerDot", iSlot = nil, iReady = false, range = 600}
 BarreiraSpell = {spellSlot = "SummonerBarrier", bSlot = nil, bReady = false, range = 0}
 FlashSpell = {spellSlot = "SummonerFlash", fSlot = nil, fReady = false, range = 400}
-DFG = {id = 3128, ready = false, range = 600, slot = nil}
+DFG = {id = 3128, ready = false, range = 750, slot = nil}
 ZHONIA = {id = 3157, ready = false, range = 0, slot = nil}
 Hppotion = {id = 2003, ready = false, slot = nil}
 --misc
@@ -691,25 +691,47 @@ end
 
 function AutoDFG()
 	if not Menu.Items.UseDfg then return end
-	if DFG.ready and Target ~= nil and GetDistance(Target) <= DFG.range and not usingUlt then
-		if Menu.General.UsePacket then
-			if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
-				Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
-			else 
-				if not Menu.Items.UseDfgR then
+	if Menu.Items.UseDfgRrange then
+		if DFG.ready and Target ~= nil and GetDistance(Target) <= AlZaharNetherGrasp.range and not usingUlt then
+			if Menu.General.UsePacket then
+				if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
 					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+				else 
+					if not Menu.Items.UseDfgR then
+						Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+					end
 				end
-			end
-		else
-			if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
-				CastSpell(DFG.slot, Target)
 			else
-				if not Menu.Items.UseDfgR then
+				if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
 					CastSpell(DFG.slot, Target)
+				else
+					if not Menu.Items.UseDfgR then
+						CastSpell(DFG.slot, Target)
+					end
 				end
 			end
 		end
-  end
+	else
+		if DFG.ready and Target ~= nil and GetDistance(Target) <= DFG.range and not usingUlt then
+			if Menu.General.UsePacket then
+				if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
+					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+				else 
+					if not Menu.Items.UseDfgR then
+						Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Target.networkID }):send()
+					end
+				end
+			else
+				if Menu.Items.UseDfgR and myHero:GetSpellData(_R).currentCd < 1 then
+					CastSpell(DFG.slot, Target)
+				else
+					if not Menu.Items.UseDfgR then
+						CastSpell(DFG.slot, Target)
+					end
+				end
+			end
+		end
+	end
 end
 
 function ManaBaixa()
@@ -746,7 +768,7 @@ end
 
 function FarmE()
 	if Recalling and ManaBaixa() then return end
-	if MinionWithE then return end
+	--if MinionWithE then return end
 	if not Menu.Farmerr.FarmESkill then return end	
 		local TimeToTheFirstDamageTick  = 0.3
 		local EProjectileSpeed = 1400 --The E projectile Speed
@@ -829,7 +851,7 @@ end
 
 function FullHarass()
 	if ManaBaixa() or usingUlt then return end
-	if Target ~= nil and ValidTarget(Target) then
+	if Target ~= nil and ValidTarget(Target, 1200) then
 	if Menu.Harass.UseE then
 		NormalCast(AlZaharMaleficVision.ready, AlZaharMaleficVision.packetslot, AlZaharMaleficVision.range, Target)
 	end 
@@ -853,18 +875,20 @@ if myHero.dead then return end
 		ZhoniaCC()
 		AutoVidaBaixa()
 	end
+	
 	if Menu.General.LevelSkill then AutoSkillLevel() end
 	
 	if Menu.Farmerr.FarmerrSystem then
 		FarmE()
-		if Menu.Farmerr.LastHit1 then
-			FarmAndWalk()
-		end
+		--if Menu.Farmerr.LastHit1 then
+		--	FarmAndWalk()
+		--end
 	end
 	
 	if Menu.Combo.ComboKey then
 		FullCombo()
 	end 
+	
 	if Menu.Harass.HarassSystem then
 		FullHarass()
 		if Menu.Harass.KSWithQ then
@@ -873,7 +897,7 @@ if myHero.dead then return end
 	end
 end
 
---[[ SIDA'S REVAMPED]]
+--[[ SIDA'S REVAMPED
 
 local priorityTable = {
  
@@ -930,3 +954,4 @@ function PriorityOnLoad()
                 arrangePrioritys()
         end
 end
+]]
