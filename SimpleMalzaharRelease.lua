@@ -1,7 +1,7 @@
-if myHero.charName ~= "Malzahar" and not VIP_USER then return end
+if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.700" 
+local version = "0.701" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -45,7 +45,9 @@ local FlashSpell = {spellSlot = "SummonerFlash", fSlot = nil, ready = false, ran
 --[[ITEMS]]--
 local DFG = {id = 3128, ready = false, range = 750, slot = nil}
 local ZHONIA = {id = 3157, ready = false, range = 0, slot = nil}
+local Seraph = {id = 3040, ready = false, range = 0, slot = nil}
 local Hppotion = {id = 2003, ready = false, slot = nil}
+local Manapotion = {id = 2004 , ready = false, slot = nil}
 --[[ORBWALK]]--
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local myTrueRange = 0
@@ -53,10 +55,12 @@ local myTrueRange = 0
 local UsandoR = false
 local MeuAlvo = nil
 local UsandoHP = false
+local UsandoMana = false
 local RecebeuCC = false
 local TemVoid = false
 local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
+--local Invulneraveis = {
 --[[VPREDICTION]]--
 require "VPrediction"
 
@@ -74,6 +78,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Combo:addParam("UseR", "Use "..myHero:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
+		--Menu.Combo:addSubMenu("Ultimate Protection Settings", "Ultimate")
+		--	Menu.Combo.Ultimate:addParam("Untargetable", "R Damage Invulnerability", SCRIPT_PARAM_ONOFF, true)
 		--Menu.Combo:addParam("CheckInsideW", "Only Cast R above W", SCRIPT_PARAM_ONOFF, false)
 		--Menu.Combo:addParam("CheckifE", "Only Cast R if target have E", SCRIPT_PARAM_ONOFF, false)	
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32) --OK
@@ -107,6 +113,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Items:addParam("UseDfgRrange", "Deathfire Grasp only in R range", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Items:addParam("UseZhonia", "Auto Zhonias", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Items:addParam("ZhoniaPorcentagem", "Zhonias Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1) --OK
+		Menu.Items:addParam("UseSeraph", "Auto Seraph's Embrace", SCRIPT_PARAM_ONOFF, true)
+		Menu.Items:addParam("SeraphPorcentagem", "Seraph's Embrace Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)
 		--Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC", SCRIPT_PARAM_ONOFF, true) 
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseBarreira", "Auto Barrier", SCRIPT_PARAM_ONOFF, true) 
@@ -150,9 +158,9 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true) --OK
 	--[[SPELL SLOT CHECK]]--
 		if myHero:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_1
-			elseif myHero:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_2 else IgniteSpell.iSlot = nil end	
+			elseif myHero:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_2 end	
 		if myHero:GetSpellData(SUMMONER_1).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_1
-			elseif myHero:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_2 else BarreiraSpell.bSlot = nil end				
+			elseif myHero:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_2 end				
 	--[[OTHERS]]--		
 	MinionsInimigos = minionManager(MINION_ENEMY, 1200, myHero, MINION_SORT_HEALTH_ASC)
 	wayPointManager = WayPointManager()
@@ -333,25 +341,38 @@ function CastZhonia()
 end	
 
 function CastBarreira()	
-	local VidaParaUsarBarreira = myHero.maxHealth * (Menu.Items.BarreiraPorcentagem / 100)
+	local VidaParaUsarBarreira = (myHero.maxHealth * (Menu.Items.BarreiraPorcentagem / 100))
 	if BarreiraSpell.bSlot ~= nil and myHero:CanUseSpell(BarreiraSpell.bSlot) == READY then	
 		if myHero.health <= VidaParaUsarBarreira then
-			if Menu.General.UsePacket then
-				Packet('S_CAST', { spellId = BarreiraSpell.bslot, targetNetworkId = myHero.networkID }):send()
-			else
-				CastSpell(BarreiraSpell.bslot)
-			end
+			CastSpell(BarreiraSpell.bslot)
+			
 		end
 	end
 end	
 
 function CastHPPotion()
-	local VidaParaUsarPotionHP = myHero.maxHealth * (Menu.Items.AutoHPPorcentagem / 100)
-	if myHero.health <= VidaParaUsarPotionHP and Hppotion.slot ~= nil and myHero:CanUseSpell(Hppotion.slot) == READY and not UsandoHP then
-		if Menu.General.UsePacket then
-			Packet('S_CAST', { spellId = Hppotion.slot, targetNetworkId = myHero.networkID }):send()
-		else
-			CastSpell(Hppotion.slot)
+	local VidaParaUsarPotionHP = (myHero.maxHealth * ( Menu.Items.AutoHPPorcentagem / 100))
+	if Hppotion.slot ~= nil and myHero:CanUseSpell(Hppotion.slot) == READY and not UsandoHP then
+		if myHero.health <= VidaParaUsarPotionHP then
+			CastSpell(Hppotion.slot)		
+		end
+	end
+end
+
+function CastManaPotion()
+	local ManaParaUsarPotion = (myHero.maxMana * ( Menu.Items.AutoMANAPorcentagem / 100))
+	if Manapotion.slot ~= nil and myHero:CanUseSpell(Manapotion.slot) == READY and not UsandoMana then
+		if myHero.mana <= ManaParaUsarPotion then
+			CastSpell(Manapotion.slot)
+		end
+	end
+end
+
+function CastSeraph()
+	local VidaParaUsarSeraph = (myHero.maxHealth * ( Menu.Items.SeraphPorcentagem / 100))
+	if Seraph.slot ~= nil and myHero:CanUseSpell(Seraph.slot) == READY then
+		if myHero.health <= VidaParaUsarSeraph then
+			CastSpell(Seraph.slot)
 		end
 	end
 end
@@ -377,13 +398,14 @@ function AtualizaItems()
 --[[ITEMS]]--
 	DFG.slot = GetInventorySlotItem(DFG.id)	
 	ZHONIA.slot = GetInventorySlotItem(ZHONIA.id)
-	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
+	Seraph.slot = GetInventorySlotItem(Seraph.id)
+	Hppotion.slot = GetInventorySlotItem(Hppotion.id)	
 	MinionsInimigos:update()	
 end
 
 --[[SPELLS END]]--
 function OnTick()
-	if Menu.LigarScript then		
+	if Menu.LigarScript and not myHero.dead then		
 		if Menu.General.UseOrb then Menu.General.MoveToMouse = false end
 		if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
 		if Menu.Paint.EnemyDamage then MeuDano() end
@@ -397,7 +419,9 @@ function OnTick()
 		if Menu.Items.ItemsSystem then
 			if Menu.Items.UseBarreira then CastBarreira() end
 			if Menu.Items.AutoHP then CastHPPotion() end
-			if Menu.Items.UseZhonia then CastZhonia() end
+			if Menu.Items.AutoMANA then CastManaPotion() end
+			if Menu.Items.UseZhonia then CastZhonia() end			
+			if Menu.Items.UseSeraph then CastSeraph() end
 		end
 		if Menu.General.LevelSkill then
 			AutoSkillLevel()
@@ -411,14 +435,14 @@ function OnGainBuff(unit, buff)
 		if buff.name:lower():find("alzaharnethergraspsound") then
 			UsandoR = true
 		end
-		if buff.name:lower():find("regenerationpotion") then --FlaskOfCrystalWater
+		if buff.name:lower():find("regenerationpotion") then 
 			UsandoHP = true
-		end
-		--if buff.type == 5 or 7 or 19 or 21 or 24 then
-		-- RecebeuCC = true
-		--end
+		end	
+		if buff.name:lower():find("flaskofcrystalwater") then
+			UsandoMana = true
+		end		
 		if buff.name:lower():find("alzaharsummonvoidling") then
-		 TemVoid = true
+			TemVoid = true
 		end
 	end
 end
@@ -428,21 +452,24 @@ function OnLoseBuff(unit, buff)
 		if buff.name:lower():find("alzaharnethergraspsound") then
 			UsandoR = false
 		end
-		if buff.name:lower():find("regenerationpotion") then --FlaskOfCrystalWater
+		if buff.name:lower():find("regenerationpotion") then 
 			UsandoHP = false
+		end
+		if buff.name:lower():find("flaskofcrystalwater") then
+			UsandoMana = false
 		end
 		--if buff.type == 5 or 7 or 19 or 21 or 24 then
 		-- RecebeuCC = false
 		--end
 		if buff.name:lower():find("alzaharsummonvoidling") then
-		 TemVoid = false
+			TemVoid = false
 		end
 	end
 end
 --[[END]]--
 
 --[[MY TARGET SELECTOR]]--
-function MelhorAlvo(Range)
+function MelhorAlvo(Range) --ADICIONAR DELAY
 	local DanoParaMatar = 100
 	local Alvo = nil
 	for i, enemy in ipairs(GetEnemyHeroes()) do
@@ -628,7 +655,7 @@ function OnDraw()
 	end
 	
 	if Menu.Paint.ManaCheck then				
-		DrawText3D(ManaParaCombo(), myHero.x, myHero.y + 75, myHero.z, 16, ARGB(255, 000, 255, 255))
+		DrawText3D(ManaParaCombo(), myHero.x + 20, myHero.y + 50, myHero.z, 16, ARGB(255, 000, 255, 255))
 	end
 	
 end
@@ -692,7 +719,7 @@ function ManaParaCombo()
 		if Menu.Combo.UseW then ManaTotal = ManaTotal + wMana end
 		if Menu.Combo.UseE then ManaTotal = ManaTotal + eMana end
 		if Menu.Combo.UseR then ManaTotal = ManaTotal + rMana end
-			if myHero.mana < ManaTotal and AlZaharCalloftheVoid.ready and AlZaharNullZone.ready and AlZaharMaleficVision.ready and AlZaharNetherGrasp.ready then
+			if myHero.mana < ManaTotal then
 				return "Not Enought Mana to Combo."
 			end
 end
