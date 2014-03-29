@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.703" 
+local version = "0.704" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -155,6 +155,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.General:addParam("UsePacket", "Use Packet to Cast", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true) --OK
+		Menu.General:addParam("SelecionarAlvo", "Target Mode", SCRIPT_PARAM_SLICE, 1, 2, 2, 0) 
 		Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true) --OK
 	--[[SPELL SLOT CHECK]]--
 		if myHero:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_1
@@ -470,9 +471,10 @@ end
 --[[END]]--
 
 --[[MY TARGET SELECTOR]]--
-function MelhorAlvo(Range) --ADICIONAR DELAY
+function MelhorAlvo(Range) --ADICIONAR DELAY	
 	local DanoParaMatar = 100
 	local Alvo = nil
+	if Menu.General.SelecionarAlvo == 1 then --less_cast
 	for i, enemy in ipairs(GetEnemyHeroes()) do
 		if ValidTarget(enemy, Range) then
 			local DanoNoInimigo = myHero:CalcMagicDamage(enemy, 200)
@@ -482,6 +484,19 @@ function MelhorAlvo(Range) --ADICIONAR DELAY
 				end
 		end
 	end
+	end	
+	
+	if Menu.General.SelecionarAlvo == 2 then --low_HP
+	for i, enemy in ipairs(GetEnemyHeroes()) do
+		if ValidTarget(enemy, Range) then
+			local DanoNoInimigo = myHero:CalcMagicDamage(enemy, 200)
+			local ParaMatar = enemy.health / enemy.health - DanoNoInimigo
+				if ParaMatar < DanoParaMatar then
+					Alvo = enemy
+				end
+		end
+	end
+	end	
 	return Alvo
 end
 --[[END]]--
@@ -717,7 +732,36 @@ function MeuDano()
 				AtualizarDanoInimigo = os.clock()
 				return "Damage to Enemy: "..Arredondar(DanoTotal, 1).." : Stay("..Arredondar(PorcentagemQueVouFicar).."%)"
 		end			
-end		
+end	
+
+function MeuDanoNoAlvo()
+		if not ((os.clock() + AtualizarDanoInimigo) > 0.5) then return end
+		local AlvoDano = MelhorAlvo(1400)
+		if AlvoDano ~= nil then
+			local DanoQ = { 80 , 135 , 190 , 245 , 300 }
+			local DanoW = { 4 , 5 , 6 , 7 , 8 }
+			local DanoE = { 80 , 140 , 200 , 260 , 320 }
+			local DanoR = {	250 , 400 , 550 }			
+			local DanoTotal, QDano, WDano, EDano, RDano, DFGDano = 0, 0, 0, 0, 0
+				if myHero:GetSpellData(_Q).level ~= 0 then
+					QDano = myHero:CalcMagicDamage(AlvoDano, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8)* 0.03))
+				end
+				if myHero:GetSpellData(_W).level ~= 0 then
+					WDano = myHero:CalcMagicDamage(AlvoDano, ((((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * AlvoDano.maxHealth) + (((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * AlvoDano.maxHealth)* 0.03) * 5)
+				end
+				if myHero:GetSpellData(_E).level ~= 0 then
+					EDano = myHero:CalcMagicDamage(AlvoDano, (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) + (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) * 0.03)
+				end
+				if myHero:GetSpellData(_R).level ~= 0 then
+					RDano = myHero:CalcMagicDamage(AlvoDano, (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) + (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) * 0.03)
+				end				
+				DanoTotal = QDano + WDano + EDano + RDano				
+				DanoTotal = DanoTotal
+				PorcentagemQueVouFicar = ((AlvoDano.maxHealth - DanoTotal)/AlvoDano.maxHealth*100)
+				AtualizarDanoInimigo = os.clock()
+				return Arredondar(DanoTotal)
+		end			
+end			
 		
 function Arredondar(num, idp)
  return string.format("%." .. (idp or 0) .. "f", num)
