@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.701" 
+local version = "0.702" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -60,7 +60,7 @@ local RecebeuCC = false
 local TemVoid = false
 local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
---local Invulneraveis = {
+local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention}
 --[[VPREDICTION]]--
 require "VPrediction"
 
@@ -78,8 +78,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Combo:addParam("UseR", "Use "..myHero:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
-		--Menu.Combo:addSubMenu("Ultimate Protection Settings", "Ultimate")
-		--	Menu.Combo.Ultimate:addParam("Untargetable", "R Damage Invulnerability", SCRIPT_PARAM_ONOFF, true)
+		Menu.Combo:addSubMenu("Ultimate Protection Settings", "Ultimate")
+			Menu.Combo.Ultimate:addParam("Untargetable", "Don't R to Invulnerability", SCRIPT_PARAM_ONOFF, true)
 		--Menu.Combo:addParam("CheckInsideW", "Only Cast R above W", SCRIPT_PARAM_ONOFF, false)
 		--Menu.Combo:addParam("CheckifE", "Only Cast R if target have E", SCRIPT_PARAM_ONOFF, false)	
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32) --OK
@@ -222,7 +222,8 @@ end
 
 function CastR()
 	local AlvoR = MelhorAlvo(AlZaharNetherGrasp.range)
-	if AlvoR ~= nil then
+	if TemImunidade(AlvoR) then return end
+	if AlvoR ~= nil and not TemImunidade(AlvoR) then
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then
 			if Menu.General.UsePacket then
 				Packet('S_CAST', { spellId = AlZaharNetherGrasp.spellSlot, targetNetworkId = AlvoR.networkID }):send()
@@ -660,6 +661,19 @@ function OnDraw()
 	
 end
 --[[MISC]]--
+
+function TemImunidade(enemy)
+	if Menu.Combo.Ultimate.Untargetable then
+		for i, Imunidades in ipairs(Invulneraveis) do
+		if TargetHaveBuff(Imunidades[i], enemy) then
+			return true
+		else
+			return false
+		end
+		end
+	end
+end
+
 function CalcularDanoInimigo()
 	local AlvoCalc = MelhorAlvo(1400)
 	if AlvoCalc ~= nil then	
