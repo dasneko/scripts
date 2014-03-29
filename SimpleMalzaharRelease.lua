@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.704" 
+local version = "0.705" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -60,7 +60,7 @@ local RecebeuCC = false
 local TemVoid = false
 local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
-local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention}
+local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention, VladimirSanguinePool}
 --[[VPREDICTION]]--
 require "VPrediction"
 
@@ -155,7 +155,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.General:addParam("UsePacket", "Use Packet to Cast", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true) --OK
-		Menu.General:addParam("SelecionarAlvo", "Target Mode", SCRIPT_PARAM_SLICE, 1, 2, 2, 0) 
+		Menu.General:addParam("SelecionarAlvo", "Target Mode", SCRIPT_PARAM_SLICE, 1, 1, 2, 0) 
 		Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true) --OK
 	--[[SPELL SLOT CHECK]]--
 		if myHero:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_1
