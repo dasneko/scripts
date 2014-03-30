@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.706" 
+local version = "0.707" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -101,7 +101,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 	Menu:addSubMenu("Farm Helper System", "Farmerr")
 		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
 		--Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
-		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)		
+		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
+		Menu.Farmerr:addParam("LastHit", "Last Hit Key (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("ArcaneON", "Use Arcane Blade Mastery", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
@@ -402,7 +403,8 @@ function AtualizaItems()
 	DFG.slot = GetInventorySlotItem(DFG.id)	
 	ZHONIA.slot = GetInventorySlotItem(ZHONIA.id)
 	Seraph.slot = GetInventorySlotItem(Seraph.id)
-	Hppotion.slot = GetInventorySlotItem(Hppotion.id)	
+	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
+	Manapotion.slot = GetInventorySlotItem(Manapotion.id)
 	MinionsInimigos:update()	
 end
 
@@ -416,11 +418,13 @@ function OnTick()
 		if Menu.Combo.ComboSystem then
 			CastCombo()		
 		end
-		if Menu.Harass.HarassSystem and Menu.Harass.AutoHarass and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not UsandoR and not UsandoRecall and not Menu.Harass.HarassKey then
-			CastHarass()		
-		else
-			if Menu.Harass.HarassSystem and Menu.Harass.HarassKey and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not Menu.Harass.AutoHarass and not UsandoR and not UsandoRecall then
-				CastHarass()
+		if Menu.Harass.HarassSystem then
+			if Menu.Harass.AutoHarass and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not UsandoR and not UsandoRecall and not Menu.Harass.HarassKey then
+				CastHarass()		
+			else
+				if Menu.Harass.HarassKey and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not Menu.Harass.AutoHarass and not UsandoR and not UsandoRecall then
+					CastHarass()
+				end	
 			end
 		end
 		if Menu.Items.ItemsSystem then
@@ -429,6 +433,11 @@ function OnTick()
 			if Menu.Items.AutoMANA then CastManaPotion() end
 			if Menu.Items.UseZhonia then CastZhonia() end			
 			if Menu.Items.UseSeraph then CastSeraph() end
+		end
+		if Menu.Farmerr.FarmerrSystem then
+			if Menu.Farmerr.LastHit then
+				LastHitLikeBoss()
+			end
 		end
 		if Menu.General.LevelSkill then
 			AutoSkillLevel()
@@ -602,7 +611,7 @@ function OnDraw()
 		DrawCircle2(myHero.x, myHero.y, myHero.z, IgniteSpell.range, ARGB(255, 000, 000, 255))
 	end 
 	if Menu.Paint.PaintAA then
-		DrawCircle2(myHero.x, myHero.y, myHero.z, myHero.range, ARGB(255,255,255,255))
+		DrawCircle2(myHero.x, myHero.y, myHero.z, myTrueRange, ARGB(255,255,255,255))
 	end
 	
 	if Menu.Paint.EnemyDamage then		
@@ -762,4 +771,29 @@ function ManaParaCombo()
 			if myHero.mana < ManaTotal then
 				return "Not Enought Mana to Combo."
 			end
+end
+
+function LastHitLikeBoss()	
+	local TimeToTheFirstDamageTick  = 2.00
+	local ProjectileSpeed = myHero.attackSpeed --AA speed
+	local delay = 0.02926 + TimeToTheFirstDamageTick -- AA delay	
+	local DamageArcane1 = myHero.ap * 0.05
+	local DamageButcher1 = 2
+	local MasteryDamage1 = 0
+		if Menu.Farmerr.ArcaneON then
+			MasteryDamage1 = MasteryDamage1 + DamageArcane1
+		end
+		if Menu.Farmerr.ButcherON then
+			MasteryDamage1 = MasteryDamage1 + DamageButcher1
+		end
+		if MinionsInimigos ~= nil then
+			for i, Minion in pairs(MinionsInimigos.objects) do
+				if Minion ~= nil and not Minion.dead then
+					local Healthh = VP:GetPredictedHealth(Minion, delay + GetDistance(Minion, myHero) / ProjectileSpeed)
+					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 then
+						myHero:Attack(Minion)					
+					end
+				end
+			end
+		end
 end
