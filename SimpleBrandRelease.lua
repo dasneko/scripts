@@ -246,8 +246,8 @@ function CastCombo()
 			if Menu.Combo.UseIgnite then CastIgnite() end		
 			if Menu.Items.UseDfg then CastDFG() end
 		end
-		if Menu.Combo.UseQ then CastQ() end
 		if Menu.Combo.UseW then CastW() end
+		if Menu.Combo.UseQ then CastQ() end
 		if Menu.Combo.UseE then CastE() end			
 		if Menu.Combo.UseR then
 			if Menu.Combo.UseQ and Menu.Combo.UseW and Menu.Combo.UseE then			 
@@ -274,8 +274,8 @@ function CastCombo()
 end
 
 function CastHarass()	
-		if Menu.Harass.UseQ then CastQ() end
 		if Menu.Harass.UseW then CastW() end
+		if Menu.Harass.UseQ then CastQ() end
 		if Menu.Harass.UseE then CastE() end	
 end
 --[[SKILLS END]]--
