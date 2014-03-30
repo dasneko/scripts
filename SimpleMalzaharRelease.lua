@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.705" 
+local version = "0.706" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -57,6 +57,7 @@ local MeuAlvo = nil
 local UsandoHP = false
 local UsandoMana = false
 local RecebeuCC = false
+local UsandoRecall =  false
 local TemVoid = false
 local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
@@ -87,12 +88,13 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 	Menu:addSubMenu("Auto Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Auto Harass System", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Harass:addParam("AutoHarass", "Automatic Harass", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("UseQ", "Use "..myHero:GetSpellData(_Q).name.." (Q)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Harass:addParam("UseW", "Use "..myHero:GetSpellData(_W).name.." (W)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Harass:addParam("UseE", "Use "..myHero:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONOFF, true) --OK
-		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
-		--Menu.Harass:addParam("ParaComRecall", "Stop if Recall", SCRIPT_PARAM_ONOFF, true)
+		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")		
 		Menu.Harass:addParam("ParaComManaBaixa", "Stop Cast if mana below %", SCRIPT_PARAM_SLICE, 40, 10, 80, 0) --OK
+		Menu.Harass:addParam("HarassKey", "Manual Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
 		--Menu.Harass:addParam("KSWithQ", "Try KS with Q", SCRIPT_PARAM_ONOFF, true)
 	--[[FARM]]--
 	
@@ -147,8 +149,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true) --OK
 		--Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false) 
 	--[[MISC]]--	
-	Menu:addSubMenu("General System", "General")
-		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
+	Menu:addSubMenu("General System", "General")		
 		Menu.General:addParam("LevelSkill", "Auto Level Skills R-E-W-Q", SCRIPT_PARAM_ONOFF, true) --OK	
 		Menu.General:addParam("UseOrb", "Use Orbwalking", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.General:addParam("MoveToMouse", "Only Move to Mouse Position", SCRIPT_PARAM_ONOFF, false) --OK
@@ -415,8 +416,12 @@ function OnTick()
 		if Menu.Combo.ComboSystem then
 			CastCombo()		
 		end
-		if Menu.Harass.HarassSystem and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not UsandoR then
+		if Menu.Harass.HarassSystem and Menu.Harass.AutoHarass and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not UsandoR and not UsandoRecall and not Menu.Harass.HarassKey then
 			CastHarass()		
+		else
+			if Menu.Harass.HarassSystem and Menu.Harass.HarassKey and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not Menu.Harass.AutoHarass and not UsandoR and not UsandoRecall then
+				CastHarass()
+			end
 		end
 		if Menu.Items.ItemsSystem then
 			if Menu.Items.UseBarreira then CastBarreira() end
@@ -445,8 +450,11 @@ function OnGainBuff(unit, buff)
 		end		
 		if buff.name:lower():find("alzaharsummonvoidling") then
 			TemVoid = true
+		end	
+		if buff.name:lower():find("recall") then
+			UsandoRecall = true
 		end
-	end
+	end	
 end
 
 function OnLoseBuff(unit, buff)
@@ -466,7 +474,10 @@ function OnLoseBuff(unit, buff)
 		if buff.name:lower():find("alzaharsummonvoidling") then
 			TemVoid = false
 		end
-	end
+		if buff.name:lower():find("recall") then
+			UsandoRecall = false
+		end
+	end	
 end
 --[[END]]--
 
@@ -734,35 +745,6 @@ function MeuDano()
 		end			
 end	
 
-function MeuDanoNoAlvo()
-		if not ((os.clock() + AtualizarDanoInimigo) > 0.5) then return end
-		local AlvoDano = MelhorAlvo(1400)
-		if AlvoDano ~= nil then
-			local DanoQ = { 80 , 135 , 190 , 245 , 300 }
-			local DanoW = { 4 , 5 , 6 , 7 , 8 }
-			local DanoE = { 80 , 140 , 200 , 260 , 320 }
-			local DanoR = {	250 , 400 , 550 }			
-			local DanoTotal, QDano, WDano, EDano, RDano, DFGDano = 0, 0, 0, 0, 0
-				if myHero:GetSpellData(_Q).level ~= 0 then
-					QDano = myHero:CalcMagicDamage(AlvoDano, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8)* 0.03))
-				end
-				if myHero:GetSpellData(_W).level ~= 0 then
-					WDano = myHero:CalcMagicDamage(AlvoDano, ((((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * AlvoDano.maxHealth) + (((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * AlvoDano.maxHealth)* 0.03) * 5)
-				end
-				if myHero:GetSpellData(_E).level ~= 0 then
-					EDano = myHero:CalcMagicDamage(AlvoDano, (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) + (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) * 0.03)
-				end
-				if myHero:GetSpellData(_R).level ~= 0 then
-					RDano = myHero:CalcMagicDamage(AlvoDano, (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) + (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) * 0.03)
-				end				
-				DanoTotal = QDano + WDano + EDano + RDano				
-				DanoTotal = DanoTotal
-				PorcentagemQueVouFicar = ((AlvoDano.maxHealth - DanoTotal)/AlvoDano.maxHealth*100)
-				AtualizarDanoInimigo = os.clock()
-				return Arredondar(DanoTotal)
-		end			
-end			
-		
 function Arredondar(num, idp)
  return string.format("%." .. (idp or 0) .. "f", num)
 end
