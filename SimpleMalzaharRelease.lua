@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.711" 
+local version = "0.712" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -94,8 +94,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Harass:addParam("UseE", "Use "..myHero:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")		
 		Menu.Harass:addParam("ParaComManaBaixa", "Stop Cast if mana below %", SCRIPT_PARAM_SLICE, 40, 10, 80, 0) --OK
-		Menu.Harass:addParam("HarassKey", "Manual Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-		--Menu.Harass:addParam("KSWithQ", "Try KS with Q", SCRIPT_PARAM_ONOFF, true)
+		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+				--Menu.Harass:addParam("KSWithQ", "Try KS with Q", SCRIPT_PARAM_ONOFF, true)
 	--[[FARM]]--
 	
 	Menu:addSubMenu("Farm Helper System", "Farmerr")
@@ -103,7 +103,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		--Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("LastHit", "Last Hit Key (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
-		Menu.Farmerr:addParam("LastHitDelay", "Last Hit Delay", SCRIPT_PARAM_SLICE, 0.3, -0.2, 2, 1)
+		Menu.Farmerr:addParam("LastHitDelay", "Last Hit Delay", SCRIPT_PARAM_SLICE, 1000, -500, 3000, 1)
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("ArcaneON", "Use Arcane Blade Mastery", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
@@ -277,9 +277,9 @@ function CastCombo()
 end
 
 function CastHarass()	
-	if Menu.Harass.UseQ then CastQ() end
-	if Menu.Harass.UseW then CastW() end
-	if Menu.Harass.UseE then CastE() end	
+		if Menu.Harass.UseQ then CastQ() end
+		if Menu.Harass.UseW then CastW() end
+		if Menu.Harass.UseE then CastE() end	
 end
 --[[SKILLS END]]--
 
@@ -539,6 +539,7 @@ function OnProcessSpell(object, spell)
 			UsandoR = false
 		end
 	end
+	
 end
 
 function _OrbWalk()
@@ -782,7 +783,7 @@ function LastHitLikeBoss()
 	local nexttick = 0
 	local TimeToTheFirstDamageTick  = 1.5
 	local ProjectileSpeed = myHero.attackSpeed --AA speed
-	local delay = Menu.Farmerr.LastHitDelay + TimeToTheFirstDamageTick -- AA delay	
+	local delay = -0.02926 + TimeToTheFirstDamageTick -- AA delay	
 	local DamageArcane1 = myHero.ap * 0.05
 	local DamageButcher1 = 2
 	local MasteryDamage1 = 0
@@ -798,7 +799,7 @@ function LastHitLikeBoss()
 					local Healthh = VP:GetPredictedHealth(Minion, delay + GetDistance(Minion, myHero) / ProjectileSpeed)
 					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 and os.clock() > nexttick then						
 						myHero:Attack(Minion)
-						nexttick = os.clock() + GetLatency() / 2
+						nexttick = os.clock() + GetLatency() / 2 + Menu.Farmerr.LastHitDelay
 					end
 				end
 			end
