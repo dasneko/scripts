@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.709" 
+local version = "0.710" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -799,7 +799,7 @@ function LastHitLikeBoss()
 					local Healthh = VP:GetPredictedHealth(Minion, delay + GetDistance(Minion, myHero) / ProjectileSpeed)
 					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 and GetTickCount() > nexttick then						
 						myHero:Attack(Minion)
-						nexttick = GetTickCount() + 400
+						nexttick = GetTickCount() + 550
 					end
 				end
 			end
