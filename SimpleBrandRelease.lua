@@ -58,7 +58,7 @@ local UsandoMana = false
 local RecebeuCC = false
 local UsandoRecall =  false
 local AtualizarDanoInimigo = 0
-local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
+local SequenciaHabilidades1 = {2,1,3,2,2,4,2,3,2,3,4,3,3,1,1,4,1,1} 
 local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention, VladimirSanguinePool}
 --[[VPREDICTION]]--
 require "VPrediction"
@@ -79,7 +79,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addSubMenu("Ultimate Settings", "Ultimate")
 			Menu.Combo.Ultimate:addParam("Untargetable", "Don't R to Invulnerability", SCRIPT_PARAM_ONOFF, true)
-			Menu.Combo.Ultimate:addParam("EnemyR", "Only Cast R if enemy with enemy >", SCRIPT_PARAM_SLICE, 0, 0, 4, 0)	
+			--Menu.Combo.Ultimate:addParam("EnemyR", "Check for Blaze enemy's >", SCRIPT_PARAM_SLICE, 3, 2, 4, 0)	
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32) --OK
 	--[[HARASS]]--	
 	Menu:addSubMenu("Auto Harass System", "Harass")
@@ -91,14 +91,12 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Harass:addParam("UseE", "Use "..myHero:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")		
 		Menu.Harass:addParam("ParaComManaBaixa", "Stop Cast if mana below %", SCRIPT_PARAM_SLICE, 40, 10, 80, 0) --OK
-		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-				--Menu.Harass:addParam("KSWithQ", "Try KS with Q", SCRIPT_PARAM_ONOFF, true)
+		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))				
 	--[[FARM]]--
 	
 	Menu:addSubMenu("Farm Helper System", "Farmerr")
 		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
-		--Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
-		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
+		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")		
 		Menu.Farmerr:addParam("LastHit", "Last Hit Key (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 		Menu.Farmerr:addParam("LastHitDelay", "Last Hit Delay", SCRIPT_PARAM_SLICE, 1000, -500, 3000, 1)
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -115,8 +113,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Items:addParam("UseZhonia", "Auto Zhonias", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Items:addParam("ZhoniaPorcentagem", "Zhonias Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1) --OK
 		Menu.Items:addParam("UseSeraph", "Auto Seraph's Embrace", SCRIPT_PARAM_ONOFF, true)
-		Menu.Items:addParam("SeraphPorcentagem", "Seraph's Embrace Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)
-		--Menu.Items:addParam("ZhoniaCC", "Use Zhonias if Hard CC", SCRIPT_PARAM_ONOFF, true) 
+		Menu.Items:addParam("SeraphPorcentagem", "Seraph's Embrace Missing Health %", SCRIPT_PARAM_SLICE, 20, 10, 80, -1)		
 		Menu.Items:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Items:addParam("UseBarreira", "Auto Barrier", SCRIPT_PARAM_ONOFF, true) 
 		Menu.Items:addParam("BarreiraPorcentagem", "Barrier Missing Health %", SCRIPT_PARAM_SLICE, 30, 10, 80, -1) 
@@ -149,7 +146,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		--Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false) 
 	--[[MISC]]--	
 	Menu:addSubMenu("General System", "General")		
-		Menu.General:addParam("LevelSkill", "Auto Level Skills R-E-W-Q", SCRIPT_PARAM_ONOFF, true) --OK	
+		Menu.General:addParam("LevelSkill", "Auto Level Skills R-W-E-Q", SCRIPT_PARAM_ONOFF, true) --OK	
 		Menu.General:addParam("UseOrb", "Use Orbwalking", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.General:addParam("MoveToMouse", "Only Move to Mouse Position", SCRIPT_PARAM_ONOFF, false) --OK
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -179,7 +176,7 @@ function CastQ()
 	if AlvoQ ~= nil and not UsandoR then
 		if myHero:CanUseSpell(BrandBlaze.spellSlot) == READY then
 			if Menu.General.UseVPred then
-			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(AlvoQ, (BrandBlaze.delay + 200)/1600, BrandBlaze.width, BrandBlaze.range, math.huge, myHero, true)   
+			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(AlvoQ, (BrandBlaze.delay)/1200, BrandBlaze.width, BrandBlaze.range, math.huge, myHero, true)   
 				if HitChance >= 2 then
 					CastSpell(BrandBlaze.spellSlot, CastPosition.x, CastPosition.z)
 				end 				
@@ -784,7 +781,7 @@ function LastHitLikeBoss()
 	local nexttick = 0
 	local TimeToTheFirstDamageTick  = 2.0
 	local ProjectileSpeed = myHero.attackSpeed --AA speed
-	local delay = -0.1125 + TimeToTheFirstDamageTick -- AA delay	
+	local delay = 0.1125 + TimeToTheFirstDamageTick -- AA delay	
 	local DamageArcane1 = myHero.ap * 0.05
 	local DamageButcher1 = 2
 	local MasteryDamage1 = 0
