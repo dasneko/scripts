@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.710" 
+local version = "0.711" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -778,7 +778,7 @@ function ManaParaCombo()
 end
 
 function LastHitLikeBoss()	
-	local tick = GetTickCount()
+	local tick = os.clock()
 	local nexttick = 0
 	local TimeToTheFirstDamageTick  = 1.5
 	local ProjectileSpeed = myHero.attackSpeed --AA speed
@@ -791,20 +791,19 @@ function LastHitLikeBoss()
 		end
 		if Menu.Farmerr.ButcherON then
 			MasteryDamage1 = MasteryDamage1 + DamageButcher1
-		end
-		
+		end		
 		if MinionsInimigos ~= nil then
 			for i, Minion in ipairs(MinionsInimigos.objects) do
 				if Minion ~= nil and not Minion.dead then
 					local Healthh = VP:GetPredictedHealth(Minion, delay + GetDistance(Minion, myHero) / ProjectileSpeed)
-					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 and GetTickCount() > nexttick then						
+					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 and os.clock() > nexttick then						
 						myHero:Attack(Minion)
-						nexttick = GetTickCount() + 550
+						nexttick = os.clock() + GetLatency() / 2
 					end
 				end
 			end
 		end
-		if GetTickCount() > nexttick then
+		if os.clock() > nexttick then
 			myHero:MoveTo(mousePos.x, mousePos.z)
 		end
 end
