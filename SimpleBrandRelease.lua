@@ -1,7 +1,7 @@
 if myHero.charName ~= "Brand" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.1" 
+local version = "0.101" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleBrandRelease.lua"
@@ -741,7 +741,7 @@ function MeuDano()
 					QDano = myHero:CalcMagicDamage(AlvoDano, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.65) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.65)* 0.03))
 				end
 				if myHero:GetSpellData(_W).level ~= 0 then
-					WDano = myHero:CalcMagicDamage(AlvoDano, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.6) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.6)* 0.03))
+					WDano = myHero:CalcMagicDamage(AlvoDano, (DanoQ[myHero:GetSpellData(_W).level] + myHero.ap * 0.6) + ((DanoQ[myHero:GetSpellData(_W).level] + myHero.ap * 0.6)* 0.03))
 				end
 				if myHero:GetSpellData(_E).level ~= 0 then
 					EDano = myHero:CalcMagicDamage(AlvoDano, (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.55) + (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.55) * 0.03)
