@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.707" 
+local version = "0.708" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -164,7 +164,10 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 			elseif myHero:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_2 end	
 		if myHero:GetSpellData(SUMMONER_1).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_1
 			elseif myHero:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_2 end	
-
+	--[[MMA/SAC Disable orbwalk]]--
+	if _G.MMA_loaded then
+		_G.MMA_Orbwalker = false 
+	end
 	--[[OTHERS]]--		
 	MinionsInimigos = minionManager(MINION_ENEMY, 1200, myHero, MINION_SORT_HEALTH_ASC)
 	wayPointManager = WayPointManager()
@@ -240,7 +243,7 @@ end
 
 function CastCombo()	
 	if Menu.Combo.ComboKey then		
-		if not UsandoR and Menu.General.UseOrb then	_OrbWalk() end
+		if not UsandoR and not _G.Evade and Menu.General.UseOrb then _OrbWalk() end
 		if Menu.Items.ItemsSystem then
 			if Menu.Combo.UseIgnite then CastIgnite() end		
 			if Menu.Items.UseDfg then CastDFG() end
@@ -611,7 +614,7 @@ function OnDraw()
 		DrawCircle2(myHero.x, myHero.y, myHero.z, IgniteSpell.range, ARGB(255, 000, 000, 255))
 	end 
 	if Menu.Paint.PaintAA then
-		DrawCircle2(myHero.x, myHero.y, myHero.z, myTrueRange, ARGB(255,255,255,255))
+		DrawCircle2(myHero.x, myHero.y, myHero.z, 550, ARGB(255,255,255,255))
 	end
 	
 	if Menu.Paint.EnemyDamage then		
@@ -774,9 +777,11 @@ function ManaParaCombo()
 end
 
 function LastHitLikeBoss()	
-	local TimeToTheFirstDamageTick  = 2.00
+	local tick = GetTickCount()
+	local nexttick = 0
+	local TimeToTheFirstDamageTick  = 1.5
 	local ProjectileSpeed = myHero.attackSpeed --AA speed
-	local delay = 0.02926 + TimeToTheFirstDamageTick -- AA delay	
+	local delay = 0.02 + TimeToTheFirstDamageTick -- AA delay	
 	local DamageArcane1 = myHero.ap * 0.05
 	local DamageButcher1 = 2
 	local MasteryDamage1 = 0
@@ -786,14 +791,19 @@ function LastHitLikeBoss()
 		if Menu.Farmerr.ButcherON then
 			MasteryDamage1 = MasteryDamage1 + DamageButcher1
 		end
+		
 		if MinionsInimigos ~= nil then
-			for i, Minion in pairs(MinionsInimigos.objects) do
+			for i, Minion in ipairs(MinionsInimigos.objects) do
 				if Minion ~= nil and not Minion.dead then
 					local Healthh = VP:GetPredictedHealth(Minion, delay + GetDistance(Minion, myHero) / ProjectileSpeed)
-					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 then
-						myHero:Attack(Minion)					
+					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 and GetTickCount() > nexttick then						
+						myHero:Attack(Minion)
+						nexttick = GetTickCount() + 400
 					end
 				end
 			end
+		end
+		if GetTickCount() > nexttick then
+		myHero:MoveTo(mousePos.x, mousePos.z)
 		end
 end
