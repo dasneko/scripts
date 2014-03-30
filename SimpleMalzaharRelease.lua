@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.708" 
+local version = "0.709" 
 local autoupdateenabled = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua"
@@ -103,6 +103,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		--Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("LastHit", "Last Hit Key (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
+		Menu.Farmerr:addParam("LastHitDelay", "Last Hit Delay", SCRIPT_PARAM_SLICE, 0.3, -0.2, 2, 1)
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("ArcaneON", "Use Arcane Blade Mastery", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
@@ -781,7 +782,7 @@ function LastHitLikeBoss()
 	local nexttick = 0
 	local TimeToTheFirstDamageTick  = 1.5
 	local ProjectileSpeed = myHero.attackSpeed --AA speed
-	local delay = 0.02 + TimeToTheFirstDamageTick -- AA delay	
+	local delay = Menu.Farmerr.LastHitDelay + TimeToTheFirstDamageTick -- AA delay	
 	local DamageArcane1 = myHero.ap * 0.05
 	local DamageButcher1 = 2
 	local MasteryDamage1 = 0
@@ -804,6 +805,6 @@ function LastHitLikeBoss()
 			end
 		end
 		if GetTickCount() > nexttick then
-		myHero:MoveTo(mousePos.x, mousePos.z)
+			myHero:MoveTo(mousePos.x, mousePos.z)
 		end
 end
