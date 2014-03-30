@@ -22,9 +22,9 @@ if autoupdateenabled then
 				ServerVersion = string.sub(ServerData, sstart+1, send-1)
 			end
 			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
-				DownloadFile(UPDATE_URL.."?rand="..math.random(1,1000), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>Brand Zoombie Nation (reload F9 2x):</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)	 
+				DownloadFile(UPDATE_URL.."?rand="..math.random(1,1000), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>Brand Zombie Nation (reload F9 2x):</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)	 
 			elseif ServerVersion then
-				print("<font color=\"#FF0000\"><b>Brand Zoombie Nation:</b> You have got the latest version: <u><b>"..version.."</b></u></font>")
+				print("<font color=\"#FF0000\"><b>Brand Zombie Nation:</b> You have got the latest version: <u><b>"..version.."</b></u></font>")
 			end
 			ServerData = nil
 		end
@@ -34,10 +34,10 @@ end
 --[[AUTO UPDATE END]]--
 
 --[[SKILLS]]--
-local BrandBlaze = {ready = nil, spellSlot = _Q, range = 900, width = 80, speed = 1200,  hitLineCheck = true},
-local BrandFissure = {ready = nil, spellSlot = _W, range = 900, width = 0, speed = 20, hitLineCheck = false},
-local BrandConflagration = {ready = nil, spellSlot = _E, range = 625, width = 0, speed = 1800, hitLineCheck = false},
-local BrandWildfire = {ready = nil, spellSlot = _R, range = 750, width = 0, speed = 1000, hitLineCheck = false, timer = 230 - GetLatency()},
+local BrandBlaze = {ready = nil, spellSlot = _Q, range = 900, width = 80, speed = 1200,  hitLineCheck = true, delay = 0.5}
+local BrandFissure = {ready = nil, spellSlot = _W, range = 900, width = 0, speed = 20, hitLineCheck = false, delay = 0.5}
+local BrandConflagration = {ready = nil, spellSlot = _E, range = 625, width = 0, speed = 1800, hitLineCheck = false, delay = 0.5}
+local BrandWildfire = {ready = nil, spellSlot = _R, range = 750, width = 0, speed = 1000, hitLineCheck = false, timer = 230 - GetLatency(), delay = 0.5}
 --[[SPELLS]]--
 local IgniteSpell = {spellSlot = "SummonerDot", iSlot = nil, ready = false, range = 600}
 local BarreiraSpell = {spellSlot = "SummonerBarrier", bSlot = nil, ready = false, range = 0}
@@ -79,7 +79,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addSubMenu("Ultimate Settings", "Ultimate")
 			Menu.Combo.Ultimate:addParam("Untargetable", "Don't R to Invulnerability", SCRIPT_PARAM_ONOFF, true)
-			Menu.Combo.Ultimate:addParam("EnemyR", "Only Cast enemy with enemy >", SCRIPT_PARAM_SLICE, 0, 0, 4, 0)	
+			Menu.Combo.Ultimate:addParam("EnemyR", "Only Cast R if enemy with enemy >", SCRIPT_PARAM_SLICE, 0, 0, 4, 0)	
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32) --OK
 	--[[HARASS]]--	
 	Menu:addSubMenu("Auto Harass System", "Harass")
@@ -171,7 +171,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 	wayPointManager = WayPointManager()
 	myTrueRange = myHero.range + GetDistance(myHero.minBBox)
 	VP = VPrediction()
-	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
+	PrintChat("-[ <font color='#000FFF'> -- Brand by Jus loaded !Good Luck! -- </font> ]-")
 end
 --[[SKILLS]]--
 function CastQ()
