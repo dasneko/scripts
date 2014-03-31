@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.713"
+local version = "0.714"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -156,7 +156,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.General:addParam("UsePacket", "Use Packet to Cast", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true) --OK
-		Menu.General:addParam("SelecionarAlvo", "Target Mode", SCRIPT_PARAM_SLICE, 1, 1, 2, 0) 
+		--Menu.General:addParam("SelecionarAlvo", "Target Mode", SCRIPT_PARAM_SLICE, 1, 1, 2, 0) 
 		Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true) --OK
 	--[[SPELL SLOT CHECK]]--
 		if myHero:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_1
@@ -168,6 +168,9 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		_G.MMA_Orbwalker = false 
 	end
 	--[[OTHERS]]--		
+	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1400, DAMAGE_MAGIC)
+	Alvo.name = "Malzahar"
+	Menu:addTS(Alvo)
 	MinionsInimigos = minionManager(MINION_ENEMY, 1200, myHero, MINION_SORT_HEALTH_ASC)
 	wayPointManager = WayPointManager()
 	myTrueRange = myHero.range + GetDistance(myHero.minBBox)
@@ -176,7 +179,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 end
 --[[SKILLS]]--
 function CastQ()
-	local AlvoQ = MelhorAlvo(AlZaharCalloftheVoid.range)
+	local AlvoQ = MeuAlvo
 	if AlvoQ ~= nil and not UsandoR then
 		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
 			if Menu.General.UseVPred then
@@ -192,7 +195,7 @@ function CastQ()
 end
 
 function CastW()
-	local AlvoW = MelhorAlvo(AlZaharNullZone.range)
+	local AlvoW = MeuAlvo
 	if AlvoW ~= nil and not UsandoR then
 		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
 			if Menu.General.UseVPred then
@@ -214,7 +217,7 @@ function CastW()
 end
 
 function CastE()
-	local AlvoE = MelhorAlvo(AlZaharMaleficVision.range)
+	local AlvoE = MeuAlvo
 	if AlvoE ~= nil and not UsandoR then
 		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then
 			if Menu.General.UsePacket then
@@ -227,8 +230,8 @@ function CastE()
 end
 
 function CastR()
-	local AlvoR = MelhorAlvo(AlZaharNetherGrasp.range)
-	if TemImunidade(AlvoR) then return end
+	local AlvoR = MeuAlvo
+	if TemImunidade(MeuAlvo) then return end
 	if AlvoR ~= nil and not TemImunidade(AlvoR) then
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then
 			if Menu.General.UsePacket then
@@ -283,7 +286,7 @@ end
 
 --[[SPELLS]]--
 function CastIgnite()
-	local AlvoI = MelhorAlvo(IgniteSpell.range)
+	local AlvoI = MeuAlvo
 	if IgniteSpell.iSlot ~= nil and myHero:CanUseSpell(IgniteSpell.iSlot) == READY and AlvoI ~= nil then	
 		if Menu.Items.AntiDoubleIgnite and TargetHaveBuff("SummonerDot", AlvoI) then return end
 		if Menu.Items.AntiDoubleIgnite and not TargetHaveBuff("SummonerDot", AlvoI) then
@@ -305,9 +308,9 @@ end
 function CastDFG()
 	local AlvoDFG = nil
 	if Menu.Items.UseDfgRrange then
-		AlvoDFG = MelhorAlvo(AlZaharNetherGrasp.range)
+		AlvoDFG = MeuAlvo
 	else
-		AlvoDFG = MelhorAlvo(DFG.range)
+		AlvoDFG = MeuAlvo
 	end
 		if AlvoDFG ~= nil then
 			if DFG.slot ~= nil and myHero:CanUseSpell(DFG.slot) == READY and Menu.Items.UseDfgR and not UsandoR and GetDistance(AlvoDFG) <= AlZaharNetherGrasp.range then
@@ -407,16 +410,18 @@ function AtualizaItems()
 	Seraph.slot = GetInventorySlotItem(Seraph.id)
 	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
 	Manapotion.slot = GetInventorySlotItem(Manapotion.id)
+	Alvo:update()
+	MeuAlvo = Alvo.target
 	MinionsInimigos:update()	
 end
 
 --[[SPELLS END]]--
 function OnTick()
-	if Menu.LigarScript and not myHero.dead then		
+	if Menu.LigarScript and not myHero.dead then
+		AtualizaItems()	
 		if Menu.General.UseOrb then Menu.General.MoveToMouse = false end
 		if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
-		if Menu.Paint.EnemyDamage then MeuDano() end
-		AtualizaItems()		
+		if Menu.Paint.EnemyDamage then MeuDano() end			
 		if Menu.Combo.ComboSystem then
 			CastCombo()		
 		end
@@ -493,6 +498,7 @@ end
 --[[END]]--
 
 --[[MY TARGET SELECTOR]]--
+--[[
 function MelhorAlvo(Range) --ADICIONAR DELAY	
 	local DanoParaMatar = 100
 	local Alvo = nil
@@ -521,7 +527,7 @@ function MelhorAlvo(Range) --ADICIONAR DELAY
 	end	
 	return Alvo
 end
---[[END]]--
+]]
 
 --[[ORBWALK]]--
 function OnProcessSpell(object, spell)
@@ -541,7 +547,7 @@ function OnProcessSpell(object, spell)
 end
 
 function _OrbWalk()
-	local AlvoOrb = MelhorAlvo(myTrueRange)
+	local AlvoOrb = MeuAlvo
 	if AlvoOrb ~= nil and GetDistance(AlvoOrb) <= myTrueRange then		
 		if timeToShoot() then
 			myHero:Attack(AlvoOrb)
@@ -618,7 +624,7 @@ function OnDraw()
 	end
 	
 	if Menu.Paint.EnemyDamage then		
-		local AlvoP = MelhorAlvo(1400)
+		local AlvoP = MeuAlvo
 		if AlvoP ~= nil then
 			DrawText3D(CalcularDanoInimigo(), myHero.x +30, myHero.y, myHero.z, 16, ARGB(255,255,255,000))
 			DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000))
@@ -668,7 +674,7 @@ function OnDraw()
 	end
 	
 	if Menu.Paint.PaintTarget then
-		local AlvoPP = MelhorAlvo(1400)
+		local AlvoPP = MeuAlvo
 		if AlvoPP  ~= nil then			 	 
 			for i=0, 4 do
 				 DrawCircle2(AlvoPP.x, AlvoPP.y, AlvoPP.z, 60 + i*1.5, ARGB(255, 255, 000, 255))	
@@ -687,7 +693,7 @@ function OnDraw()
 	end	
 	
 	if Menu.Paint.PredInimigo then
-		local AlvoPred = MelhorAlvo(1200)
+		local AlvoPred = MeuAlvo
 		if AlvoPred ~= nil then
 			wayPointManager:DrawWayPoints(AlvoPred)
 		end
@@ -713,7 +719,7 @@ function TemImunidade(enemy)
 end
 
 function CalcularDanoInimigo()
-	local AlvoCalc = MelhorAlvo(1400)
+	local AlvoCalc = MeuAlvo
 	if AlvoCalc ~= nil then	
 		adDmgE = (getDmg("AD", myHero, AlvoCalc) or 0)		
 		qDmgE = (getDmg("Q", myHero, AlvoCalc) or 0)
@@ -730,7 +736,7 @@ end
 -- 0.03 from mastery Havoc
 function MeuDano()
 		if not ((os.clock() + AtualizarDanoInimigo) > 0.5) then return end
-		local AlvoDano = MelhorAlvo(1400)
+		local AlvoDano = MeuAlvo
 		if AlvoDano ~= nil then
 			local DanoQ = { 80 , 135 , 190 , 245 , 300 }
 			local DanoW = { 4 , 5 , 6 , 7 , 8 }
