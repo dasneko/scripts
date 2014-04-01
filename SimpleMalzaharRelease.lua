@@ -1,7 +1,8 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
+require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.715"
+local version = "0.716"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -61,8 +62,6 @@ local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
 local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention, VladimirSanguinePool}
 local SupportList = { }
---[[VPREDICTION]]--
-require "VPrediction"
 
 function OnLoad()
 Menu = scriptConfig(myHero.charName.." by Jus", "Malzahar")
@@ -181,13 +180,13 @@ end
 --[[SKILLS]]--
 function CastQ()
 	local AlvoQ = MeuAlvo
-	if AlvoQ ~= nil and not UsandoR then
+	if AlvoQ ~= nil and not UsandoR and GetDistance(AlvoQ) <= AlZaharCalloftheVoid.range then
 		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
 			if Menu.General.UseVPred then
-			local CastPosition, HitChance1, Position1 = VP:GetCircularCastPosition(AlvoQ, (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, AlZaharCalloftheVoid.range, math.huge, myHero, false)   
-			--local Position, HitChance  = VPrediction:GetPredictedPos(AlvoQ, (AlZaharCalloftheVoid.delay + 200)/1600, math.huge,  myHero, false)
+			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(AlvoQ, (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, AlZaharCalloftheVoid.range, math.huge, myHero, false)   
+			--local Position, HitChance    = VPrediction:GetPredictedPos(AlvoQ, 0.6, math.huge, myHero, false)
 			--local CastPoint = Vector(Position) + 200*(Vector(Position) - Vector(myHero)):normalized()
-				if HitChance1 >= 2 then
+				if HitChance >= 2 then
 					CastSpell(AlZaharCalloftheVoid.spellSlot, CastPosition.x, CastPosition.z)
 				end 				
 			elseif not Menu.General.UsePacket and not Menu.General.UseVPred then
@@ -199,16 +198,16 @@ end
 
 function CastW()
 	local AlvoW = MeuAlvo
-	if AlvoW ~= nil and not UsandoR then
+	if AlvoW ~= nil and not UsandoR and GetDistance(AlvoW) <= AlZaharNullZone.range then
 		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
 			if Menu.General.UseVPred then
 				local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(AlvoW, AlZaharNullZone.delay, AlZaharNullZone.width, AlZaharNullZone.range, math.huge, myHero) 
-					if CountEnemyHeroInRange(Range, myHero) >= 3 then
+					if CountEnemyHeroInRange(AlZaharNullZone.range, myHero) >= 3 then
 						if MainTargetHitChance >= 1 then
 							CastSpell(AlZaharNullZone.spellSlot, AOECastPosition.x , AOECastPosition.z)
 						end
 					end
-					if CountEnemyHeroInRange(Range, myHero) < 3 then
+					if CountEnemyHeroInRange(AlZaharNullZone.range, myHero) < 3 then
 						if MainTargetHitChance >= 2 then
 							CastSpell(AlZaharNullZone.spellSlot, AOECastPosition.x , AOECastPosition.z)
 						end
@@ -221,7 +220,7 @@ end
 
 function CastE()
 	local AlvoE = MeuAlvo
-	if AlvoE ~= nil and not UsandoR then
+	if AlvoE ~= nil and not UsandoR and GetDistance(AlvoE) <= AlZaharMaleficVision.range then
 		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then
 			if Menu.General.UsePacket then
 				Packet('S_CAST', { spellId = AlZaharMaleficVision.spellSlot, targetNetworkId = AlvoE.networkID }):send()				
@@ -235,7 +234,7 @@ end
 function CastR()
 	local AlvoR = MeuAlvo
 	if TemImunidade(MeuAlvo) then return end
-	if AlvoR ~= nil and not TemImunidade(AlvoR) then
+	if AlvoR ~= nil and not TemImunidade(AlvoR) and GetDistance(AlvoR) <= AlZaharNetherGrasp.range then
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then
 			if Menu.General.UsePacket then
 				Packet('S_CAST', { spellId = AlZaharNetherGrasp.spellSlot, targetNetworkId = AlvoR.networkID }):send()
@@ -247,9 +246,9 @@ function CastR()
 end
 
 function CastCombo()	
-	if Menu.Combo.ComboKey then		
-		if not UsandoR and not _G.Evade and Menu.General.UseOrb then _OrbWalk() end
-		if Menu.Items.ItemsSystem then
+	if Menu.Combo.ComboKey then	
+		if not UsandoR and Menu.General.UseOrb then _OrbWalk() end		
+		if Menu.Items.ItemsSystem then			
 			if Menu.Combo.UseIgnite then CastIgnite() end		
 			if Menu.Items.UseDfg then CastDFG() end
 		end
@@ -281,9 +280,11 @@ function CastCombo()
 end
 
 function CastHarass()	
+	if MeuAlvo ~= nil then
 		if Menu.Harass.UseQ then CastQ() end
 		if Menu.Harass.UseW then CastW() end
-		if Menu.Harass.UseE then CastE() end	
+		if Menu.Harass.UseE then CastE() end
+	end
 end
 --[[SKILLS END]]--
 
@@ -412,27 +413,27 @@ function AtualizaItems()
 	ZHONIA.slot = GetInventorySlotItem(ZHONIA.id)
 	Seraph.slot = GetInventorySlotItem(Seraph.id)
 	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
-	Manapotion.slot = GetInventorySlotItem(Manapotion.id)
-	Alvo:update()
-	MeuAlvo = Alvo.target
+	Manapotion.slot = GetInventorySlotItem(Manapotion.id)	
 	MinionsInimigos:update()	
 end
 
 --[[SPELLS END]]--
 function OnTick()
 	if Menu.LigarScript and not myHero.dead then
+		Alvo:update()
+		MeuAlvo = Alvo.target
 		AtualizaItems()	
-		if Menu.General.UseOrb then Menu.General.MoveToMouse = false end
+		if Menu.General.UseOrb then	Menu.General.MoveToMouse = false end
 		if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
 		if Menu.Paint.EnemyDamage then MeuDano() end			
-		if Menu.Combo.ComboSystem then
+		if Menu.Combo.ComboSystem and MeuAlvo ~= nil then
 			CastCombo()		
 		end
-		if Menu.Harass.HarassSystem then
-			if Menu.Harass.AutoHarass and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not UsandoR and not UsandoRecall and not Menu.Harass.HarassKey then
+		if Menu.Harass.HarassSystem and ValidTarget(MeuAlvo) then
+			if Menu.Harass.AutoHarass and MeuAlvo ~= nil and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not UsandoR and not UsandoRecall and not Menu.Harass.HarassKey then
 				CastHarass()		
 			else
-				if Menu.Harass.HarassKey and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not Menu.Harass.AutoHarass and not UsandoR and not UsandoRecall then
+				if Menu.Harass.HarassKey and MeuAlvo ~= nil and ((myHero.mana / myHero.maxMana * 100)) >= Menu.Harass.ParaComManaBaixa and not Menu.Harass.AutoHarass and not UsandoR and not UsandoRecall then
 					CastHarass()
 				end	
 			end
@@ -469,10 +470,7 @@ function OnGainBuff(unit, buff)
 		end		
 		if buff.name:lower():find("alzaharsummonvoidling") then
 			TemVoid = true
-		end	
-		if buff.name:lower():find("recall") then
-			UsandoRecall = true
-		end
+		end		
 	end	
 end
 
@@ -492,10 +490,7 @@ function OnLoseBuff(unit, buff)
 		--end
 		if buff.name:lower():find("alzaharsummonvoidling") then
 			TemVoid = false
-		end
-		if buff.name:lower():find("recall") then
-			UsandoRecall = false
-		end
+		end		
 	end	
 end
 --[[END]]--
@@ -814,4 +809,22 @@ function LastHitLikeBoss()
 		if os.clock() > nexttick then
 			myHero:MoveTo(mousePos.x, mousePos.z)
 		end
+end
+
+function OnRecall(hero, channelTimeInMs)
+        if hero.networkID == player.networkID then
+                UsandoRecall = true
+        end
+end
+
+function OnAbortRecall(hero)
+        if hero.networkID == player.networkID then
+                UsandoRecall = false
+        end        
+end
+
+function OnFinishRecall(hero)
+        if hero.networkID == player.networkID then
+                UsandoRecall = false
+        end
 end
