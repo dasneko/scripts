@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.724"
+local version = "0.725"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -79,6 +79,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addSubMenu("Team Fight Settings", "Ultimate")
 			Menu.Combo.Ultimate:addParam("SuportSilence", "Always Try Silence Support", SCRIPT_PARAM_ONOFF, true)
+			Menu.Combo.Ultimate:addParam("Qss", "Never Ultimate enemy with Qss", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.Ultimate:addParam("Untargetable", "Don't R to Invulnerability", SCRIPT_PARAM_ONOFF, true)
 
 		--Menu.Combo:addParam("CheckInsideW", "Only Cast R above W", SCRIPT_PARAM_ONOFF, false)
@@ -238,9 +239,8 @@ function CastE()
 	end
 end
 
-function CastR()
-	
-	if TemImunidade(Alvo.target) then return end
+function CastR()	
+	if TemImunidade(Alvo.target) or TemQss() then return end	
 	if Alvo.target ~= nil and GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then
 			if Menu.General.UsePacket then
@@ -552,7 +552,7 @@ end
 
 function _OrbWalk()
 	
-	if Alvo.target ~= nil and GetDistance(Alvo.target) <= myTrueRange then		
+	if Alvo.target ~= nil and GetDistance(Alvo.target) <= myTrueRange and ValidTarget(Alvo.target) then		
 		if timeToShoot() then
 			myHero:Attack(Alvo.target)
 		elseif heroCanMove()  then
@@ -838,6 +838,20 @@ function EncontrarAlvoQ()
 		end
 	else
 		return FirstTarget
+	end
+end
+
+function TemQss()
+	if Menu.Combo.Ultimate.TemQss then
+		for i, Inimigo in pairs(GetEnemyHeroes()) do
+			if Inimigo:GetInventorySlotItem(3139) ~= nil or Inimigo:GetInventorySlotItem(3140) ~= nil then
+				return true
+			else
+				return false
+			end
+		end
+	else
+		return false
 	end
 end
 
