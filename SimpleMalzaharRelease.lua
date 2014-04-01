@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.723"
+local version = "0.724"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -821,7 +821,7 @@ end
 function EncontrarAlvoQ()
 	local FirstTarget = Alvo.target	
 	if Menu.Combo.Ultimate.SuportSilence and FirstTarget ~= nil then
-				
+		if CountEnemyHeroInRange(AlZaharCalloftheVoid.range, myHero) > 3 then		
 			for i, Suporte in pairs(priorityTable.Support) do
 				if Alvo.target.charName == Suporte and Suporte ~= FirstTarget then
 					for i, Inimigo in pairs(GetEnemyHeroes()) do
@@ -833,7 +833,9 @@ function EncontrarAlvoQ()
 					end			
 				end
 			end
-		
+		else
+			return FirstTarget
+		end
 	else
 		return FirstTarget
 	end
