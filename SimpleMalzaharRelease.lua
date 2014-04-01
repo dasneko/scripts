@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.718"
+local version = "0.719"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -545,7 +545,7 @@ function _OrbWalk()
 	
 	if Alvo.target ~= nil and GetDistance(Alvo.target) <= myTrueRange then		
 		if timeToShoot() then
-			myHero:Attack(AlvoOrb)
+			myHero:Attack(Alvo.target)
 		elseif heroCanMove()  then
 			moveToCursor()
 		end
@@ -622,7 +622,7 @@ function OnDraw()
 		
 		if Alvo.target ~= nil then
 			DrawText3D(CalcularDanoInimigo(), myHero.x +30, myHero.y, myHero.z, 16, ARGB(255,255,255,000))
-			DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000))
+			--DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000))
 		end
 	end
 	
@@ -672,7 +672,7 @@ function OnDraw()
 		
 		if Alvo.target  ~= nil then			 	 
 			for i=0, 4 do
-				 DrawCircle2(AlvoPP.x, AlvoPP.y, AlvoPP.z, 60 + i*1.5, ARGB(255, 255, 000, 255))	
+				 DrawCircle2(Alvo.target.x, Alvo.target.y, Alvo.target.z, 60 + i*1.5, ARGB(255, 255, 000, 255))	
 			end
 		end 
 	end
