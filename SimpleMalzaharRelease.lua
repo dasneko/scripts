@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.722"
+local version = "0.723"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -77,8 +77,10 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Combo:addParam("UseR", "Use "..myHero:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
-		Menu.Combo:addSubMenu("Ultimate Protection Settings", "Ultimate")
+		Menu.Combo:addSubMenu("Team Fight Settings", "Ultimate")
+			Menu.Combo.Ultimate:addParam("SuportSilence", "Always Try Silence Support", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.Ultimate:addParam("Untargetable", "Don't R to Invulnerability", SCRIPT_PARAM_ONOFF, true)
+
 		--Menu.Combo:addParam("CheckInsideW", "Only Cast R above W", SCRIPT_PARAM_ONOFF, false)
 		--Menu.Combo:addParam("CheckifE", "Only Cast R if target have E", SCRIPT_PARAM_ONOFF, false)	
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32) --OK
@@ -184,19 +186,18 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
 end
 --[[SKILLS]]--
-function CastQ()
-	
-	if Alvo.target ~= nil and not UsandoR and GetDistance(Alvo.target) <= AlZaharCalloftheVoid.range then
+function CastQ()	
+	if EncontrarAlvoQ() ~= nil and not UsandoR and GetDistance(EncontrarAlvoQ()) <= AlZaharCalloftheVoid.range then
 		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
 			if Menu.General.UseVPred then
-			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Alvo.target, (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, AlZaharCalloftheVoid.range, math.huge, myHero, false)   
+			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(EncontrarAlvoQ(), (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, AlZaharCalloftheVoid.range, math.huge, myHero, false)   
 			--local Position, HitChance    = VPrediction:GetPredictedPos(AlvoQ, 0.6, math.huge, myHero, false)
 			--local CastPoint = Vector(Position) + 200*(Vector(Position) - Vector(myHero)):normalized()
 				if HitChance >= 2 then
 					CastSpell(AlZaharCalloftheVoid.spellSlot, CastPosition.x, CastPosition.z)
 				end 				
 			elseif not Menu.General.UsePacket and not Menu.General.UseVPred then
-				CastSpell(AlZaharCalloftheVoid.spellSlot, Alvo.target.x, Alvo.target.z)
+				CastSpell(AlZaharCalloftheVoid.spellSlot, EncontrarAlvoQ().x, EncontrarAlvoQ().z)
 			end			
 		end
 	end
@@ -815,6 +816,27 @@ function LastHitLikeBoss()
 		if os.clock() > nexttick then
 			myHero:MoveTo(mousePos.x, mousePos.z)
 		end
+end
+
+function EncontrarAlvoQ()
+	local FirstTarget = Alvo.target	
+	if Menu.Combo.Ultimate.SuportSilence and FirstTarget ~= nil then
+				
+			for i, Suporte in pairs(priorityTable.Support) do
+				if Alvo.target.charName == Suporte and Suporte ~= FirstTarget then
+					for i, Inimigo in pairs(GetEnemyHeroes()) do
+						if ValidTarget(Inimigo) and Inimigo.charName == Suporte and GetDistance(Inimigo) <= AlZaharCalloftheVoid.range then					
+							return Inimigo
+						else
+							return FirstTarget
+						end
+					end			
+				end
+			end
+		
+	else
+		return FirstTarget
+	end
 end
 
 --[[SIDA Revamped]]--
