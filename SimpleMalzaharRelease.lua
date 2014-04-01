@@ -1,7 +1,7 @@
 if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 
 --[[AUTO UPDATE]]--
-local version = "0.714"
+local version = "0.715"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -60,6 +60,7 @@ local TemVoid = false
 local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
 local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention, VladimirSanguinePool}
+local SupportList = { }
 --[[VPREDICTION]]--
 require "VPrediction"
 
@@ -183,8 +184,10 @@ function CastQ()
 	if AlvoQ ~= nil and not UsandoR then
 		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
 			if Menu.General.UseVPred then
-			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(AlvoQ, (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, AlZaharCalloftheVoid.range, math.huge, myHero, false)   
-				if HitChance >= 2 then
+			local CastPosition, HitChance1, Position1 = VP:GetCircularCastPosition(AlvoQ, (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, AlZaharCalloftheVoid.range, math.huge, myHero, false)   
+			--local Position, HitChance  = VPrediction:GetPredictedPos(AlvoQ, (AlZaharCalloftheVoid.delay + 200)/1600, math.huge,  myHero, false)
+			--local CastPoint = Vector(Position) + 200*(Vector(Position) - Vector(myHero)):normalized()
+				if HitChance1 >= 2 then
 					CastSpell(AlZaharCalloftheVoid.spellSlot, CastPosition.x, CastPosition.z)
 				end 				
 			elseif not Menu.General.UsePacket and not Menu.General.UseVPred then
