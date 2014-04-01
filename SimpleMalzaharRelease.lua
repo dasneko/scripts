@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.717"
+local version = "0.718"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -416,7 +416,7 @@ function OnTick()
 		AtualizaItems()	
 		if Menu.General.UseOrb then	Menu.General.MoveToMouse = false end
 		if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
-		if Menu.Paint.EnemyDamage then MeuDano() end			
+		--if Menu.Paint.EnemyDamage then MeuDano() end			
 		if Menu.Combo.ComboSystem then
 			CastCombo()		
 		end
