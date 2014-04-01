@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.719"
+local version = "0.720"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -166,7 +166,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 	--[[MMA/SAC Disable orbwalk]]--
 
 	--[[OTHERS]]--		
-	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1400, DAMAGE_MAGIC, true)
+	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, AlZaharCalloftheVoid.range, DAMAGE_MAGIC, true)
 	Alvo.name = "Malzahar"
 	Menu:addTS(Alvo)
 	MinionsInimigos = minionManager(MINION_ENEMY, 1200, myHero, MINION_SORT_HEALTH_ASC)
@@ -731,7 +731,7 @@ function CalcularDanoInimigo()
 end		
 -- 0.03 from mastery Havoc
 function MeuDano()
-		if not ((os.clock() + AtualizarDanoInimigo) > 0.5) then return end
+		--if not ((os.clock() + AtualizarDanoInimigo) > 0.5) then return end
 		
 		if Alvo.target ~= nil then
 			local DanoQ = { 80 , 135 , 190 , 245 , 300 }
@@ -754,7 +754,7 @@ function MeuDano()
 				DanoTotal = QDano + WDano + EDano + RDano				
 				DanoTotal = DanoTotal
 				PorcentagemQueVouFicar = ((Alvo.target.maxHealth - DanoTotal)/Alvo.target.maxHealth*100)
-				AtualizarDanoInimigo = os.clock()
+				--AtualizarDanoInimigo = os.clock()
 				return "Damage to Enemy: "..Arredondar(DanoTotal, 1).." : Stay("..Arredondar(PorcentagemQueVouFicar).."%)"
 		end			
 end	
