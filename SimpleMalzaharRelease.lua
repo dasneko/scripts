@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.727"
+local version = "0.728"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -67,6 +67,13 @@ local DanoW = { 4 , 5 , 6 , 7 , 8 }
 local DanoE = { 80 , 140 , 200 , 260 , 320 }
 local DanoR = {	250 , 400 , 550 }			
 local DanoTotal, QDano, WDano, EDano, RDano, DFGDano = 0, 0, 0, 0, 0
+local StealJungle = {
+Vilemaw = {obj = nil, name = "TT_Spiderboss7.1.1"},
+Baron = {obj = nil, name = "Worm12.1.1"},
+Dragon = {obj = nil, name = "Dragon6.1.1"},
+Golem1 = {obj = nil, name = "AncientGolem1.1.1"},
+Golem2 = {obj = nil, name = "AncientGolem7.1.1"},
+}
 
 function OnLoad()
 Menu = scriptConfig(myHero.charName.." by Jus", "Malzahar")
@@ -117,6 +124,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 			Menu.Farmerr.FarmSettings:addParam("", "", SCRIPT_PARAM_INFO, "")
 			Menu.Farmerr.FarmSettings:addParam("ArcaneON", "Use Arcana Blade Mastery", SCRIPT_PARAM_ONOFF, true)
 			Menu.Farmerr.FarmSettings:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
+			Menu.Farmerr.FarmSettings:addParam("", "", SCRIPT_PARAM_INFO, "")
+			Menu.Farmerr.FarmSettings:addParam("Steal", "Auto Jungle Steal with Q", SCRIPT_PARAM_ONOFF, true)
 	--[[ITEMS]]--	
 	Menu:addSubMenu("Items Helper System", "Items")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true) --OK
@@ -366,9 +375,10 @@ function CastIgnite()
 end 
 
 function CastDFG()	
-	
-		if Alvo.target ~= nil then
-			if DFG.slot ~= nil and myHero:CanUseSpell(DFG.slot) == READY and Menu.Items.UseDfgR and not UsandoR and GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then
+		if Menu.items.UseDfgR and not myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then return end
+		if Alvo.target ~= nil and Menu.items.UseDfgRrange and not GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then return end
+		if Alvo.target ~= nil then		
+			if DFG.slot ~= nil and myHero:CanUseSpell(DFG.slot) == READY and not UsandoR then
 				if Menu.General.UsePacket then
 					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Alvo.target.networkID }):send()
 				else
@@ -505,6 +515,9 @@ function OnTick()
 			end
 			if Menu.Farmerr.JungleKey then
 				JungleFarm()
+			end
+			if Menu.Farmerr.FarmSettings.Steal then
+				RoubarJungle()
 			end
 		end
 		if Menu.General.LevelSkill then
@@ -905,6 +918,14 @@ function TemQss()
 	else
 		return false
 	end
+end
+
+function RoubarJungle()	
+    for i, MinionJ in pairs(StealJungle) do
+        if MinionJ.obj ~= nil and MinionJ.obj.valid and not MinionJ.obj.dead and GetDistance(MinionJ.obj) <= AlZaharCalloftheVoid.range and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY and MinionJ.obj.health < getDmg("Q",MinionJ.obj,myHero) then
+            CastSpell(_Q, MinionJ.obj.x, MinionJ.obj.z)
+        end
+    end
 end
 
 --[[SIDA Revamped]]--
