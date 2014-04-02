@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.729"
+local version = "0.730"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -376,7 +376,7 @@ end
 
 function CastDFG()	
 		if Menu.Items.UseDfgR and not myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then return end
-		if Alvo.target ~= nil and Menu.Items.UseDfgRrange and not GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then return end
+		--if Alvo.target ~= nil and Menu.Items.UseDfgRrange and not GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then return end
 		if Alvo.target ~= nil then		
 			if DFG.slot ~= nil and myHero:CanUseSpell(DFG.slot) == READY and not UsandoR then
 				if Menu.General.UsePacket then
