@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.725"
+local version = "0.726"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -62,6 +62,11 @@ local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
 local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention, VladimirSanguinePool}
 local SupportList = { }
+local DanoQ = { 80 , 135 , 190 , 245 , 300 }
+local DanoW = { 4 , 5 , 6 , 7 , 8 }
+local DanoE = { 80 , 140 , 200 , 260 , 320 }
+local DanoR = {	250 , 400 , 550 }			
+local DanoTotal, QDano, WDano, EDano, RDano, DFGDano = 0, 0, 0, 0, 0
 
 function OnLoad()
 Menu = scriptConfig(myHero.charName.." by Jus", "Malzahar")
@@ -101,14 +106,16 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 	
 	Menu:addSubMenu("Farm Helper System", "Farmerr")
 		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
-		--Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("LastHit", "Last Hit Key (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 		Menu.Farmerr:addParam("LastHitDelay", "Last Hit Delay", SCRIPT_PARAM_SLICE, 1000, -500, 3000, 1)
-		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.Farmerr:addParam("ArcaneON", "Use Arcane Blade Mastery", SCRIPT_PARAM_ONOFF, true)
-		Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
 		
+		Menu.Farmerr:addSubMenu("More Farm Settings", "FarmSettings")
+			Menu.Farmerr.FarmSettings:addParam("Gota", "Use Tear of The Goddess mode", SCRIPT_PARAM_ONOFF, true)
+			Menu.Farmerr.FarmSettings:addParam("", "", SCRIPT_PARAM_INFO, "")
+			Menu.Farmerr.FarmSettings:addParam("ArcaneON", "Use Arcana Blade Mastery", SCRIPT_PARAM_ONOFF, true)
+			Menu.Farmerr.FarmSettings:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
 	--[[ITEMS]]--	
 	Menu:addSubMenu("Items Helper System", "Items")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true) --OK
@@ -150,7 +157,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Paint:addParam("PredInimigo", "Enemy Moviment Prediction", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true) --OK
-		--Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false) 
+		Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false) 
 	--[[MISC]]--	
 	Menu:addSubMenu("General System", "General")		
 		Menu.General:addParam("LevelSkill", "Auto Level Skills R-E-W-Q", SCRIPT_PARAM_ONOFF, true) --OK	
@@ -202,6 +209,26 @@ function CastQ()
 			end			
 		end
 	end
+end
+
+function CastQTear()
+	if GetInventorySlotItem(3070) ~= nil then		
+	for i, Minion in pairs(MinionsInimigos.objects) do
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharCalloftheVoid.range) then
+			CastSpell(AlZaharCalloftheVoid.spellSlot, Minion.x, Minion.z)
+		end
+	end
+end
+end
+
+function CastWTear()
+	if GetInventorySlotItem(3070) ~= nil then		
+	for i, Minion in pairs(MinionsInimigos.objects) do
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharNullZone.range) then
+			CastSpell(AlZaharNullZone.spellSlot, Minion.x, Minion.z)
+		end
+	end
+end
 end
 
 function CastW()
@@ -425,7 +452,7 @@ function OnTick()
 		AtualizaItems()	
 		if Menu.General.UseOrb then	Menu.General.MoveToMouse = false end
 		if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
-		--if Menu.Paint.EnemyDamage then MeuDano() end			
+		if Menu.Paint.EnemyDamage then MeuDano() end			
 		if Menu.Combo.ComboSystem then
 			CastCombo()		
 		end
@@ -448,6 +475,9 @@ function OnTick()
 		if Menu.Farmerr.FarmerrSystem then
 			if Menu.Farmerr.LastHit then
 				LastHitLikeBoss()
+			end
+			if Menu.Farmerr.FarmSettings.Gota then
+				CastQTear()
 			end
 		end
 		if Menu.General.LevelSkill then
@@ -631,7 +661,7 @@ function OnDraw()
 		
 		if Alvo.target ~= nil then
 			DrawText3D(CalcularDanoInimigo(), myHero.x +30, myHero.y, myHero.z, 16, ARGB(255,255,255,000))
-			--DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000))
+			DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000))
 		end
 	end
 	
@@ -640,10 +670,10 @@ function OnDraw()
 		local DamageArcane1 = myHero.ap * 0.05
 		local DamageButcher1 = 2
 		local MasteryDamage1 = 0
-			if Menu.Farmerr.ArcaneON then
+			if Menu.Farmerr.FarmSettings.ArcaneON then
 				MasteryDamage1 = MasteryDamage1 + DamageArcane1
 			end
-			if Menu.Farmerr.ButcherON then
+			if Menu.Farmerr.FarmSettings.ButcherON then
 				MasteryDamage1 = MasteryDamage1 + DamageButcher1
 			end
 			for i, Minion in pairs(MinionsInimigos.objects) do
@@ -740,30 +770,25 @@ function CalcularDanoInimigo()
 end		
 -- 0.03 from mastery Havoc
 function MeuDano()
-		--if not ((os.clock() + AtualizarDanoInimigo) > 0.5) then return end
+		if not ((os.clock() + AtualizarDanoInimigo) > 1) then return end
 		
-		if Alvo.target ~= nil then
-			local DanoQ = { 80 , 135 , 190 , 245 , 300 }
-			local DanoW = { 4 , 5 , 6 , 7 , 8 }
-			local DanoE = { 80 , 140 , 200 , 260 , 320 }
-			local DanoR = {	250 , 400 , 550 }			
-			local DanoTotal, QDano, WDano, EDano, RDano, DFGDano = 0, 0, 0, 0, 0
+		if Alvo.target ~= nil then			
 				if myHero:GetSpellData(_Q).level ~= 0 then
-					QDano = myHero:CalcMagicDamage(AlvoDano, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8)* 0.03))
+					QDano = myHero:CalcMagicDamage(Alvo.target, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8)* 0.03))
 				end
 				if myHero:GetSpellData(_W).level ~= 0 then
-					WDano = myHero:CalcMagicDamage(AlvoDano, ((((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * Alvo.target.maxHealth) + (((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * Alvo.target.maxHealth)* 0.03) * 5)
+					WDano = myHero:CalcMagicDamage(Alvo.target, ((((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * Alvo.target.maxHealth) + (((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * Alvo.target.maxHealth)* 0.03) * 5)
 				end
 				if myHero:GetSpellData(_E).level ~= 0 then
-					EDano = myHero:CalcMagicDamage(AlvoDano, (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) + (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) * 0.03)
+					EDano = myHero:CalcMagicDamage(Alvo.target, (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) + (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) * 0.03)
 				end
 				if myHero:GetSpellData(_R).level ~= 0 then
-					RDano = myHero:CalcMagicDamage(AlvoDano, (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) + (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) * 0.03)
+					RDano = myHero:CalcMagicDamage(Alvo.target, (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) + (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) * 0.03)
 				end				
 				DanoTotal = QDano + WDano + EDano + RDano				
 				DanoTotal = DanoTotal
 				PorcentagemQueVouFicar = ((Alvo.target.maxHealth - DanoTotal)/Alvo.target.maxHealth*100)
-				--AtualizarDanoInimigo = os.clock()
+				AtualizarDanoInimigo = os.clock()
 				return "Damage to Enemy: "..Arredondar(DanoTotal, 1).." : Stay("..Arredondar(PorcentagemQueVouFicar).."%)"
 		end			
 end	
