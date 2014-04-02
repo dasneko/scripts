@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.726"
+local version = "0.727"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -110,6 +110,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("LastHit", "Last Hit Key (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 		Menu.Farmerr:addParam("LastHitDelay", "Last Hit Delay", SCRIPT_PARAM_SLICE, 1000, -500, 3000, 1)
+		Menu.Farmerr:addParam("JungleKey", "Jungle Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 		
 		Menu.Farmerr:addSubMenu("More Farm Settings", "FarmSettings")
 			Menu.Farmerr.FarmSettings:addParam("Gota", "Use Tear of The Goddess mode", SCRIPT_PARAM_ONOFF, true)
@@ -181,6 +182,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 	Menu:addTS(Alvo)
 	enemyHeroes = GetEnemyHeroes()
 	MinionsInimigos = minionManager(MINION_ENEMY, 1200, myHero, MINION_SORT_HEALTH_ASC)
+	JungleMinions = minionManager(MINION_JUNGLE, 900, myHero, MINION_SORT_MAXHEALTH_DEC)
 	wayPointManager = WayPointManager()
 	if heroManager.iCount < 10 then -- borrowed from Sidas Auto Carry, modified to 3v3
 	   			PrintChat(" >> Too few champions to arrange priority")
@@ -211,28 +213,7 @@ function CastQ()
 	end
 end
 
-function CastQTear()
-	if GetInventorySlotItem(3070) ~= nil then		
-	for i, Minion in pairs(MinionsInimigos.objects) do
-		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharCalloftheVoid.range) and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
-			CastSpell(AlZaharCalloftheVoid.spellSlot, Minion.x, Minion.z)
-		end
-	end
-end
-end
-
-function CastWTear()
-	if GetInventorySlotItem(3070) ~= nil then		
-	for i, Minion in pairs(MinionsInimigos.objects) do
-		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharNullZone.range) and myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
-			CastSpell(AlZaharNullZone.spellSlot, Minion.x, Minion.z)
-		end
-	end
-end
-end
-
-function CastW()
-	
+function CastW()	
 	if Alvo.target ~= nil and not UsandoR and GetDistance(Alvo.target) <= AlZaharNullZone.range then
 		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
 			if Menu.General.UseVPred then
@@ -279,9 +260,51 @@ function CastR()
 	end
 end
 
+function CastQTear()
+	if GetInventorySlotItem(3070) ~= nil then		
+	for i, Minion in pairs(MinionsInimigos.objects) do
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharCalloftheVoid.range) and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
+			CastSpell(AlZaharCalloftheVoid.spellSlot, Minion.x, Minion.z)
+		end
+	end
+end
+end
+
+function CastWTear()
+	if GetInventorySlotItem(3070) ~= nil then		
+	for i, Minion in pairs(MinionsInimigos.objects) do
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharNullZone.range) and myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
+			CastSpell(AlZaharNullZone.spellSlot, Minion.x, Minion.z)
+		end
+	end
+end
+end
+
+function JungleFarm()
+	JungleMinions:update()	
+		if Menu.Farmerr.JungleKey then
+			for i, MinionJ in pairs(JungleMinions.objects) do
+				if MinionJ ~= nil then
+					if CountEnemyHeroInRange(AlZaharCalloftheVoid.range, myHero) == 0 then
+						_OrbWalk(MinionJ)
+						if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
+							CastSpell(AlZaharCalloftheVoid.spellSlot, MinionJ.x, MinionJ.z)
+						end
+						if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
+							CastSpell(AlZaharNullZone.spellSlot, MinionJ.x, MinionJ.z)
+						end
+						if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then
+							CastSpell(AlZaharMaleficVision.spellSlot, MinionJ)
+						end
+					end
+				end
+			end
+		end
+end
+
 function CastCombo()	
 	if Menu.Combo.ComboKey then	
-		if not UsandoR and Menu.General.UseOrb then _OrbWalk() end		
+		if not UsandoR and Menu.General.UseOrb then _OrbWalk(Alvo.target) end		
 		if Menu.Items.ItemsSystem then			
 			if Menu.Combo.UseIgnite then CastIgnite() end		
 			if Menu.Items.UseDfg then CastDFG() end
@@ -480,6 +503,9 @@ function OnTick()
 				CastQTear()
 				CastWTear()
 			end
+			if Menu.Farmerr.JungleKey then
+				JungleFarm()
+			end
 		end
 		if Menu.General.LevelSkill then
 			AutoSkillLevel()
@@ -581,11 +607,11 @@ function OnProcessSpell(object, spell)
 	
 end
 
-function _OrbWalk()
+function _OrbWalk(MeuAlvo)
 	
-	if Alvo.target ~= nil and GetDistance(Alvo.target) <= myTrueRange and ValidTarget(Alvo.target) then		
+	if MeuAlvo ~= nil and GetDistance(MeuAlvo) <= myTrueRange and ValidTarget(MeuAlvo) then		
 		if timeToShoot() then
-			myHero:Attack(Alvo.target)
+			myHero:Attack(MeuAlvo)
 		elseif heroCanMove()  then
 			moveToCursor()
 		end
