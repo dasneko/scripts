@@ -478,6 +478,7 @@ function OnTick()
 			end
 			if Menu.Farmerr.FarmSettings.Gota then
 				CastQTear()
+				CastWTear()
 			end
 		end
 		if Menu.General.LevelSkill then
