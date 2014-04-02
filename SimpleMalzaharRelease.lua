@@ -214,7 +214,7 @@ end
 function CastQTear()
 	if GetInventorySlotItem(3070) ~= nil then		
 	for i, Minion in pairs(MinionsInimigos.objects) do
-		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharCalloftheVoid.range) then
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharCalloftheVoid.range) and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
 			CastSpell(AlZaharCalloftheVoid.spellSlot, Minion.x, Minion.z)
 		end
 	end
@@ -224,7 +224,7 @@ end
 function CastWTear()
 	if GetInventorySlotItem(3070) ~= nil then		
 	for i, Minion in pairs(MinionsInimigos.objects) do
-		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharNullZone.range) then
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharNullZone.range) and myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
 			CastSpell(AlZaharNullZone.spellSlot, Minion.x, Minion.z)
 		end
 	end
