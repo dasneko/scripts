@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.733"
+local version = "0.734"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -107,6 +107,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Harass:addParam("UseE", "Use "..myHero:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")		
 		Menu.Harass:addParam("ParaComManaBaixa", "Stop Cast if mana below %", SCRIPT_PARAM_SLICE, 40, 10, 80, 0) --OK
+		Menu.Harass:addParam("StopTurret", "Do not harass under turret", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
 				--Menu.Harass:addParam("KSWithQ", "Try KS with Q", SCRIPT_PARAM_ONOFF, true)
 	--[[FARM]]--
@@ -117,7 +118,10 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		--Menu.Farmerr:addParam("FarmESkill", "Auto E to Farm", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("LastHit", "Last Hit Key (experimental)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 		Menu.Farmerr:addParam("LastHitDelay", "Last Hit Delay", SCRIPT_PARAM_SLICE, 1000, -500, 3000, 1)
+		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Farmerr:addParam("JungleKey", "Jungle Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
+		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Farmerr:addParam("LaneClearKey", "Lane Clear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
 		
 		Menu.Farmerr:addSubMenu("More Farm Settings", "FarmSettings")
 			Menu.Farmerr.FarmSettings:addParam("Gota", "Use Tear of The Goddess mode", SCRIPT_PARAM_ONOFF, true)
@@ -210,9 +214,11 @@ function CastQ()
 		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
 			if Menu.General.UseVPred then
 			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(EncontrarAlvoQ(), (AlZaharCalloftheVoid.delay + 200)/1600, AlZaharCalloftheVoid.width, AlZaharCalloftheVoid.range, math.huge, myHero, false)   
-			--local Position, HitChance    = VPrediction:GetPredictedPos(AlvoQ, 0.6, math.huge, myHero, false)
-			--local CastPoint = Vector(Position) + 200*(Vector(Position) - Vector(myHero)):normalized()
+			
+			--local CastPoint = Vector(CastPosition) + (200*(Vector(CastPosition) - Vector(myHero))/1600):normalized()			
 				if HitChance >= 2 then
+					--PrintChat("Vector:"..tostring(CastPoint))
+					--PrintChat("VPrediction:"..tostring(CastPosition))
 					CastSpell(AlZaharCalloftheVoid.spellSlot, CastPosition.x, CastPosition.z)
 				end 				
 			elseif not Menu.General.UsePacket and not Menu.General.UseVPred then
@@ -312,6 +318,26 @@ function JungleFarm()
 		end
 end
 
+function LaneClear()
+	MinionsInimigos:update()
+	if Menu.Farmerr.LaneClearKey then
+		for i, MinionJ in pairs(MinionsInimigos.objects) do
+			if MinionJ ~= nil then
+				_OrbWalk(MinionJ.target)
+				if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
+					CastSpell(AlZaharCalloftheVoid.spellSlot, MinionJ.x, MinionJ.z)
+				end
+				if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
+					CastSpell(AlZaharNullZone.spellSlot, MinionJ.x, MinionJ.z)
+				end
+				if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then
+					CastSpell(AlZaharMaleficVision.spellSlot, MinionJ)
+				end
+			end
+		end
+	end
+end
+
 function CastCombo()
 	if Menu.Combo.ComboKey then	
 		if Menu.General.UseOrb then _OrbWalk(Alvo.target) end		
@@ -408,6 +434,7 @@ end
 
 function CastHarass()	
 		if usandoR then return end
+		if Menu.Harass.StopTurret and UnderTurret(myHero, true) then return end
 		if Menu.Harass.UseQ then CastQ() end
 		if Menu.Harass.UseW then CastW() end
 		if Menu.Harass.UseE then CastE() end	
@@ -576,6 +603,9 @@ function OnTick()
 			end
 			if Menu.Farmerr.FarmSettings.Steal then
 				RoubarJungle()
+			end
+			if Menu.Farmerr.LaneClearKey then
+				LaneClear()
 			end
 		end
 		if Menu.General.LevelSkill then
@@ -965,6 +995,7 @@ function LastHitLikeBoss()
 					if Healthh ~= nil and ValidTarget(Minion, 550) and Healthh <= getDmg("AD", Minion, myHero) + MasteryDamage1 and os.clock() > nexttick then						
 						myHero:Attack(Minion)
 						nexttick = os.clock() + GetLatency() / 2 + Menu.Farmerr.LastHitDelay
+						break
 					end
 				end
 			end
