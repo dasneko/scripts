@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.732"
+local version = "0.733"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -61,7 +61,6 @@ local TemVoid = false
 local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
 local Invulneraveis = { "PoppyDiplomaticImmunity", "UndyingRage", "JudicatorIntervention", "VladimirSanguinePool"}
-local SupportList = { }
 local DanoQ = { 80 , 135 , 190 , 245 , 300 }
 local DanoW = { 4 , 5 , 6 , 7 , 8 }
 local DanoE = { 80 , 140 , 200 , 260 , 320 }
@@ -223,6 +222,16 @@ function CastQ()
 	end
 end
 
+function CastQTear()
+	if GetInventorySlotItem(3070) ~= nil then		
+	for i, Minion in pairs(MinionsInimigos.objects) do
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharCalloftheVoid.range) and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
+			CastSpell(AlZaharCalloftheVoid.spellSlot, Minion.x, Minion.z)
+		end
+	end
+end
+end
+
 function CastW()	
 	if Alvo.target ~= nil and not UsandoR and GetDistance(Alvo.target) <= AlZaharNullZone.range then
 		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
@@ -242,6 +251,16 @@ function CastW()
 			end				
 		end
 	end
+end
+
+function CastWTear()
+	if GetInventorySlotItem(3070) ~= nil then		
+	for i, Minion in pairs(MinionsInimigos.objects) do
+		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharNullZone.range) and myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
+			CastSpell(AlZaharNullZone.spellSlot, Minion.x, Minion.z)
+		end
+	end
+end
 end
 
 function CastE()
@@ -270,26 +289,6 @@ function CastR()
 	end
 end
 
-
-function CastQTear()
-	if GetInventorySlotItem(3070) ~= nil then		
-	for i, Minion in pairs(MinionsInimigos.objects) do
-		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharCalloftheVoid.range) and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then
-			CastSpell(AlZaharCalloftheVoid.spellSlot, Minion.x, Minion.z)
-		end
-	end
-end
-end
-
-function CastWTear()
-	if GetInventorySlotItem(3070) ~= nil then		
-	for i, Minion in pairs(MinionsInimigos.objects) do
-		if Minion ~= nil and not Minion.dead and ValidTarget(Minion, AlZaharNullZone.range) and myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
-			CastSpell(AlZaharNullZone.spellSlot, Minion.x, Minion.z)
-		end
-	end
-end
-end
 
 function JungleFarm()
 	JungleMinions:update()	
@@ -328,7 +327,9 @@ function CastCombo()
 		if Menu.Combo.UseE then CastE() end			
 		if Menu.Combo.UseR then
 			if Menu.Combo.UseQ and Menu.Combo.UseW and Menu.Combo.UseE then			 
-				if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) ~= READY and myHero:CanUseSpell(AlZaharNullZone.spellSlot) ~= READY and myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) ~= READY then
+				if not myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) ~= READY and 
+					myHero:CanUseSpell(AlZaharNullZone.spellSlot) ~= READY and 
+					myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) ~= READY then
 					CastR()
 				end
 			end
@@ -362,7 +363,7 @@ function GetBestCombo()
 		for a, ListSpell in ipairs(spelllist) do							
 			TotalDamage = TotalDamage + getDmg(ListSpell, Alvo.target, myHero)				
 		end			
-		if Alvo.target.health >= TotalDamage then		 			
+		if Alvo.target.health <= TotalDamage then		 			
 			for b, ListCombo in ipairs(spelllist) do
 				--local SpellToCast = "_"..ListCombo	-- eg. _Q, _W, _E, _R			
 				if ListCombo == "Q" then
@@ -436,7 +437,8 @@ end
 function CastDFG()	
 		if Menu.Items.UseDfgR and not myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then return end
 		--if Alvo.target ~= nil and Menu.Items.UseDfgRrange and not GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then return end
-		if Alvo.target ~= nil then		
+		if Alvo.target ~= nil then	
+			if Menu.Items.UseDfgRrange and GetDistance(Alvo.target) > AlZaharNetherGrasp.range then return end	
 			if DFG.slot ~= nil and myHero:CanUseSpell(DFG.slot) == READY and not UsandoR then
 				if Menu.General.UsePacket then
 					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Alvo.target.networkID }):send()
