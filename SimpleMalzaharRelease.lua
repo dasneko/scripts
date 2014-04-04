@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.730"
+local version = "0.731"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -89,6 +89,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Combo:addParam("UseR", "Use "..myHero:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("UseIgnite", "Start with Ignite", SCRIPT_PARAM_ONOFF, true)
+		Menu.Combo:addParam("ComboLogic", "Use Combo Helper", SCRIPT_PARAM_ONOFF, true)
 		Menu.Combo:addSubMenu("Team Fight Settings", "Ultimate")
 			Menu.Combo.Ultimate:addParam("SuportSilence", "Always Try Silence Support", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.Ultimate:addParam("Qss", "Never Ultimate enemy with Qss", SCRIPT_PARAM_ONOFF, true)
@@ -269,6 +270,7 @@ function CastR()
 	end
 end
 
+
 function CastQTear()
 	if GetInventorySlotItem(3070) ~= nil then		
 	for i, Minion in pairs(MinionsInimigos.objects) do
@@ -311,13 +313,16 @@ function JungleFarm()
 		end
 end
 
-function CastCombo()	
+function CastCombo()
 	if Menu.Combo.ComboKey then	
-		if not UsandoR and Menu.General.UseOrb then _OrbWalk(Alvo.target) end		
+		if Menu.General.UseOrb then _OrbWalk(Alvo.target) end		
 		if Menu.Items.ItemsSystem then			
 			if Menu.Combo.UseIgnite then CastIgnite() end		
 			if Menu.Items.UseDfg then CastDFG() end
 		end
+		if Menu.Combo.ComboLogic and not GetBestCombo() then
+		--PrintChat("Normal Combo")	
+		
 		if Menu.Combo.UseQ then CastQ() end
 		if Menu.Combo.UseW then CastW() end
 		if Menu.Combo.UseE then CastE() end			
@@ -333,7 +338,7 @@ function CastCombo()
 				end
 			end
 			if Menu.Combo.UseW and not Menu.Combo.UseQ and not Menu.Combo.UseE then
-				if myHero:CanUseSpell(AlZaharNullZone.spellSlot) ~= READY then	CastR()	end
+				if myHero:CanUseSpell(AlZaharNullZone.spellSlot) ~= READY then CastR()	end
 			end
 			if Menu.Combo.UseE and not Menu.Combo.UseQ and not Menu.Combo.UseW then
 				if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) ~= READY then	CastR()	end
@@ -341,16 +346,50 @@ function CastCombo()
 			if Menu.Combo.UseQ and not Menu.Combo.UseW and not Menu.Combo.UseE then
 				if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) ~= READY then	CastR()	end
 			end
+		end
 		end	
 	end
 end
 
+function GetBestCombo()
+	local spelllist ={ }
+	if Alvo.target ~= nil then		
+		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then table.insert(spelllist, "Q") end
+		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then table.insert(spelllist, "W") end
+		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then table.insert(spelllist, "E") end
+		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then table.insert(spelllist, "R") end		
+		local TotalDamage = 0		
+		for a, ListSpell in ipairs(spelllist) do							
+			TotalDamage = TotalDamage + getDmg(ListSpell, Alvo.target, myHero)				
+		end			
+		if Alvo.target.health >= TotalDamage then		 			
+			for b, ListCombo in ipairs(spelllist) do
+				--local SpellToCast = "_"..ListCombo	-- eg. _Q, _W, _E, _R			
+				if ListCombo == "Q" then
+					CastQ()
+				end
+				if ListCombo == "W" then
+					CastW()
+				end
+				if ListCombo == "E" then
+					CastE()
+				end
+				if ListCombo == "R" then
+					CastR()
+				end
+			end	
+		else 
+			return false
+		end
+	end
+end
+
+
 function CastHarass()	
-	
+		if usandoR then return end
 		if Menu.Harass.UseQ then CastQ() end
 		if Menu.Harass.UseW then CastW() end
-		if Menu.Harass.UseE then CastE() end
-	
+		if Menu.Harass.UseE then CastE() end	
 end
 --[[SKILLS END]]--
 
@@ -383,13 +422,7 @@ function CastDFG()
 					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Alvo.target.networkID }):send()
 				else
 					CastSpell(DFG.slot, Alvo.target)
-				end
-			else
-				if Menu.General.UsePacket then
-					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Alvo.target.networkID }):send()
-				else
-					CastSpell(DFG.slot, Alvo.target)
-				end
+				end			
 			end
 		end
 end
@@ -476,15 +509,18 @@ function AtualizaItems()
 	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
 	Manapotion.slot = GetInventorySlotItem(Manapotion.id)	
 	MinionsInimigos:update()
-	Alvo:update()	
+	Alvo:update()
+	if Alvo.target == nil then
+	 Alvo:update()
+	end	
 end
 
 --[[SPELLS END]]--
 function OnTick()
 	if Menu.LigarScript and not myHero.dead then				
 		AtualizaItems()	
-		if Menu.General.UseOrb then	Menu.General.MoveToMouse = false end
-		if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
+		--if Menu.General.UseOrb then	Menu.General.MoveToMouse = false end
+		--if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
 		if Menu.Paint.EnemyDamage then MeuDano() end			
 		if Menu.Combo.ComboSystem then
 			CastCombo()		
@@ -505,7 +541,7 @@ function OnTick()
 			if Menu.Items.UseZhonia then CastZhonia() end			
 			if Menu.Items.UseSeraph then CastSeraph() end
 		end
-		if Menu.Farmerr.FarmerrSystem then
+		if Menu.Farmerr.FarmerrSystem and not UsandoR then
 			if Menu.Farmerr.LastHit then
 				LastHitLikeBoss()
 			end
@@ -529,8 +565,10 @@ end
 --[[ULTIMATE/BUFFS CONTROL]]--
 function OnGainBuff(unit, buff)
 	if unit.isMe then
+		--rintChat(tostring(buff.name))
 		if buff.name:lower():find("alzaharnethergraspsound") then
 			UsandoR = true
+			--PrintChat("GAIN BUFF: Usando Ultimate")
 		end
 		if buff.name:lower():find("regenerationpotion") then 
 			UsandoHP = true
@@ -549,8 +587,10 @@ end
 
 function OnLoseBuff(unit, buff)
 	if unit.isMe then
+		--PrintChat(tostring(buff.name))
 		if buff.name:lower():find("alzaharnethergraspsound") then
 			UsandoR = false
+			--PrintChat("LOSE BUFF: NAO Usando Ultimate")
 		end
 		if buff.name:lower():find("regenerationpotion") then 
 			UsandoHP = false
@@ -569,6 +609,20 @@ function OnLoseBuff(unit, buff)
 		end	
 	end	
 end
+--[[
+function OnCreateObj(obj)	
+	if obj.name == "AlzaharNetherGrasp_tar.troy" then
+		UsandoR = true
+	end
+end
+
+function OnDeleteObj(obj)
+	if obj.name == "AlzaharNetherGrasp_tar.troy" then
+		UsandoR = false
+	end
+end
+]]
+
 --[[END]]--
 
 --[[MY TARGET SELECTOR]]--
@@ -611,18 +665,22 @@ function OnProcessSpell(object, spell)
 			lastWindUpTime = spell.windUpTime * 1000
 			lastAttackCD = spell.animationTime * 1000
 		end 
+		
 		if spell.name:find("AlZaharNetherGrasp") then
 			UsandoR = true
+			--PrintChat("PROCESS SPEL: Usando Ultimate = true")
 		else
-			UsandoR = false
+			UsandoR =  false
+			--PrintChat("PROCESS SPELL: Usando Ultimate = false")
 		end
+		
 	end
 	
 end
 
-function _OrbWalk(MeuAlvo)
-	
-	if MeuAlvo ~= nil and GetDistance(MeuAlvo) <= myTrueRange and ValidTarget(MeuAlvo) then		
+function _OrbWalk(MeuAlvo)	
+	if UsandoR then return end
+	if MeuAlvo ~= nil and GetDistance(MeuAlvo) <= myTrueRange then		
 		if timeToShoot() then
 			myHero:Attack(MeuAlvo)
 		elseif heroCanMove()  then
@@ -643,7 +701,7 @@ end
  
 function moveToCursor()
 	if GetDistance(mousePos) > 1 or lastAnimation == "Idle1" then
-		local moveToPos = myHero + (Vector(mousePos) - myHero):normalized() * 250
+		local moveToPos = myHero + (Vector(mousePos) - myHero):normalized() * 300
 		myHero:MoveTo(moveToPos.x, moveToPos.z)
 	end 
 end
@@ -781,7 +839,7 @@ end
 --[[MISC]]--
 
 function TemImunidade(enemy)
-	if not Alvo.target ~= nil then return end
+	if not enemy ~= nil then return end
 	if Menu.Combo.Ultimate.Untargetable then
 		for i, Imunidades in ipairs(Invulneraveis) do
 		if TargetHaveBuff(Imunidades[i], enemy) then
@@ -922,7 +980,7 @@ end
 
 function RoubarJungle()	
     for i, MinionJ in pairs(StealJungle) do
-        if MinionJ.obj ~= nil and MinionJ.obj.valid and not MinionJ.obj.dead and GetDistance(MinionJ.obj) <= AlZaharCalloftheVoid.range and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY and MinionJ.obj.health < getDmg("Q",MinionJ.obj,myHero) then
+        if not UsandoR and MinionJ.obj ~= nil and MinionJ.obj.valid and not MinionJ.obj.dead and GetDistance(MinionJ.obj) <= AlZaharCalloftheVoid.range and myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY and MinionJ.obj.health < getDmg("Q",MinionJ.obj,myHero) then
             CastSpell(_Q, MinionJ.obj.x, MinionJ.obj.z)
         end
     end
