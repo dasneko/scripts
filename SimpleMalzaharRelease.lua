@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.731"
+local version = "0.732"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -60,7 +60,7 @@ local UsandoRecall =  false
 local TemVoid = false
 local AtualizarDanoInimigo = 0
 local SequenciaHabilidades1 = {1,3,3,2,3,4,3,2,3,2,4,2,2,1,1,4,1,1} 
-local Invulneraveis = { PoppyDiplomaticImmunity, UndyingRage, JudicatorIntervention, VladimirSanguinePool}
+local Invulneraveis = { "PoppyDiplomaticImmunity", "UndyingRage", "JudicatorIntervention", "VladimirSanguinePool"}
 local SupportList = { }
 local DanoQ = { 80 , 135 , 190 , 245 , 300 }
 local DanoW = { 4 , 5 , 6 , 7 , 8 }
@@ -156,8 +156,7 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Paint:addParam("PaintW", "Draw "..myHero:GetSpellData(_W).name.." (W) Range", SCRIPT_PARAM_ONOFF, false) --OK
 		Menu.Paint:addParam("PaintE", "Draw "..myHero:GetSpellData(_E).name.." (E) Range", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Paint:addParam("PaintR", "Draw "..myHero:GetSpellData(_R).name.." (R) Range", SCRIPT_PARAM_ONOFF, false) --OK
-		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
-		Menu.Paint:addParam("EnemyDamage", "Current Enemy Damage", SCRIPT_PARAM_ONOFF, true) --OK
+		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")		
 		Menu.Paint:addParam("PaintAA", "Draw Auto Attack Range", SCRIPT_PARAM_ONOFF, false) --OK
 		Menu.Paint:addParam("PaintMinion", "Minion Last Hit Indicator", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Paint:addParam("PaintTurrent", "Turret Last Hit Indicator", SCRIPT_PARAM_ONOFF, true) --OK
@@ -168,7 +167,8 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Paint:addParam("PredInimigo", "Enemy Moviment Prediction", SCRIPT_PARAM_ONOFF, true) --OK
 		Menu.Paint:addParam("PaintTarget", "Target Circle Indicator", SCRIPT_PARAM_ONOFF, true) --OK
-		Menu.Paint:addParam("PaintTarget2", "Target Text Indicator", SCRIPT_PARAM_ONOFF, false) 
+		Menu.Paint:addParam("EnemyDamage", "Current Damage to Target", SCRIPT_PARAM_ONOFF, true) --OK
+		
 	--[[MISC]]--	
 	Menu:addSubMenu("General System", "General")		
 		Menu.General:addParam("LevelSkill", "Auto Level Skills R-E-W-Q", SCRIPT_PARAM_ONOFF, true) --OK	
@@ -384,6 +384,26 @@ function GetBestCombo()
 	end
 end
 
+function GetBestComboText()
+	local spelllist ={ }
+	if Alvo.target ~= nil then		
+		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then table.insert(spelllist, "Q") end
+		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then table.insert(spelllist, "W") end
+		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then table.insert(spelllist, "E") end
+		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then table.insert(spelllist, "R") end		
+		local TotalDamage = 0		
+		for a, ListSpell in ipairs(spelllist) do							
+			TotalDamage = TotalDamage + getDmg(ListSpell, Alvo.target, myHero)				
+		end			
+		if Alvo.target.health >= TotalDamage then		 			
+			--table.concat(spelllist, "+")
+			
+			return "Not killable"
+		else
+			return "Killable"
+		end
+	end
+end
 
 function CastHarass()	
 		if usandoR then return end
@@ -521,7 +541,7 @@ function OnTick()
 		AtualizaItems()	
 		--if Menu.General.UseOrb then	Menu.General.MoveToMouse = false end
 		--if Menu.General.MoveToMouse then Menu.General.UseOrb = false end
-		if Menu.Paint.EnemyDamage then MeuDano() end			
+		--if Menu.Paint.EnemyDamage then MeuDano() end			
 		if Menu.Combo.ComboSystem then
 			CastCombo()		
 		end
@@ -701,7 +721,7 @@ end
  
 function moveToCursor()
 	if GetDistance(mousePos) > 1 or lastAnimation == "Idle1" then
-		local moveToPos = myHero + (Vector(mousePos) - myHero):normalized() * 300
+		local moveToPos = myHero + (Vector(mousePos) - myHero):normalized() * 260
 		myHero:MoveTo(moveToPos.x, moveToPos.z)
 	end 
 end
@@ -755,11 +775,10 @@ function OnDraw()
 		DrawCircle2(myHero.x, myHero.y, myHero.z, 550, ARGB(255,255,255,255))
 	end
 	
-	if Menu.Paint.EnemyDamage then		
-		
-		if Alvo.target ~= nil then
-			DrawText3D(CalcularDanoInimigo(), myHero.x +30, myHero.y, myHero.z, 16, ARGB(255,255,255,000))
-			DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000))
+	if Menu.Paint.EnemyDamage then			
+		if Alvo.target ~= nil then			
+			DrawText3D(tostring(GetBestComboText()), Alvo.target.x, Alvo.target.y, Alvo.target.z, 16, ARGB(255,255,255,000), true)
+			DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000), true)
 		end
 	end
 	
@@ -808,9 +827,9 @@ function OnDraw()
 	if Menu.Paint.PaintTarget then
 		
 		if Alvo.target  ~= nil then			 	 
-			for i=0, 4 do
-				 DrawCircle2(Alvo.target.x, Alvo.target.y, Alvo.target.z, 60 + i*1.5, ARGB(255, 255, 000, 255))	
-			end
+			--for i=0, 4 do -- 60 + i*1.5
+				 DrawCircle2(Alvo.target.x, Alvo.target.y, Alvo.target.z, VP:GetHitBox(Alvo.target), ARGB(255, 255, 000, 255))	
+			--end
 		end 
 	end
 	
@@ -842,7 +861,7 @@ function TemImunidade(enemy)
 	if not enemy ~= nil then return end
 	if Menu.Combo.Ultimate.Untargetable then
 		for i, Imunidades in ipairs(Invulneraveis) do
-		if TargetHaveBuff(Imunidades[i], enemy) then
+		if TargetHaveBuff(Imunidades, enemy) then
 			return true
 		else
 			return false
@@ -850,25 +869,37 @@ function TemImunidade(enemy)
 		end
 	end
 end
+--[[
 
-function CalcularDanoInimigo()
-	
+function CalcularDanoInimigo()	
 	if Alvo.target ~= nil then	
+		local spellList = {}
+		if getDmg("AD", myHero, Alvo.target) ~= 0 then table.insert(spellList, getDmg("AD", myHero, Alvo.target)) end
+		if getDmg("Q", myHero, Alvo.target) ~= 0 then table.insert(spellList, getDmg("Q", myHero, Alvo.target)) end
+		if getDmg("W", myHero, Alvo.target) ~= 0 then table.insert(spellList, getDmg("W", myHero, Alvo.target)) end
+		if getDmg("E", myHero, Alvo.target) ~= 0 then table.insert(spellList, getDmg("E", myHero, Alvo.target)) end
+		if getDmg("R", myHero, Alvo.target) ~= 0 then table.insert(spellList, getDmg("R", myHero, Alvo.target)) end
+		--[[
 		adDmgE = (getDmg("AD", myHero, Alvo.target) or 0)		
 		qDmgE = (getDmg("Q", myHero, Alvo.target) or 0)
 		wDmgE =  (getDmg("W", myHero, Alvo.target) or 0)
 		eDmgE = (getDmg("E", myHero, Alvo.target) or 0)
 		rDmgE = (getDmg("R", myHero, Alvo.target) or 0)
-		local DanoInimigo = qDmgE + wDmgE + eDmgE + rDmgE + adDmgE
-		local PorcentagemQueVouFicar = ((((myHero.maxHealth - DanoInimigo)/myHero.maxHealth)*100) or 0)			
-		return "Total Enemy Damage:"..Arredondar(DanoInimigo).." / Stay: "..Arredondar(PorcentagemQueVouFicar).."%:My HP:"..Arredondar(myHero.health).."/"..Arredondar(myHero.maxHealth)
-	else
-		return "No enemy/My HP:"..Arredondar(myHero.health).."/"..Arredondar(myHero.maxHealth)
+		
+		local DanoInimigo = 0		
+		for a, ListSpellDamage in ipairs(spellList) do
+		 DanoInimigo = DanoInimigo + ListSpellDamage
+		end		
+		if DanoInimigo ~= 0 then		
+			local PorcentagemQueVouFicar = (((myHero.maxHealth - DanoInimigo)/myHero.maxHealth)*100)	
+			return "Total Enemy Damage:"..Arredondar(DanoInimigo).." / Stay: "..Arredondar(PorcentagemQueVouFicar).."%:My HP:"..Arredondar(myHero.health).."/"..Arredondar(myHero.maxHealth)
+		end
 	end
-end		
+end	
+]]	
 -- 0.03 from mastery Havoc
 function MeuDano()
-		if not ((os.clock() + AtualizarDanoInimigo) > 1) then return end
+		--if not ((os.clock() - AtualizarDanoInimigo) > 1) then return end
 		
 		if Alvo.target ~= nil then			
 				if myHero:GetSpellData(_Q).level ~= 0 then
@@ -886,7 +917,7 @@ function MeuDano()
 				DanoTotal = QDano + WDano + EDano + RDano				
 				DanoTotal = DanoTotal
 				PorcentagemQueVouFicar = ((Alvo.target.maxHealth - DanoTotal)/Alvo.target.maxHealth*100)
-				AtualizarDanoInimigo = os.clock()
+				--AtualizarDanoInimigo = os.clock()
 				return "Damage to Enemy: "..Arredondar(DanoTotal, 1).." : Stay("..Arredondar(PorcentagemQueVouFicar).."%)"
 		end			
 end	
