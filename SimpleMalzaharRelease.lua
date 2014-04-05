@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.734"
+local version = "0.735"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -53,6 +53,8 @@ local myTrueRange = 0
 --[[MISC]]--
 local UsandoR = false
 local MeuAlvo = nil
+local MeuAlvoSelecionado = false
+local EsteAlvo = nil
 local UsandoHP = false
 local UsandoMana = false
 local RecebeuCC = false
@@ -239,10 +241,10 @@ end
 end
 
 function CastW()	
-	if Alvo.target ~= nil and not UsandoR and GetDistance(Alvo.target) <= AlZaharNullZone.range then
+	if MeuAlvo ~= nil and not UsandoR and GetDistance(MeuAlvo) <= AlZaharNullZone.range then
 		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then
 			if Menu.General.UseVPred then
-				local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Alvo.target, AlZaharNullZone.delay, AlZaharNullZone.width, AlZaharNullZone.range, math.huge, myHero) 
+				local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(MeuAlvo, AlZaharNullZone.delay, AlZaharNullZone.width, AlZaharNullZone.range, math.huge, myHero) 
 					if CountEnemyHeroInRange(AlZaharNullZone.range, myHero) >= 3 then
 						if MainTargetHitChance >= 1 then
 							CastSpell(AlZaharNullZone.spellSlot, AOECastPosition.x , AOECastPosition.z)
@@ -253,7 +255,7 @@ function CastW()
 							CastSpell(AlZaharNullZone.spellSlot, AOECastPosition.x , AOECastPosition.z)
 						end
 					end
-			else CastSpell(AlZaharNullZone.spellSlot, Alvo.target.x, Alvo.target.z)
+			else CastSpell(AlZaharNullZone.spellSlot, MeuAlvo.x, MeuAlvo.z)
 			end				
 		end
 	end
@@ -271,25 +273,25 @@ end
 
 function CastE()
 	
-	if Alvo.target ~= nil and not UsandoR and GetDistance(Alvo.target) <= AlZaharMaleficVision.range then
+	if MeuAlvo ~= nil and not UsandoR and GetDistance(MeuAlvo) <= AlZaharMaleficVision.range then
 		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then
 			if Menu.General.UsePacket then
-				Packet('S_CAST', { spellId = AlZaharMaleficVision.spellSlot, targetNetworkId = Alvo.target.networkID }):send()				
+				Packet('S_CAST', { spellId = AlZaharMaleficVision.spellSlot, targetNetworkId = MeuAlvo.networkID }):send()				
 			else
-				CastSpell(AlZaharMaleficVision.spellSlot, Alvo.target)				
+				CastSpell(AlZaharMaleficVision.spellSlot, MeuAlvo)				
 			end
 		end
 	end
 end
 
 function CastR()	
-	if TemImunidade(Alvo.target) or TemQss() then return end	
-	if Alvo.target ~= nil and GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then
+	if TemImunidade(MeuAlvo) or TemQss() then return end	
+	if MeuAlvo ~= nil and GetDistance(MeuAlvo) <= AlZaharNetherGrasp.range then
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then
 			if Menu.General.UsePacket then
-				Packet('S_CAST', { spellId = AlZaharNetherGrasp.spellSlot, targetNetworkId = Alvo.target.networkID }):send()
+				Packet('S_CAST', { spellId = AlZaharNetherGrasp.spellSlot, targetNetworkId = MeuAlvo.networkID }):send()
 			else
-				CastSpell(AlZaharMaleficVision.spellSlot, Alvo.target)
+				CastSpell(AlZaharMaleficVision.spellSlot, MeuAlvo)
 			end		
 		end
 	end
@@ -340,7 +342,7 @@ end
 
 function CastCombo()
 	if Menu.Combo.ComboKey then	
-		if Menu.General.UseOrb then _OrbWalk(Alvo.target) end		
+		if Menu.General.UseOrb then _OrbWalk(MeuAlvo) end		
 		if Menu.Items.ItemsSystem then			
 			if Menu.Combo.UseIgnite then CastIgnite() end		
 			if Menu.Items.UseDfg then CastDFG() end
@@ -380,16 +382,16 @@ end
 
 function GetBestCombo()
 	local spelllist ={ }
-	if Alvo.target ~= nil then		
+	if MeuAlvo ~= nil then		
 		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then table.insert(spelllist, "Q") end
 		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then table.insert(spelllist, "W") end
 		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then table.insert(spelllist, "E") end
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then table.insert(spelllist, "R") end		
 		local TotalDamage = 0		
 		for a, ListSpell in ipairs(spelllist) do							
-			TotalDamage = TotalDamage + getDmg(ListSpell, Alvo.target, myHero)				
+			TotalDamage = TotalDamage + getDmg(ListSpell, MeuAlvo, myHero)				
 		end			
-		if Alvo.target.health <= TotalDamage then		 			
+		if MeuAlvo.health <= TotalDamage then		 			
 			for b, ListCombo in ipairs(spelllist) do
 				--local SpellToCast = "_"..ListCombo	-- eg. _Q, _W, _E, _R			
 				if ListCombo == "Q" then
@@ -413,16 +415,16 @@ end
 
 function GetBestComboText()
 	local spelllist ={ }
-	if Alvo.target ~= nil then		
+	if MeuAlvo ~= nil then		
 		if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) == READY then table.insert(spelllist, "Q") end
 		if myHero:CanUseSpell(AlZaharNullZone.spellSlot) == READY then table.insert(spelllist, "W") end
 		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then table.insert(spelllist, "E") end
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then table.insert(spelllist, "R") end		
 		local TotalDamage = 0		
 		for a, ListSpell in ipairs(spelllist) do							
-			TotalDamage = TotalDamage + getDmg(ListSpell, Alvo.target, myHero)				
+			TotalDamage = TotalDamage + getDmg(ListSpell, MeuAlvo, myHero)				
 		end			
-		if Alvo.target.health >= TotalDamage then		 			
+		if MeuAlvo.health >= TotalDamage then		 			
 			--table.concat(spelllist, "+")
 			
 			return "Not killable"
@@ -443,19 +445,19 @@ end
 
 --[[SPELLS]]--
 function CastIgnite()	
-	if IgniteSpell.iSlot ~= nil and myHero:CanUseSpell(IgniteSpell.iSlot) == READY and Alvo.target ~= nil then	
-		if Menu.Items.AntiDoubleIgnite and TargetHaveBuff("SummonerDot", Alvo.target) then return end
-		if Menu.Items.AntiDoubleIgnite and not TargetHaveBuff("SummonerDot", Alvo.target) then
+	if IgniteSpell.iSlot ~= nil and myHero:CanUseSpell(IgniteSpell.iSlot) == READY and MeuAlvo ~= nil then	
+		if Menu.Items.AntiDoubleIgnite and TargetHaveBuff("SummonerDot", MeuAlvo) then return end
+		if Menu.Items.AntiDoubleIgnite and not TargetHaveBuff("SummonerDot", MeuAlvo) then
 			if Menu.General.UsePacket then
-				Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = Alvo.target.networkID }):send()
+				Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = MeuAlvo.networkID }):send()
 			else
-				CastSpell(IgniteSpell.iSlot, Alvo.target)
+				CastSpell(IgniteSpell.iSlot, MeuAlvo)
 			end
 		else
 			if Menu.General.UsePacket then
-				Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = Alvo.target.networkID }):send()
+				Packet('S_CAST', { spellId = IgniteSpell.iSlot, targetNetworkId = MeuAlvo.networkID }):send()
 			else
-				CastSpell(IgniteSpell.iSlot, Alvo.target)
+				CastSpell(IgniteSpell.iSlot, MeuAlvo)
 			end
 		end
 	end
@@ -464,13 +466,13 @@ end
 function CastDFG()	
 		if Menu.Items.UseDfgR and not myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then return end
 		--if Alvo.target ~= nil and Menu.Items.UseDfgRrange and not GetDistance(Alvo.target) <= AlZaharNetherGrasp.range then return end
-		if Alvo.target ~= nil then	
-			if Menu.Items.UseDfgRrange and GetDistance(Alvo.target) > AlZaharNetherGrasp.range then return end	
+		if MeuAlvo ~= nil then	
+			if Menu.Items.UseDfgRrange and GetDistance(MeuAlvo) > AlZaharNetherGrasp.range then return end	
 			if DFG.slot ~= nil and myHero:CanUseSpell(DFG.slot) == READY and not UsandoR then
 				if Menu.General.UsePacket then
-					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = Alvo.target.networkID }):send()
+					Packet('S_CAST', { spellId = DFG.slot, targetNetworkId = MeuAlvo.networkID }):send()
 				else
-					CastSpell(DFG.slot, Alvo.target)
+					CastSpell(DFG.slot, MeuAlvo)
 				end			
 			end
 		end
@@ -562,6 +564,7 @@ function AtualizaItems()
 	if Alvo.target == nil then
 	 Alvo:update()
 	end	
+	if MeuAlvoSelecionado == false then MeuAlvo = Alvo.target else MeuAlvo = EsteAlvo end	
 end
 
 --[[SPELLS END]]--
@@ -613,6 +616,28 @@ function OnTick()
 		end
 	end
 end
+
+--[[target]]
+function OnWndMsg(Msg, Key)
+	if Msg == WM_LBUTTONDOWN then		
+		Alvo:update()
+		for i, Alvos_ in ipairs(GetEnemyHeroes()) do
+			if ValidTarget(Alvos_) and GetDistance(Alvos_) <= AlZaharCalloftheVoid.range + 200 then
+				EsteAlvo = Alvos_
+				PrintChat("<font color=\"#FF0000\">Target selected:"..EsteAlvo.charName.."</font>")
+				MeuAlvoSelecionado = true
+				
+			end
+		end
+	else
+		if EsteAlvo == nil then
+			EsteAlvo = Alvo.target	
+			MeuAlvoSelecionado = false	
+				
+		end
+	end
+end
+
 
 --[[ULTIMATE/BUFFS CONTROL]]--
 function OnGainBuff(unit, buff)
@@ -808,8 +833,8 @@ function OnDraw()
 	end
 	
 	if Menu.Paint.EnemyDamage then			
-		if Alvo.target ~= nil then			
-			DrawText3D(tostring(GetBestComboText()), Alvo.target.x, Alvo.target.y, Alvo.target.z, 16, ARGB(255,255,255,000), true)
+		if MeuAlvo ~= nil then			
+			DrawText3D(tostring(GetBestComboText()), MeuAlvo.x, MeuAlvo.y, MeuAlvo.z, 16, ARGB(255,255,255,000), true)
 			DrawText3D(MeuDano(), myHero.x, myHero.y + 100, myHero.z, 16, ARGB(255,255,000,000), true)
 		end
 	end
@@ -858,9 +883,9 @@ function OnDraw()
 	
 	if Menu.Paint.PaintTarget then
 		
-		if Alvo.target  ~= nil then			 	 
+		if MeuAlvo  ~= nil then			 	 
 			--for i=0, 4 do -- 60 + i*1.5
-				 DrawCircle2(Alvo.target.x, Alvo.target.y, Alvo.target.z, VP:GetHitBox(Alvo.target), ARGB(255, 255, 000, 255))	
+				 DrawCircle2(MeuAlvo.x, MeuAlvo.y, MeuAlvo.z, VP:GetHitBox(MeuAlvo), ARGB(255, 255, 000, 255))	
 			--end
 		end 
 	end
@@ -877,8 +902,8 @@ function OnDraw()
 	
 	if Menu.Paint.PredInimigo then
 		
-		if Alvo.target ~= nil then
-			wayPointManager:DrawWayPoints(Alvo.target)
+		if MeuAlvo ~= nil then
+			wayPointManager:DrawWayPoints(MeuAlvo)
 		end
 	end
 	
@@ -933,22 +958,22 @@ end
 function MeuDano()
 		--if not ((os.clock() - AtualizarDanoInimigo) > 1) then return end
 		
-		if Alvo.target ~= nil then			
+		if MeuAlvo ~= nil then			
 				if myHero:GetSpellData(_Q).level ~= 0 then
-					QDano = myHero:CalcMagicDamage(Alvo.target, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8)* 0.03))
+					QDano = myHero:CalcMagicDamage(MeuAlvo, (DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8) + ((DanoQ[myHero:GetSpellData(_Q).level] + myHero.ap * 0.8)* 0.03))
 				end
 				if myHero:GetSpellData(_W).level ~= 0 then
-					WDano = myHero:CalcMagicDamage(Alvo.target, ((((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * Alvo.target.maxHealth) + (((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * Alvo.target.maxHealth)* 0.03) * 5)
+					WDano = myHero:CalcMagicDamage(MeuAlvo, ((((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * MeuAlvo.maxHealth) + (((DanoW[myHero:GetSpellData(_W).level] + myHero.ap * 0.01) / 100) * MeuAlvo.maxHealth)* 0.03) * 5)
 				end
 				if myHero:GetSpellData(_E).level ~= 0 then
-					EDano = myHero:CalcMagicDamage(Alvo.target, (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) + (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) * 0.03)
+					EDano = myHero:CalcMagicDamage(MeuAlvo, (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) + (DanoE[myHero:GetSpellData(_E).level] + myHero.ap * 0.8) * 0.03)
 				end
 				if myHero:GetSpellData(_R).level ~= 0 then
-					RDano = myHero:CalcMagicDamage(Alvo.target, (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) + (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) * 0.03)
+					RDano = myHero:CalcMagicDamage(MeuAlvo, (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) + (DanoR[myHero:GetSpellData(_R).level] + myHero.ap * 0.52) * 0.03)
 				end				
 				DanoTotal = QDano + WDano + EDano + RDano				
 				DanoTotal = DanoTotal
-				PorcentagemQueVouFicar = ((Alvo.target.maxHealth - DanoTotal)/Alvo.target.maxHealth*100)
+				PorcentagemQueVouFicar = ((MeuAlvo.maxHealth - DanoTotal)/MeuAlvo.maxHealth*100)
 				--AtualizarDanoInimigo = os.clock()
 				return "Damage to Enemy: "..Arredondar(DanoTotal, 1).." : Stay("..Arredondar(PorcentagemQueVouFicar).."%)"
 		end			
@@ -1006,11 +1031,11 @@ function LastHitLikeBoss()
 end
 
 function EncontrarAlvoQ()
-	local FirstTarget = Alvo.target	
+	local FirstTarget = MeuAlvo
 	if Menu.Combo.Ultimate.SuportSilence and FirstTarget ~= nil then
 		if CountEnemyHeroInRange(AlZaharCalloftheVoid.range, myHero) > 3 then		
 			for i, Suporte in pairs(priorityTable.Support) do
-				if Alvo.target.charName == Suporte and Suporte ~= FirstTarget then
+				if MeuAlvo.charName == Suporte and Suporte ~= FirstTarget then
 					for i, Inimigo in pairs(GetEnemyHeroes()) do
 						if ValidTarget(Inimigo) and Inimigo.charName == Suporte and GetDistance(Inimigo) <= AlZaharCalloftheVoid.range then					
 							return Inimigo
