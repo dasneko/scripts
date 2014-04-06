@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.735"
+local version = "0.736"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -79,7 +79,7 @@ Golem2 = {obj = nil, name = "AncientGolem7.1.1"},
 function OnLoad()
 Menu = scriptConfig(myHero.charName.." by Jus", "Malzahar")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
+Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 	--[[COMBO]]--
 	Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true) --OK
@@ -184,6 +184,13 @@ Menu:addParam("VersaoInfo", "Version", SCRIPT_PARAM_INFO, version)
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true) --OK
 		--Menu.General:addParam("SelecionarAlvo", "Target Mode", SCRIPT_PARAM_SLICE, 1, 1, 2, 0) 
 		Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true) --OK
+	Menu:permaShow("VersaoInfo")
+	Menu.Combo:permaShow("ComboKey")
+	Menu.Harass:permaShow("HarassKey")
+	Menu.Farmerr:permaShow("JungleKey")
+	Menu.Farmerr:permaShow("LaneClearKey")
+	Menu.Farmerr:permaShow("LastHit")
+	
 	--[[SPELL SLOT CHECK]]--
 		if myHero:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_1
 			elseif myHero:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.iSlot = SUMMONER_2 end	
@@ -560,11 +567,9 @@ function AtualizaItems()
 	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
 	Manapotion.slot = GetInventorySlotItem(Manapotion.id)	
 	MinionsInimigos:update()
-	Alvo:update()
-	if Alvo.target == nil then
-	 Alvo:update()
-	end	
-	if MeuAlvoSelecionado == false then MeuAlvo = Alvo.target else MeuAlvo = EsteAlvo end	
+	Alvo:update()	
+	--if MeuAlvoSelecionado == false then MeuAlvo = Alvo.target else MeuAlvo = EsteAlvo end	
+	MeuAlvo = Alvo.target
 end
 
 --[[SPELLS END]]--
@@ -618,6 +623,7 @@ function OnTick()
 end
 
 --[[target]]
+--[[
 function OnWndMsg(Msg, Key)
 	if Msg == WM_LBUTTONDOWN then		
 		Alvo:update()
@@ -637,6 +643,7 @@ function OnWndMsg(Msg, Key)
 		end
 	end
 end
+]]
 
 
 --[[ULTIMATE/BUFFS CONTROL]]--
