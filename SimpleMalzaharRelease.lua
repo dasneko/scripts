@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.744"
+local version = "0.745"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -522,7 +522,7 @@ end
 
 function CastBarreira()	
 	local VidaParaUsarBarreira = (myHero.maxHealth * (Menu.Items.BarreiraPorcentagem / 100))
-	if BarreiraSpell.bSlot ~= nil and myHero:CanUseSpell(BarreiraSpell.bSlot) == READY then	
+	if BarreiraSpell.bSlot ~= nil and myHero:CanUseSpell(BarreiraSpell.bSlot) == READY and not InFountain() then	
 		if myHero.health <= VidaParaUsarBarreira then
 			CastSpell(BarreiraSpell.bSlot)			
 		end
@@ -531,7 +531,7 @@ end
 
 function CastHPPotion()
 	local VidaParaUsarPotionHP = (myHero.maxHealth * ( Menu.Items.AutoHPPorcentagem / 100))
-	if Hppotion.slot ~= nil and myHero:CanUseSpell(Hppotion.slot) == READY and not UsandoHP then
+	if Hppotion.slot ~= nil and myHero:CanUseSpell(Hppotion.slot) == READY and not UsandoHP and not InFountain() then
 		if myHero.health <= VidaParaUsarPotionHP then
 			CastSpell(Hppotion.slot)		
 		end
@@ -540,7 +540,7 @@ end
 
 function CastManaPotion()
 	local ManaParaUsarPotion = (myHero.maxMana * ( Menu.Items.AutoMANAPorcentagem / 100))
-	if Manapotion.slot ~= nil and myHero:CanUseSpell(Manapotion.slot) == READY and not UsandoMana then
+	if Manapotion.slot ~= nil and myHero:CanUseSpell(Manapotion.slot) == READY and not UsandoMana and not InFountain() then
 		if myHero.mana <= ManaParaUsarPotion then
 			CastSpell(Manapotion.slot)
 		end
@@ -549,7 +549,7 @@ end
 
 function CastSeraph()
 	local VidaParaUsarSeraph = (myHero.maxHealth * ( Menu.Items.SeraphPorcentagem / 100))
-	if Seraph.slot ~= nil and myHero:CanUseSpell(Seraph.slot) == READY then
+	if Seraph.slot ~= nil and myHero:CanUseSpell(Seraph.slot) == READY and not InFountain() then
 		if myHero.health <= VidaParaUsarSeraph then
 			CastSpell(Seraph.slot)
 		end
