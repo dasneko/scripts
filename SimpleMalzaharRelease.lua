@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.743"
+local version = "0.744"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -198,7 +198,7 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 		if myHero:GetSpellData(SUMMONER_1).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_1
 			elseif myHero:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_2 end	
 	--[[MMA/SAC Disable orbwalk]]--
-		if _G.MMA_loaded then
+		if _G.MMA_Loaded then
 			_G.MMA_Orbwalker = false		
 			_G.MMA_HybridMode = false
 			_G.MMA_LaneClear = false
@@ -585,7 +585,7 @@ function AtualizaItems()
 	--if MeuAlvoSelecionado == false then MeuAlvo = Alvo.target else MeuAlvo = EsteAlvo end	
 	MeuAlvo = GetCustomTarget()
 
-	if _G.MMA_loaded then
+	if _G.MMA_Loaded then
 		_G.MMA_Orbwalker = false		
 		_G.MMA_HybridMode = false
 		_G.MMA_LaneClear = false
