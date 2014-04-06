@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.736"
+local version = "0.737"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -197,6 +197,14 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 		if myHero:GetSpellData(SUMMONER_1).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_1
 			elseif myHero:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_2 end	
 	--[[MMA/SAC Disable orbwalk]]--
+	if _G.MMA_loaded then
+		_G.MMA_Orbwalker = false		
+		_G.MMA_HybridMode = false
+		_G.MMA_LaneClear = false
+	end
+	_G.AutoCarry.Orbwalker = false
+	_G.AutoCarry.CanMove = false
+	_G.AutoCarry.CanAttack = true
 
 	--[[OTHERS]]--		
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, AlZaharCalloftheVoid.range, DAMAGE_MAGIC, true)
@@ -207,12 +215,12 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 	JungleMinions = minionManager(MINION_JUNGLE, 900, myHero, MINION_SORT_MAXHEALTH_DEC)
 	wayPointManager = WayPointManager()
 	if heroManager.iCount < 10 then -- borrowed from Sidas Auto Carry, modified to 3v3
-	   			PrintChat(" >> Too few champions to arrange priority")
-			elseif heroManager.iCount == 6 and TTMAP then
-				ArrangeTTPriorities()
-			else
-				ArrangePriorities()
-			end
+	   	PrintChat(" >> Too few champions to arrange priority")
+	elseif heroManager.iCount == 6 and TTMAP then
+		ArrangeTTPriorities()
+	else
+		ArrangePriorities()
+	end
 	myTrueRange = myHero.range + GetDistance(myHero.minBBox)
 	VP = VPrediction()
 	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
@@ -360,7 +368,7 @@ function CastCombo()
 		if Menu.Combo.UseQ then CastQ() end
 		if Menu.Combo.UseW then CastW() end
 		if Menu.Combo.UseE then CastE() end			
-		if Menu.Combo.UseR then
+		if Menu.Combo.UseR and not _G.Evade then
 			if Menu.Combo.UseQ and Menu.Combo.UseW and Menu.Combo.UseE then			 
 				if not myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) ~= READY and 
 					myHero:CanUseSpell(AlZaharNullZone.spellSlot) ~= READY and 
@@ -410,7 +418,7 @@ function GetBestCombo()
 				if ListCombo == "E" then
 					CastE()
 				end
-				if ListCombo == "R" then
+				if ListCombo == "R" and not _G.Evade then
 					CastR()
 				end
 			end	
@@ -567,10 +575,29 @@ function AtualizaItems()
 	Hppotion.slot = GetInventorySlotItem(Hppotion.id)
 	Manapotion.slot = GetInventorySlotItem(Manapotion.id)	
 	MinionsInimigos:update()
-	Alvo:update()	
+		
 	--if MeuAlvoSelecionado == false then MeuAlvo = Alvo.target else MeuAlvo = EsteAlvo end	
-	MeuAlvo = Alvo.target
+	MeuAlvo = GetCustomTarget()
+
+	if _G.MMA_loaded then
+		_G.MMA_Orbwalker = false		
+		_G.MMA_HybridMode = false
+		_G.MMA_LaneClear = false
+	end
+	_G.AutoCarry.Orbwalker = false
+	_G.AutoCarry.CanMove = false
+	_G.AutoCarry.CanAttack = true
+
 end
+
+function GetCustomTarget()
+  Alvo:update()
+    if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
+    if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
+    return Alvo.target
+end
+--End Credit Trees
+
 
 --[[SPELLS END]]--
 function OnTick()
@@ -1088,7 +1115,7 @@ priorityTable = {
 			AP = {
 				"Annie", "Ahri", "Akali", "Anivia", "Annie", "Brand", "Cassiopeia", "Diana", "Evelynn", "FiddleSticks", "Fizz", "Gragas", "Heimerdinger", "Karthus",
 				"Kassadin", "Katarina", "Kayle", "Kennen", "Leblanc", "Lissandra", "Lux", "Malzahar", "Mordekaiser", "Morgana", "Nidalee", "Orianna",
-				"Ryze", "Sion", "Swain", "Syndra", "Teemo", "TwistedFate", "Veigar", "Viktor", "Vladimir", "Xerath", "Ziggs", "Zyra",
+				"Ryze", "Sion", "Swain", "Syndra", "Teemo", "TwistedFate", "Veigar", "Vel'koz", "Viktor", "Vladimir", "Xerath", "Ziggs", "Zyra",
 			},
 			Support = {
 				"Alistar", "Blitzcrank", "Janna", "Karma", "Leona", "Lulu", "Nami", "Nunu", "Sona", "Soraka", "Taric", "Thresh", "Zilean",
