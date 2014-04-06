@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.742"
+local version = "0.743"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -199,17 +199,17 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 			elseif myHero:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_2 end	
 	--[[MMA/SAC Disable orbwalk]]--
 		if _G.MMA_loaded then
-		_G.MMA_Orbwalker = false		
-		_G.MMA_HybridMode = false
-		_G.MMA_LaneClear = false
-		_G.MMA_AbleToMove = false
-		_G.MMA_AttackAvailable = true
-	end
-	if _G.AutoCarry then
-		_G.AutoCarry.Orbwalker = false
-		_G.AutoCarry.CanMove = false
-		_G.AutoCarry.CanAttack = true
-	end
+			_G.MMA_Orbwalker = false		
+			_G.MMA_HybridMode = false
+			_G.MMA_LaneClear = false
+			_G.MMA_AbleToMove = false
+			_G.MMA_AttackAvailable = true
+		end
+		if _G.AutoCarry then
+			_G.AutoCarry.Orbwalker = false
+			_G.AutoCarry.CanMove = false
+			_G.AutoCarry.CanAttack = true
+		end
 
 
 	--[[OTHERS]]--		
@@ -365,7 +365,7 @@ function CastCombo()
 	if Menu.Combo.ComboKey then	
 		if Menu.General.UseOrb then _OrbWalk(MeuAlvo) end		
 		if Menu.Items.ItemsSystem then			
-			if Menu.Combo.UseIgnite then CastIgnite() end		
+			if Menu.Combo.UseIgnite and not UsandoR then CastIgnite() end		
 			if Menu.Items.UseDfg then CastDFG() end
 		end
 		if Menu.Combo.ComboLogic and not GetBestCombo() then
@@ -466,7 +466,7 @@ end
 
 --[[SPELLS]]--
 function CastIgnite()	
-	if IgniteSpell.iSlot ~= nil and myHero:CanUseSpell(IgniteSpell.iSlot) == READY and MeuAlvo ~= nil then	
+	if IgniteSpell.iSlot ~= nil and myHero:CanUseSpell(IgniteSpell.iSlot) == READY and MeuAlvo ~= nil and GetDistance(MeuAlvo) < IgniteSpell.range then	
 		if Menu.Items.AntiDoubleIgnite and TargetHaveBuff("SummonerDot", MeuAlvo) then return end
 		if Menu.Items.AntiDoubleIgnite and not TargetHaveBuff("SummonerDot", MeuAlvo) then
 			if Menu.General.UsePacket then
