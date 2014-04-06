@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.745"
+local version = "0.746"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -584,18 +584,19 @@ function AtualizaItems()
 		
 	--if MeuAlvoSelecionado == false then MeuAlvo = Alvo.target else MeuAlvo = EsteAlvo end	
 	MeuAlvo = GetCustomTarget()
-
-	if _G.MMA_Loaded then
-		_G.MMA_Orbwalker = false		
-		_G.MMA_HybridMode = false
-		_G.MMA_LaneClear = false
-		_G.MMA_AbleToMove = false
-		_G.MMA_AttackAvailable = true
-	end
-	if _G.AutoCarry then
-		_G.AutoCarry.Orbwalker = false
-		_G.AutoCarry.CanMove = false
-		_G.AutoCarry.CanAttack = true
+		if UsandoR then
+		if _G.MMA_Loaded then
+			_G.MMA_Orbwalker = false		
+			_G.MMA_HybridMode = false
+			_G.MMA_LaneClear = false
+			_G.MMA_AbleToMove = false
+			_G.MMA_AttackAvailable = false
+		end
+		if _G.AutoCarry then
+			_G.AutoCarry.Orbwalker = false
+			_G.AutoCarry.CanMove = false
+			_G.AutoCarry.CanAttack = false
+		end
 	end
 
 end
@@ -1099,8 +1100,8 @@ end
 
 function TemQss()
 	if Menu.Combo.Ultimate.TemQss then
-		for i, Inimigo in pairs(GetEnemyHeroes()) do
-			if Inimigo:GetInventorySlotItem(3139) ~= nil or Inimigo:GetInventorySlotItem(3140) ~= nil then
+		if MeuAlvo ~= nil then
+			if GetInventoryItemIsCastable(3139, MeuAlvo) == true or GetInventoryItemIsCastable(3140, MeuAlvo) == true then
 				return true
 			else
 				return false
