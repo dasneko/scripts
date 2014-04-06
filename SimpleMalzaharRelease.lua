@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.740"
+local version = "0.741"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -408,11 +408,11 @@ function GetBestCombo()
 		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then table.insert(spelllist, "E") end
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then table.insert(spelllist, "R") end		
 		local TotalDamage = 0		
-		for a, ListSpell in ipairs(spelllist) do							
+		for a, ListSpell in pairs(spelllist) do							
 			TotalDamage = TotalDamage + getDmg(ListSpell, MeuAlvo, myHero)				
 		end			
 		if MeuAlvo.health <= TotalDamage then		 			
-			for b, ListCombo in ipairs(spelllist) do
+			for b, ListCombo in pairs(spelllist) do
 				--local SpellToCast = "_"..ListCombo	-- eg. _Q, _W, _E, _R			
 				if ListCombo == "Q" then
 					CastQ()
@@ -441,7 +441,7 @@ function GetBestComboText()
 		if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) == READY then table.insert(spelllist, "E") end
 		if myHero:CanUseSpell(AlZaharNetherGrasp.spellSlot) == READY then table.insert(spelllist, "R") end		
 		local TotalDamage = 0		
-		for a, ListSpell in ipairs(spelllist) do							
+		for a, ListSpell in pairs(spelllist) do							
 			TotalDamage = TotalDamage + getDmg(ListSpell, MeuAlvo, myHero)				
 		end			
 		if MeuAlvo.health >= TotalDamage then		 			
