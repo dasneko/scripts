@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.737"
+local version = "0.739"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -75,9 +75,10 @@ Dragon = {obj = nil, name = "Dragon6.1.1"},
 Golem1 = {obj = nil, name = "AncientGolem1.1.1"},
 Golem2 = {obj = nil, name = "AncientGolem7.1.1"},
 }
+--[[Others]]
 
 function OnLoad()
-Menu = scriptConfig(myHero.charName.." by Jus", "Malzahar")
+Menu = scriptConfig(myHero.charName.." by Jus", "SimpleMalzahar")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
 Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 	--[[COMBO]]--
@@ -197,14 +198,17 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 		if myHero:GetSpellData(SUMMONER_1).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_1
 			elseif myHero:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.bSlot = SUMMONER_2 end	
 	--[[MMA/SAC Disable orbwalk]]--
-	if _G.MMA_loaded then
+		if _G.MMA_loaded then
 		_G.MMA_Orbwalker = false		
 		_G.MMA_HybridMode = false
 		_G.MMA_LaneClear = false
 	end
-	_G.AutoCarry.Orbwalker = false
-	_G.AutoCarry.CanMove = false
-	_G.AutoCarry.CanAttack = true
+	if _G.AutoCarry then
+		_G.AutoCarry.Orbwalker = false
+		_G.AutoCarry.CanMove = false
+		_G.AutoCarry.CanAttack = true
+	end
+
 
 	--[[OTHERS]]--		
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, AlZaharCalloftheVoid.range, DAMAGE_MAGIC, true)
@@ -584,9 +588,11 @@ function AtualizaItems()
 		_G.MMA_HybridMode = false
 		_G.MMA_LaneClear = false
 	end
-	_G.AutoCarry.Orbwalker = false
-	_G.AutoCarry.CanMove = false
-	_G.AutoCarry.CanAttack = true
+	if _G.AutoCarry then
+		_G.AutoCarry.Orbwalker = false
+		_G.AutoCarry.CanMove = false
+		_G.AutoCarry.CanAttack = true
+	end
 
 end
 
