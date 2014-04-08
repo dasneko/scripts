@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "0.1"
+local version = "0.2"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -161,10 +161,10 @@ end
 
 function UpdateVariaveis()
 	--[[SKILLS]]--
-	if (myPlayer:CanUseSpell(TalonNoxianDiplomacy.spellSlot) == READY) then TalonNoxianDiplomacy.ready = true else TalonNoxianDiplomacy.ready = false end
-	if (myPlayer:CanUseSpell(TalonRake.spellSlot) == READY) then TalonRake.ready = true else TalonRake.ready = false end
-	if (myPlayer:CanUseSpell(TalonCutthroat.spellSlot) == READY) then TalonCutthroat.ready = true else TalonCutthroat.ready = false end
-	if (myPlayer:CanUseSpell(TalonShadowAssault.spellSlot) == READY) then TalonShadowAssault.ready = true else TalonShadowAssault.ready = false end
+	if (myHero:CanUseSpell(TalonNoxianDiplomacy.spellSlot) == READY) then TalonNoxianDiplomacy.ready = true else TalonNoxianDiplomacy.ready = false end
+	if (myHero:CanUseSpell(TalonRake.spellSlot) == READY) then TalonRake.ready = true else TalonRake.ready = false end
+	if (myHero:CanUseSpell(TalonCutthroat.spellSlot) == READY) then TalonCutthroat.ready = true else TalonCutthroat.ready = false end
+	if (myHero:CanUseSpell(TalonShadowAssault.spellSlot) == READY) then TalonShadowAssault.ready = true else TalonShadowAssault.ready = false end
 --[[TARGET SELECTOR]]--
 	Alvo:update()
 	Target = GetCustomTarget()
@@ -258,7 +258,7 @@ end
 function CheckItems(tabela)
 	for ItemIndex, Value in pairs(tabela) do
 		Value.slot = GetInventorySlotItem(Value.SlotId)		
-			if Value.slot ~= nil and myPlayer:CanUseSpell(Value.slot) == READY then 				
+			if Value.slot ~= nil and myHero:CanUseSpell(Value.slot) == READY then 				
 			table.insert(FoundItems, ItemIndex)			
 		end
 	end
@@ -405,7 +405,7 @@ end
 --[[others functions]]
 
 function CastIgnite()
-	local IgniteReady 		= myPlayer:CanUseSpell(IgniteSpell.slot) == READY	
+	local IgniteReady 		= myHero:CanUseSpell(IgniteSpell.slot) == READY	
 	local AntiDoubleIgnite_ = Menu.Items.AntiDoubleIgnite
 	if IgniteSpell.slot ~= nil and ValidTarget(Target) and GetDistance(Target) < IgniteSpell.range and IgniteReady then	
 		if AntiDoubleIgnite_ and TargetHaveBuff("SummonerDot", Target) then return end
