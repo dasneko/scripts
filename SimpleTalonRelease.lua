@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "0.4"
+local version = "0.5"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -314,8 +314,8 @@ function CastSurviveItem()
 			end			
 		FoundItems[i] = nil
 		end
-		if BarreiraSpell.slot ~= nil and UseBarreira_ and UseBarreiraPorcen_1 <= UseBarreira_ and not InFountain() then
-			CasSpell(BarreiraSpell.slot)
+		if BarreiraSpell.slot ~= nil and UseBarreira_ and UseBarreiraPorcen_1 <= UseBarreiraPorcen_ and not InFountain() then
+			CastSpell(BarreiraSpell.slot)
 		end 
 	end
 end
