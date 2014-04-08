@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "0.7"
+local version = "0.8"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -152,18 +152,7 @@ Menu:addSubMenu("General System", "General")
 		ArrangePriorities()
 	end
 	--[[MMA/SAC Disable orbwalk]]--
-		if _G.MMA_Loaded then
-			_G.MMA_Orbwalker = false		
-			_G.MMA_HybridMode = false
-			_G.MMA_LaneClear = false
-			_G.MMA_AbleToMove = false
-			_G.MMA_AttackAvailable = false
-		end
-		if _G.AutoCarry then
-			_G.AutoCarry.Orbwalker = false
-			_G.AutoCarry.CanMove = false
-			_G.AutoCarry.CanAttack = false
-		end
+	
 --[[Ts/minion/jungle]]
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200, true)
 	Alvo.name = "Talon"
@@ -508,7 +497,7 @@ function FarmMinionsW()
 end
 --trees
 function GetCustomTarget()
- 	--Alvo:update()
+ 	Alvo:update()
     if _G.MMA_Target and _G.MMA_Target.type == myPlayer.type then return _G.MMA_Target end
     if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myPlayer.type then return _G.AutoCarry.Attack_Crosshair.target end
     return Alvo.target
