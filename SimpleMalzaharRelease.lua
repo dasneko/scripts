@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.746"
+local version = "0.747"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -585,19 +585,19 @@ function AtualizaItems()
 	--if MeuAlvoSelecionado == false then MeuAlvo = Alvo.target else MeuAlvo = EsteAlvo end	
 	MeuAlvo = GetCustomTarget()
 		if UsandoR then
-		if _G.MMA_Loaded then
+			if _G.MMA_Loaded then
 			_G.MMA_Orbwalker = false		
 			_G.MMA_HybridMode = false
 			_G.MMA_LaneClear = false
 			_G.MMA_AbleToMove = false
 			_G.MMA_AttackAvailable = false
-		end
-		if _G.AutoCarry then
+			end
+			if _G.AutoCarry then
 			_G.AutoCarry.Orbwalker = false
 			_G.AutoCarry.CanMove = false
 			_G.AutoCarry.CanAttack = false
+			end
 		end
-	end
 
 end
 
@@ -801,7 +801,7 @@ function OnProcessSpell(object, spell)
 end
 
 function _OrbWalk(MeuAlvo)	
-	if UsandoR then return end
+	if UsandoR or _G.Evade then return end
 	if MeuAlvo ~= nil and GetDistance(MeuAlvo) <= myTrueRange then		
 		if timeToShoot() then
 			myHero:Attack(MeuAlvo)
