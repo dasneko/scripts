@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "0.2"
+local version = "0.3"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -52,7 +52,7 @@ local Items = {
 			["SD"]	   =	{ready = false, range = 150, SlotId = 3131, slot = nil}				
 			}
 local HP_MANA = { ["Hppotion"] = {SlotId = 2003, ready = false, slot = nil},
-				  ["Manapotion"] = {SlotId = 2004 , ready = false, slot = nil}
+				  ["Manapotion"] = {SlotId = 2004 , ready = false, slot = nil}				  
 				}
 local FoundItems = {}
 --[[ORBWALK]]--
@@ -76,7 +76,7 @@ function OnLoad()
 end
 
 function Menu1()
-Menu = scriptConfig(myHero.charName.." by Jus", "TalonMenu")
+Menu = scriptConfig(myPlayer.charName.." by Jus", "TalonMenu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
 Menu:addParam("Ver", "Version Info", SCRIPT_PARAM_INFO, version)
 --[[Combo]]
@@ -161,10 +161,10 @@ end
 
 function UpdateVariaveis()
 	--[[SKILLS]]--
-	if (myHero:CanUseSpell(TalonNoxianDiplomacy.spellSlot) == READY) then TalonNoxianDiplomacy.ready = true else TalonNoxianDiplomacy.ready = false end
-	if (myHero:CanUseSpell(TalonRake.spellSlot) == READY) then TalonRake.ready = true else TalonRake.ready = false end
-	if (myHero:CanUseSpell(TalonCutthroat.spellSlot) == READY) then TalonCutthroat.ready = true else TalonCutthroat.ready = false end
-	if (myHero:CanUseSpell(TalonShadowAssault.spellSlot) == READY) then TalonShadowAssault.ready = true else TalonShadowAssault.ready = false end
+	if (myPlayer:CanUseSpell(TalonNoxianDiplomacy.spellSlot) == READY) then TalonNoxianDiplomacy.ready = true else TalonNoxianDiplomacy.ready = false end
+	if (myPlayer:CanUseSpell(TalonRake.spellSlot) == READY) then TalonRake.ready = true else TalonRake.ready = false end
+	if (myPlayer:CanUseSpell(TalonCutthroat.spellSlot) == READY) then TalonCutthroat.ready = true else TalonCutthroat.ready = false end
+	if (myPlayer:CanUseSpell(TalonShadowAssault.spellSlot) == READY) then TalonShadowAssault.ready = true else TalonShadowAssault.ready = false end
 --[[TARGET SELECTOR]]--
 	Alvo:update()
 	Target = GetCustomTarget()
@@ -258,7 +258,7 @@ end
 function CheckItems(tabela)
 	for ItemIndex, Value in pairs(tabela) do
 		Value.slot = GetInventorySlotItem(Value.SlotId)		
-			if Value.slot ~= nil and myHero:CanUseSpell(Value.slot) == READY then 				
+			if Value.slot ~= nil and (myPlayer:CanUseSpell(Value.slot) == READY) then 				
 			table.insert(FoundItems, ItemIndex)			
 		end
 	end
@@ -286,8 +286,11 @@ function CastSurviveItem()
 	CheckItems(HP_MANA)	
 	local AutoHPPorcentagem_ 	= Menu.Items.AutoHPPorcentagem
 	local AutoMANAPorcentagem_ 	= Menu.Items.AutoMANAPorcentagem
-	local HP_Porcentagem 	= (myPlayer.health / myPlayer.maxHealth *100)
-	local MANA_Porcentagem	= (myPlayer.mana / myPlayer.maxMana *100)
+	local HP_Porcentagem 		= (myPlayer.health / myPlayer.maxHealth *100)
+	local MANA_Porcentagem		= (myPlayer.mana / myPlayer.maxMana *100)
+	local UseBarreira_			= Menu.Items.UseBarreira
+	local UseBarreiraPorcen_	= Menu.Items.BarreiraPorcentagem
+	local UseBarreiraPorcen_1 	= (myPlayer.health / myPlayer.maxHealth *100)
 	if #FoundItems ~= 0 then
 		for i, HP_MANA_ in pairs(FoundItems) do
 			if HP_MANA_ == "Hppotion" and HP_Porcentagem <= AutoHPPorcentagem_  and not InFountain() and not UsandoHP then
@@ -295,9 +298,12 @@ function CastSurviveItem()
 			end
 			if HP_MANA_ == "Manapotion" and MANA_Porcentagem <= AutoMANAPorcentagem_  and not InFountain() and not UsandoMana then
 				CastSpell(HP_MANA[HP_MANA_].slot)
-			end
+			end			
 		FoundItems[i] = nil
 		end
+		if BarreiraSpell.slot ~= nil and UseBarreira_ and UseBarreiraPorcen_1 <= UseBarreira_ and not InFountain() then
+			CasSpell(BarreiraSpell.slot)
+		end 
 	end
 end
 
@@ -346,13 +352,13 @@ function OnTick()
 	if not Menu.LigarScript or myPlayer.dead then return end	
 	UpdateVariaveis()	
 	if Usar then
-		if UseOrb_ then _OrbWalk(Target) end
-		if UsarItems_ then CastCommonItem()	end
+		if UseOrb_ then _OrbWalk(Target) end		
 		if UseIgnite_ then CastIgnite() end
 		CastE(Target)
 		CastQ(Target)
 		CastW(Target)
 		CastR(Target)
+		if UsarItems_ then CastCommonItem()	end
 	end
 	if UsarHarass and not _G.Evade and not UsandoRecall	then
 		CastW(Target)
@@ -405,7 +411,7 @@ end
 --[[others functions]]
 
 function CastIgnite()
-	local IgniteReady 		= myHero:CanUseSpell(IgniteSpell.slot) == READY	
+	--local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
 	local AntiDoubleIgnite_ = Menu.Items.AntiDoubleIgnite
 	if IgniteSpell.slot ~= nil and ValidTarget(Target) and GetDistance(Target) < IgniteSpell.range and IgniteReady then	
 		if AntiDoubleIgnite_ and TargetHaveBuff("SummonerDot", Target) then return end
