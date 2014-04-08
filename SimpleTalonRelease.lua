@@ -9,7 +9,7 @@ local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..m
 local UPDATE_FILE_PATH = LIB_PATH.."SimpleTalonRelease.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Simple Talon:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Talon, Tail of the Dragon:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH, "", 5)
 	if ServerData then
@@ -76,7 +76,7 @@ function OnLoad()
 end
 
 function Menu1()
-Menu = scriptConfig(myHero.charName.." by Jus", "Menu")
+Menu = scriptConfig(myHero.charName.." by Jus", "TalonMenu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
 Menu:addParam("Ver", "Version Info", SCRIPT_PARAM_INFO, version)
 --[[Combo]]
@@ -136,7 +136,7 @@ Menu:addSubMenu("General System", "General")
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.General:addParam("UsePacket", "Use Packet to Cast", SCRIPT_PARAM_ONOFF, true)
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true)
-		Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true)
+		--Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true)
 --[[spells]]
 	if myPlayer:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_1
 	elseif myPlayer:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_2 end	
