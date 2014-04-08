@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "0.3"
+local version = "0.4"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -151,6 +151,19 @@ Menu:addSubMenu("General System", "General")
 	else
 		ArrangePriorities()
 	end
+	--[[MMA/SAC Disable orbwalk]]--
+		if _G.MMA_Loaded then
+			_G.MMA_Orbwalker = false		
+			_G.MMA_HybridMode = false
+			_G.MMA_LaneClear = false
+			_G.MMA_AbleToMove = false
+			_G.MMA_AttackAvailable = false
+		end
+		if _G.AutoCarry then
+			_G.AutoCarry.Orbwalker = false
+			_G.AutoCarry.CanMove = false
+			_G.AutoCarry.CanAttack = false
+		end
 --[[Ts/minion/jungle]]
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200 + enemyRangeHitBox, true)
 	Alvo.name = "Talon"
@@ -352,6 +365,20 @@ function OnTick()
 	if not Menu.LigarScript or myPlayer.dead then return end	
 	UpdateVariaveis()	
 	if Usar then
+
+		if _G.MMA_Loaded then
+			_G.MMA_Orbwalker = false		
+			_G.MMA_HybridMode = false
+			_G.MMA_LaneClear = false
+			_G.MMA_AbleToMove = false
+			_G.MMA_AttackAvailable = false
+		end
+		if _G.AutoCarry then
+			_G.AutoCarry.Orbwalker = false
+			_G.AutoCarry.CanMove = false
+			_G.AutoCarry.CanAttack = false
+		end
+
 		if UseOrb_ then _OrbWalk(Target) end		
 		if UseIgnite_ then CastIgnite() end
 		CastE(Target)
