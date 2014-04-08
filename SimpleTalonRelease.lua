@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "0.5"
+local version = "0.6"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -179,7 +179,7 @@ function UpdateVariaveis()
 	if (myPlayer:CanUseSpell(TalonCutthroat.spellSlot) == READY) then TalonCutthroat.ready = true else TalonCutthroat.ready = false end
 	if (myPlayer:CanUseSpell(TalonShadowAssault.spellSlot) == READY) then TalonShadowAssault.ready = true else TalonShadowAssault.ready = false end
 --[[TARGET SELECTOR]]--
-	Alvo:update()
+	--Alvo:update()
 	Target = GetCustomTarget()
 	if ValidTarget(Target) then enemyRangeHitBox = VP:GetHitBox(Target) else enemyRangeHitBox = 0 end
 --[[MINION MANAGER]]--
