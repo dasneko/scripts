@@ -141,7 +141,16 @@ Menu:addSubMenu("General System", "General")
 	if myPlayer:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_1
 	elseif myPlayer:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_2 end	
 	if myPlayer:GetSpellData(SUMMONER_1).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.slot = SUMMONER_1
-	elseif myPlayer:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.slot = SUMMONER_2 end	
+	elseif myPlayer:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.slot = SUMMONER_2 end
+--[[others_func]]
+	enemyHeroes = GetEnemyHeroes()	
+	if heroManager.iCount < 10 then -- borrowed from Sidas Auto Carry, modified to 3v3
+	   	PrintChat(" >> Too few champions to arrange priority")
+	elseif heroManager.iCount == 6 and TTMAP then
+		ArrangeTTPriorities()
+	else
+		ArrangePriorities()
+	end
 --[[Ts/minion/jungle]]
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200 + enemyRangeHitBox, true)
 	Alvo.name = "Talon"
@@ -524,3 +533,65 @@ function DrawCircle2(x, y, z, radius, color)
 	end
 end
 --[[END]]--
+
+--[[SIDA Revamped]]--
+
+priorityTable = {
+			AP = {
+				"Annie", "Ahri", "Akali", "Anivia", "Annie", "Brand", "Cassiopeia", "Diana", "Evelynn", "FiddleSticks", "Fizz", "Gragas", "Heimerdinger", "Karthus",
+				"Kassadin", "Katarina", "Kayle", "Kennen", "Leblanc", "Lissandra", "Lux", "Malzahar", "Mordekaiser", "Morgana", "Nidalee", "Orianna",
+				"Ryze", "Sion", "Swain", "Syndra", "Teemo", "TwistedFate", "Veigar", "Vel'koz", "Viktor", "Vladimir", "Xerath", "Ziggs", "Zyra",
+			},
+			Support = {
+				"Alistar", "Blitzcrank", "Janna", "Karma", "Leona", "Lulu", "Nami", "Nunu", "Sona", "Soraka", "Taric", "Thresh", "Zilean",
+			},
+			Tank = {
+				"Amumu", "Chogath", "DrMundo", "Galio", "Hecarim", "Malphite", "Maokai", "Nasus", "Rammus", "Sejuani", "Nautilus", "Shen", "Singed", "Skarner", "Volibear",
+				"Warwick", "Yorick", "Zac",
+			},
+			AD_Carry = {
+				"Ashe", "Caitlyn", "Corki", "Draven", "Ezreal", "Graves", "Jayce", "Jinx", "KogMaw", "Lucian", "MasterYi", "MissFortune", "Pantheon", "Quinn", "Shaco", "Sivir",
+				"Talon","Tryndamere", "Tristana", "Twitch", "Urgot", "Varus", "Vayne", "Yasuo","Zed", 
+			},
+			Bruiser = {
+				"Aatrox", "Darius", "Elise", "Fiora", "Gangplank", "Garen", "Irelia", "JarvanIV", "Jax", "Khazix", "LeeSin", "Nocturne", "Olaf", "Poppy",
+				"Renekton", "Rengar", "Riven", "Rumble", "Shyvana", "Trundle", "Udyr", "Vi", "MonkeyKing", "XinZhao",
+			},
+		}
+
+		--- Arrange Priorities 5v5 ---
+--->
+	function ArrangePriorities()
+		for i, enemy in pairs(enemyHeroes) do
+			SetPriority(priorityTable.AD_Carry, enemy, 1)
+			SetPriority(priorityTable.AP, enemy, 2)
+			SetPriority(priorityTable.Support, enemy, 3)
+			SetPriority(priorityTable.Bruiser, enemy, 4)
+			SetPriority(priorityTable.Tank, enemy, 5)
+		end
+	end
+---<
+--- Arrange Priorities 5v5 ---
+--- Arrange Priorities 3v3 ---
+--->
+	function ArrangeTTPriorities()
+		for i, enemy in pairs(enemyHeroes) do
+			SetPriority(priorityTable.AD_Carry, enemy, 1)
+			SetPriority(priorityTable.AP, enemy, 1)
+			SetPriority(priorityTable.Support, enemy, 2)
+			SetPriority(priorityTable.Bruiser, enemy, 2)
+			SetPriority(priorityTable.Tank, enemy, 3)
+		end
+	end
+---<
+--- Arrange Priorities 3v3 ---
+--- Set Priorities ---
+--->
+	function SetPriority(table, hero, priority)
+		for i = 1, #table, 1 do
+			if hero.charName:find(table[i]) ~= nil then
+				TS_SetHeroPriority(priority, hero.charName)
+			end
+		end
+	end
+
