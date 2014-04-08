@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "0.9"
+local version = "1.0"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -154,7 +154,7 @@ Menu:addSubMenu("General System", "General")
 	--[[MMA/SAC Disable orbwalk]]--
 	
 --[[Ts/minion/jungle]]
-	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200, true)
+	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200, DAMAGE_PHYSICAL, true)
 	Alvo.name = "Talon"
 	Menu:addTS(Alvo)	
 	MinionsInimigos = minionManager(MINION_ENEMY, TalonRake.range, myPlayer, MINION_SORT_HEALTH_ASC)	
@@ -503,7 +503,6 @@ function GetCustomTarget()
  	end
     if _G.MMA_Target and _G.MMA_Target.type == myPlayer.type then return _G.MMA_Target end
     if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myPlayer.type then return _G.AutoCarry.Attack_Crosshair.target end
-    
 end
 --end
 
