@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "1.0"
+local version = "1.1"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -143,6 +143,7 @@ Menu:addSubMenu("General System", "General")
 	if myPlayer:GetSpellData(SUMMONER_1).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.slot = SUMMONER_1
 	elseif myPlayer:GetSpellData(SUMMONER_2).name:find(BarreiraSpell.spellSlot) then BarreiraSpell.slot = SUMMONER_2 end
 --[[others_func]]
+--[[
 	enemyHeroes = GetEnemyHeroes()	
 	if heroManager.iCount < 10 then -- borrowed from Sidas Auto Carry, modified to 3v3
 	   	PrintChat(" >> Too few champions to arrange priority")
@@ -151,6 +152,7 @@ Menu:addSubMenu("General System", "General")
 	else
 		ArrangePriorities()
 	end
+	]]
 	--[[MMA/SAC Disable orbwalk]]--
 	
 --[[Ts/minion/jungle]]
@@ -169,6 +171,7 @@ function UpdateVariaveis()
 	if (myPlayer:CanUseSpell(TalonShadowAssault.spellSlot) == READY) then TalonShadowAssault.ready = true else TalonShadowAssault.ready = false end
 --[[TARGET SELECTOR]]--
 	--Alvo:update()
+	Alvo:update()
 	Target = GetCustomTarget()
 	if ValidTarget(Target) then enemyRangeHitBox = VP:GetHitBox(Target) else enemyRangeHitBox = 0 end
 --[[MINION MANAGER]]--
@@ -497,12 +500,10 @@ function FarmMinionsW()
 end
 --trees
 function GetCustomTarget()
- 	Alvo:update()
- 	if Alvo.Target ~= nil then
- 		return Alvo.target
- 	end
+ 	Alvo:update() 	
     if _G.MMA_Target and _G.MMA_Target.type == myPlayer.type then return _G.MMA_Target end
     if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myPlayer.type then return _G.AutoCarry.Attack_Crosshair.target end
+return Alvo.target
 end
 --end
 
