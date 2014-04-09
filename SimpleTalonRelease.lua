@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "1.2"
+local version = "1.3"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -32,9 +32,9 @@ end
 
 --[[AUTO UPDATE END]]--
 
-local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = 0, delay = 0.0435, ready = nil}
+local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
 local TalonRake            = 	{spellSlot = _W, range = 700, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
-local TalonCutthroat       =	{spellSlot = _E, range = 675, width = 0, speed = 0, delay = 0.5, ready = nil}
+local TalonCutthroat       =	{spellSlot = _E, range = 675, width = 0, speed = math.huge, delay = 0.5, ready = nil}
 local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 902, delay = 0.5, ready = nil}
 --[[SPELLS]]--
 local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
@@ -78,7 +78,7 @@ end
 function Menu1()
 Menu = scriptConfig(myPlayer.charName.." by Jus", "TalonMenu")
 Menu:addParam("LigarScript", "Global ON/OFF", SCRIPT_PARAM_ONOFF, true)
-Menu:addParam("Ver", "Version Info", SCRIPT_PARAM_INFO, version)
+Menu:addParam("Ver", "Talon Version", SCRIPT_PARAM_INFO, version)
 --[[Combo]]
 Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("ComboSystem", "Use Combo System", SCRIPT_PARAM_ONOFF, true)
@@ -96,16 +96,18 @@ Menu:addSubMenu("Combo System", "Combo")
 Menu:addSubMenu("Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Harass System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Harass:addParam("UseAutoW", "Auto Cast W", SCRIPT_PARAM_ONOFF, false)
 		Menu.Harass:addParam("UseW", "Use "..myPlayer:GetSpellData(_W).name.." (W)", SCRIPT_PARAM_ONOFF, true)
+		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 --[[Farm]]
 Menu:addSubMenu("Farm Helper System", "Farmerr")
 		Menu.Farmerr:addParam("FarmerrSystem", "Use Farm System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")
-		--Menu.Farmerr:addParam("FarmQSkill", "Auto Jump with Q to Farm", SCRIPT_PARAM_ONOFF, true)
+		Menu.Farmerr:addParam("UseAutoW", "Auto Cast W", SCRIPT_PARAM_ONOFF, false)
 		Menu.Farmerr:addParam("UseW", "Cast W if minion count >", SCRIPT_PARAM_LIST, 2, {"1", "2", "3", "4", "5", "OFF"})
 		Menu.Farmerr:addParam("StopCastMana", "Stop Cast W if mana below %", SCRIPT_PARAM_SLICE, 40, 20, 100, -1)
-		--Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")		
-		--Menu.Farmerr:addParam("ButcherON", "Use Butcher Mastery", SCRIPT_PARAM_ONOFF, true)
+		Menu.Farmerr:addParam("", "", SCRIPT_PARAM_INFO, "")		
+		Menu.Farmerr:addParam("FarmKey", "Manual Farm Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
 --[[Items]]
 Menu:addSubMenu("Items Helper System", "Items")
 		Menu.Items:addParam("ItemsSystem", "Use Items Helper System", SCRIPT_PARAM_ONOFF, true)
@@ -137,6 +139,11 @@ Menu:addSubMenu("General System", "General")
 		Menu.General:addParam("UsePacket", "Use Packet to Cast", SCRIPT_PARAM_ONOFF, true)
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true)
 		--Menu.General:addParam("AutoUpdate", "Auto Update Script On Start", SCRIPT_PARAM_ONOFF, true)
+--[[PermaShow Options]]
+	Menu:permaShow("Ver")
+	Menu.Combo:permaShow("ComboKey")
+	Menu.Harass:permaShow("HarassKey")
+	Menu.Farmerr:permaShow("FarmKey")
 --[[spells]]
 	if myPlayer:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_1
 	elseif myPlayer:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_2 end	
@@ -345,10 +352,19 @@ end
 --[[end]]
 
 function OnTick()
+	--[[Combo]]
 	local Usar 		 			= Menu.Combo.ComboKey
-	local UsarHarass 			= Menu.Harass.HarassSystem
 	local UsarItems_ 			= Menu.Combo.CSettings.UseItems
+	--[[Harass]]
+	local UsarHarass 			= Menu.Harass.HarassSystem
+	local UsarHarassKey			= Menu.Harass.HarassKey
+	local UsarAutoHarass		= Menu.Harass.UseAutoW
+	--[[Farm]]	
+	local FarmerrSystem_		= Menu.Farmerr.FarmerrSystem
 	local FarmUseW_				= Menu.Farmerr.UseW
+	local UsarAutoFarm			= Menu.Farmerr.UseAutoW
+	local UsarFarmKey			= Menu.Farmerr.FarmKey
+	--[[Others]]
 	local AutoHP_ 	 			= Menu.Items.AutoHP
 	local AutoMana_	 			= Menu.Items.AutoMana
 	local AutoLevelSkills_      = Menu.General.LevelSkill
@@ -357,7 +373,6 @@ function OnTick()
 	if not Menu.LigarScript or myPlayer.dead then return end	
 	UpdateVariaveis()	
 	if Usar then
-
 		if _G.MMA_Loaded then
 			_G.MMA_Orbwalker = false		
 			_G.MMA_HybridMode = false
@@ -379,12 +394,28 @@ function OnTick()
 		CastR(Target)
 		if UsarItems_ then CastCommonItem()	end
 	end
-	if UsarHarass and not _G.Evade and not UsandoRecall	then
-		CastW(Target)
+	if UsarHarass and not _G.Evade then
+		if UsarAutoHarass then
+			CastW(Target)			
+		else
+			if UsarHarassKey then
+				CastW(Target)
+				_OrbWalk()
+			end
+		end
+	end		
+	if FarmerrSystem_ and not _G.Evade then
+		if UsarAutoFarm and FarmUseW_ and not UsandoRecall then
+			FarmMinionsW()
+		else 
+			if UsarFarmKey then
+				FarmMinionsW()
+				_OrbWalk()
+			end
+		end
 	end
 	if AutoLevelSkills_ then AutoSkillLevel() end
 	if AutoHP_ or AutoMana_ then CastSurviveItem() end
-	if FarmUseW_ then FarmMinionsW() end
 end
 
 function OnDraw()
