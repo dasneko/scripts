@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "1.8"
+local version = "1.9"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -407,7 +407,7 @@ function OnTick()
 		else
 			if UsarHarassKey and MyMana_ > StopCastManaP then
 				CastW(Target)
-				if UseOrb_ then _OrbWalk(Target) end
+				if UseOrb_ then _OrbWalk() end
 			end
 		end
 	end		
