@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "1.6"
+local version = "1.7"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -407,7 +407,7 @@ function OnTick()
 		else
 			if UsarHarassKey and MyMana_ > StopCastManaP then
 				CastW(Target)
-				_OrbWalk(Target)
+				if UseOrb_ then _OrbWalk(Target) end
 			end
 		end
 	end		
@@ -417,7 +417,7 @@ function OnTick()
 		else 
 			if UsarFarmKey then
 				FarmMinionsW()
-				_OrbWalk()
+				if UseOrb_ then _OrbWalk() end
 			end
 		end
 	end
@@ -558,9 +558,6 @@ function ScapeRules()
 		end
 	end
 end
-
-		
-
 
 function CastIgnite()
 	--local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
