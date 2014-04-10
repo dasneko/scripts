@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "1.5"
+local version = "1.6"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -381,19 +381,12 @@ function OnTick()
 	if not Menu.LigarScript or myPlayer.dead then return end	
 	UpdateVariaveis()	
 	if Usar then
-		if _G.MMA_Loaded then
-			_G.MMA_Orbwalker = false		
-			_G.MMA_HybridMode = false
-			_G.MMA_LaneClear = false
-			_G.MMA_AbleToMove = false
-			_G.MMA_AttackAvailable = false
+		if _G.MMA_Loaded then			
+			_G.MMA_AbleToMove = false			
 		end
-		if _G.AutoCarry then
-			_G.AutoCarry.Orbwalker = false
-			_G.AutoCarry.CanMove = false
-			_G.AutoCarry.CanAttack = false
+		if _G.AutoCarry then			
+			_G.AutoCarry.CanMove = false			
 		end
-
 		if UseOrb_ then _OrbWalk(Target) end		
 		if UseIgnite_ then CastIgnite() end
 		CastE(Target)
