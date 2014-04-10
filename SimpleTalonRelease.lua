@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.001"
+local version = "2.002"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -33,7 +33,7 @@ end
 --[[AUTO UPDATE END]]--
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
-local TalonRake            = 	{spellSlot = _W, range = 700, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
+local TalonRake            = 	{spellSlot = _W, range = 675, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
 local TalonCutthroat       =	{spellSlot = _E, range = 700, width = 0, speed = math.huge, delay = 0.5, ready = nil}
 local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 902, delay = 0.5, ready = nil}
 --[[SPELLS]]--
@@ -211,10 +211,10 @@ end
 function CastW(myTarget)
 	local UseW_  = Menu.Combo.UseW
 	if not UseW_ then return end
-	if ValidTarget(myTarget) and TalonRake.ready and GetDistance(myTarget) + enemyRangeHitBox <= TalonRake.range then
+	if ValidTarget(myTarget, TalonRake.range) and TalonRake.ready then
 		if Menu.General.UseVPred then
 			local mainCastPosition, mainHitChance = VP:GetConeAOECastPosition(myTarget,
-																			  ((TalonRake.delay + 350)/TalonRake.speed), 
+																			  ((TalonRake.delay + 335)/TalonRake.speed), 
 																			  52, 
 																			  TalonRake.range, 
 																			  TalonRake.speed, 
@@ -232,7 +232,7 @@ end
 function CastE(myTarget)
 	local UseE_  = Menu.Combo.UseE
 	if not UseE_ then return end
-	if ValidTarget(myTarget) and TalonCutthroat.ready and GetDistance(myTarget) + enemyRangeHitBox <= TalonCutthroat.range then		
+	if ValidTarget(myTarget, TalonCutthroat.range) and TalonCutthroat.ready then		
 		if Menu.General.UsePacket then
 			Packet('S_CAST', { spellId = TalonCutthroat.spellSlot, targetNetworkId = myTarget.networkID }):send()					
 		else
