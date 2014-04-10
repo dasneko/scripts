@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "1.3"
+local version = "1.4"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -34,7 +34,7 @@ end
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
 local TalonRake            = 	{spellSlot = _W, range = 700, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
-local TalonCutthroat       =	{spellSlot = _E, range = 675, width = 0, speed = math.huge, delay = 0.5, ready = nil}
+local TalonCutthroat       =	{spellSlot = _E, range = 665, width = 0, speed = math.huge, delay = 0.5, ready = nil}
 local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 902, delay = 0.5, ready = nil}
 --[[SPELLS]]--
 local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
@@ -67,8 +67,9 @@ local Target 				= nil
 local UsandoHP				= false
 local UsandoMana			= false
 local UsandoRecall			= false
-local DamageTable = {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT", "HYDRA", "RUINEDKING"}
-local DamageText  = nil
+local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT", "HYDRA", "RUINEDKING"}
+local DamageText  			= nil
+local RespawPoint 			= GetSpawnPos():normalized()
 function OnLoad()	
 	Menu1()	
 	UpdateVariaveis()
@@ -89,14 +90,17 @@ Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("UseR", "Use "..myPlayer:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true)		
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-		Menu.Combo:addSubMenu("Combo Settings", "CSettings")
+		Menu.Combo:addSubMenu("Combo/Team Fight Settings", "CSettings")
 			Menu.Combo.CSettings:addParam("Rdelay", "Ultimate delay to second cast", SCRIPT_PARAM_LIST, 4, {"0", "0.5", "1.0", "1.5", "2.0", "2.5"})
 			Menu.Combo.CSettings:addParam("UseItems", "Auto Use Items", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.CSettings:addParam("UseIgnite", "Auto Ignite Target", SCRIPT_PARAM_ONOFF, true)
+			Menu.Combo.CSettings:addParam("scapeMode", "Scape Mode Prioritization", SCRIPT_PARAM_LIST, 1, {"Minion", "Enemy", "Auto"})
+			Menu.Combo.CSettings:addParam("scapeKey", "Scape with "..myPlayer:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 Menu:addSubMenu("Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Harass System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Harass:addParam("UseAutoW", "Auto Cast W", SCRIPT_PARAM_ONOFF, false)
+		Menu.Harass:addParam("StopCastMana", "Stop Cast W if mana below %", SCRIPT_PARAM_SLICE, 40, 20, 100, -1)
 		Menu.Harass:addParam("UseW", "Use "..myPlayer:GetSpellData(_W).name.." (W)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 --[[Farm]]
@@ -144,6 +148,7 @@ Menu:addSubMenu("General System", "General")
 	Menu.Combo:permaShow("ComboKey")
 	Menu.Harass:permaShow("HarassKey")
 	Menu.Farmerr:permaShow("FarmKey")
+	Menu.Combo.CSettings:permaShow("scapeKey")
 --[[spells]]
 	if myPlayer:GetSpellData(SUMMONER_1).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_1
 	elseif myPlayer:GetSpellData(SUMMONER_2).name:find(IgniteSpell.spellSlot) then IgniteSpell.slot = SUMMONER_2 end	
@@ -227,11 +232,9 @@ function CastE(myTarget)
 	if not UseE_ then return end
 	if ValidTarget(myTarget) and TalonCutthroat.ready and GetDistance(myTarget) + enemyRangeHitBox <= TalonCutthroat.range then		
 		if Menu.General.UsePacket then
-			Packet('S_CAST', { spellId = TalonCutthroat.spellSlot, targetNetworkId = myTarget.networkID }):send()	
-			lastAttackCD = 0		
+			Packet('S_CAST', { spellId = TalonCutthroat.spellSlot, targetNetworkId = myTarget.networkID }):send()					
 		else
-			CastSpell(TalonCutthroat.spellSlot, myTarget)	
-			lastAttackCD = 0			
+			CastSpell(TalonCutthroat.spellSlot, myTarget)						
 		end
 	end
 end
@@ -253,14 +256,14 @@ function CastR(myTarget)
 				DelayAction(function ()
 								CastSpell(TalonShadowAssault.spellSlot, AOECastPosition.x, AOECastPosition.z)
 							end,
-							rDelay + GetLatency() / 1000)
+							rDelay + GetLatency() / 2000)
 			end
 		else
 			CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
 			DelayAction(function ()
 						CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
 						end,
-						rDelay + GetLatency() / 1000)
+						rDelay + GetLatency() / 2000)
 		end
 	end
 end
@@ -355,10 +358,13 @@ function OnTick()
 	--[[Combo]]
 	local Usar 		 			= Menu.Combo.ComboKey
 	local UsarItems_ 			= Menu.Combo.CSettings.UseItems
+	local UsarScape_			= Menu.Combo.CSettings.scapeKey
 	--[[Harass]]
 	local UsarHarass 			= Menu.Harass.HarassSystem
 	local UsarHarassKey			= Menu.Harass.HarassKey
 	local UsarAutoHarass		= Menu.Harass.UseAutoW
+	local StopCastMana_			= Menu.Harass.StopCastMana
+	local MyMana_				= (myPlayer.mana / myPlayer.maxMana *100)
 	--[[Farm]]	
 	local FarmerrSystem_		= Menu.Farmerr.FarmerrSystem
 	local FarmUseW_				= Menu.Farmerr.UseW
@@ -394,13 +400,17 @@ function OnTick()
 		CastR(Target)
 		if UsarItems_ then CastCommonItem()	end
 	end
+	if UsarScape_ and not _G.Evade then
+		_OrbWalk()
+		ScapeRules()
+	end
 	if UsarHarass and not _G.Evade then
 		if UsarAutoHarass then
 			CastW(Target)			
 		else
-			if UsarHarassKey then
+			if UsarHarassKey and not myMana <= StopCastMana_ then
 				CastW(Target)
-				_OrbWalk()
+				_OrbWalk(Target)
 			end
 		end
 	end		
@@ -459,6 +469,92 @@ function OnProcessSpell(object, spell)
 end
 
 --[[others functions]]
+
+function ScapeRules()
+	local Enemys 		= GetEnemyHeroes() --targetmaneger
+	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized() --vector of myPlayer	
+	local EnemyPosT_	= {} --table with vector of all nearby enemies
+	local MinionPosT_	= {} --table with vector of all nearby minions
+	local scapeMode_	= Menu.Combo.CSettings.scapeMode --{"Minion", "Enemy", "Auto"}]
+	--local BestPos		= nil
+	local ScapeTarget 	= nil --final target to cast E
+
+	--[[Buff enemy vector pos in a table]]	
+	for i, Enemy_ in pairs(Enemys) do
+		if ValidTarget(Enemy_, TalonCutthroat.range) then
+			--PrintChat("Testing:"..Enemy_)
+			local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()
+			table.insert(EnemyPosT_, EnemyPos)			
+		end
+	end
+	--PrintChat("Enemy table OK")
+
+	--[[Buff minions vector pos in a table]]
+	for i, Minion_ in pairs(MinionsInimigos.objects) do -- MinionsInimigos from minionManager
+		if ValidTarget(Minion_, TalonCutthroat.range, true) then
+			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()
+			table.insert(MinionPosT_, MinionPos)
+			--PrintChat("Checking Minions:"..Minion_)
+		end
+	end
+	--PrintChat("Minion table OK")
+
+	--[[Cast E if "Minion" Option]]
+	if scapeMode_ == "Minion" then
+		--PrintChat("Escape Minion Mode")
+		for i, Minion_ in pairs(MinionPosT_) do
+			--local BestPos = Minion_ - RespawPoint
+			local MinionDist = GetDistance(Minion_, RespawPoint)  --distance between Minion and Respaw
+			local MyDist	= GetDistance(MyPos, RespawPoint)
+			if MinionDist < MyDist and CountEnemyHeroInRange(400, Minion_) <= 2 then --there is no reason to use "E" if I'm closer to the base than the minion
+				CastE(Minion_)
+			end
+			MinionPosT_[i] = nil
+		end
+		--PrintChat("Scape minion ok")		
+	end
+
+	--[[Cast E if "Enemy" Option]]
+	if scapeMode_ == "Enemy" and #EnemyPosT_ > 0 then
+		--PrintChat("Escape Enemy Mode")
+		for i, Enemy_ in pairs(EnemyPosT_) do
+			--local BestPos = Enemy_ - RespawPoint
+			local EnemyDist = GetDistance(Enemy_, RespawPoint) --distance between Enemy and Respaw
+			local MyDist	= GetDistance(MyPos, RespawPoint)			
+			if EnemyDist < MyDist then --there is no reason to use "E" if I'm closer to the base than the enemy
+				CastE(Enemy_)
+			end
+			EnemyPosT_[i] = nil
+		end
+		--PrintChat("Scape enemy ok")	
+	end
+
+	--[[Cast E if Auto Option, see what distance is small between Enemy and Minion]]
+	if scapeMode_ == "Auto" then
+		--PrintChat("Escape Enemy Mode")
+		local BestPos = nil
+		for i, Enemy_ in pairs(EnemyPosT_) do
+			local EnemyDist = GetDistance(Enemy_, RespawPoint)
+			local MyDist	= GetDistance(MyPos, RespawPoint)
+			if EnemyDist < MyDist then				
+				ScapeTarget = Enemy_
+			end
+		end
+		for i, Minion_ in pairs(MinionPosT_) do
+			local MinionDist 	= GetDistance(Minion_, RespawPoint)
+			local MyDist		= GetDistance(MyPos, RespawPoint)
+			if MinionDist < MyDist then				
+				ScapeTarget = Minion_
+			end
+		end
+		if ValidTarget(ScapeTarget, TalonCutthroat.range) then
+			CastE(ScapeTarget)
+		end
+	end
+end
+
+		
+
 
 function CastIgnite()
 	--local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
@@ -522,13 +618,37 @@ function FarmMinionsW()
 	MinionsInimigos:update()
 	for i, Minion in pairs(MinionsInimigos.objects) do
 		local wDamage = getDmg("W", Minion, myPlayer) *2
-		if ValidTarget(Minion) and GetDistance(Minion) <= TalonRake.range and TalonNoxianDiplomacy.ready and (myPlayer.mana / myPlayer.maxMana *100) > manaStop then			
-			if Minion.health <= wDamage and MinionsInimigos.iCount > FarmWithW then
+		if ValidTarget(Minion) and GetDistance(Minion) <= TalonRake.range and TalonNoxianDiplomacy.ready and actualMana > manaStop then		
+			if Minion.health <= wDamage and MinionsInimigos.iCount > FarmWithW then --check if number of minion is higher than X
 				CastW(Minion)
 			end
 		end
 	end
 end
+
+function GetMinionAngle()
+	MinionsInimigos:update()
+	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized()
+	local MinionPos     = nil
+	local MinionTable	= {}
+	local MinionTable1  = {}	
+	--local FirstMinion 	= nil
+	for i, Minion in pairs(MinionsInimigos.objects) do		
+		MinionPos = Vector(Vector(Minion.x, Minion.y, Minion.z) + MyPos):normalized()*52
+		table.insert(MinionTable, MinionPos)
+	end
+	for a, MinionPos_ in pairs(MinionTable) do
+		for b, Minion in pairs(MinionsInimigos.objects) do
+			local MinionPos_2 = Vector(Vector(Minion.x, Minion.y, Minion.z) + MyPos):normalized()*52
+			if MinionPos_ < MinionPos_2 and #MinionInimigos.objects > 3 then
+				CastW(MinionPos_2)
+			end
+		end
+	end
+end
+
+		
+
 --trees
 function GetCustomTarget()
  	Alvo:update() 	
