@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "1.4"
+local version = "1.5"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -70,6 +70,8 @@ local UsandoRecall			= false
 local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT", "HYDRA", "RUINEDKING"}
 local DamageText  			= nil
 local RespawPoint 			= GetSpawnPos():normalized()
+local DrawLine1				= nil
+local DrawLine2 			= nil
 function OnLoad()	
 	Menu1()	
 	UpdateVariaveis()
@@ -363,7 +365,7 @@ function OnTick()
 	local UsarHarass 			= Menu.Harass.HarassSystem
 	local UsarHarassKey			= Menu.Harass.HarassKey
 	local UsarAutoHarass		= Menu.Harass.UseAutoW
-	local StopCastMana_			= Menu.Harass.StopCastMana
+	local StopCastManaP			= Menu.Harass.StopCastMana
 	local MyMana_				= (myPlayer.mana / myPlayer.maxMana *100)
 	--[[Farm]]	
 	local FarmerrSystem_		= Menu.Farmerr.FarmerrSystem
@@ -400,15 +402,17 @@ function OnTick()
 		CastR(Target)
 		if UsarItems_ then CastCommonItem()	end
 	end
+	--[[
 	if UsarScape_ and not _G.Evade then
 		_OrbWalk()
 		ScapeRules()
 	end
+	]]
 	if UsarHarass and not _G.Evade then
-		if UsarAutoHarass then
+		if UsarAutoHarass and MyMana_ > StopCastManaP then
 			CastW(Target)			
 		else
-			if UsarHarassKey and not myMana <= StopCastMana_ then
+			if UsarHarassKey and MyMana_ > StopCastManaP then
 				CastW(Target)
 				_OrbWalk(Target)
 			end
@@ -456,6 +460,13 @@ function OnDraw()
 			DrawText3D(tostring(DamageText_),Target.x ,Target.y + 50, Target.z, 22, ARGB(255,255,0,0), true)
 		end
 	end
+
+	if DrawLine1 ~= nil then
+		DrawLines3D(DrawLine1.x, DrawLine1.y, DrawLine1.z, 50, ARGB(255, 255, 255, 000))
+	end
+	if DrawLine2 ~= nil then
+		DrawLines3D(DrawLine2, 50, ARGB(255, 255, 000, 000))
+	end
 end
 
 function OnProcessSpell(object, spell)
@@ -484,7 +495,8 @@ function ScapeRules()
 		if ValidTarget(Enemy_, TalonCutthroat.range) then
 			--PrintChat("Testing:"..Enemy_)
 			local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()
-			table.insert(EnemyPosT_, EnemyPos)			
+			table.insert(EnemyPosT_, EnemyPos)	
+			DrawLine1 = EnemyPos		
 		end
 	end
 	--PrintChat("Enemy table OK")
@@ -495,6 +507,7 @@ function ScapeRules()
 			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()
 			table.insert(MinionPosT_, MinionPos)
 			--PrintChat("Checking Minions:"..Minion_)
+			DrawLine2 = MinionPos
 		end
 	end
 	--PrintChat("Minion table OK")
@@ -506,7 +519,7 @@ function ScapeRules()
 			--local BestPos = Minion_ - RespawPoint
 			local MinionDist = GetDistance(Minion_, RespawPoint)  --distance between Minion and Respaw
 			local MyDist	= GetDistance(MyPos, RespawPoint)
-			if MinionDist < MyDist and CountEnemyHeroInRange(400, Minion_) <= 2 then --there is no reason to use "E" if I'm closer to the base than the minion
+			if MinionDist < MyDist and CountEnemyHeroInRange(400, Minion_) <= 2 and TalonCutthroat.ready then --there is no reason to use "E" if I'm closer to the base than the minion
 				CastE(Minion_)
 			end
 			MinionPosT_[i] = nil
@@ -521,7 +534,7 @@ function ScapeRules()
 			--local BestPos = Enemy_ - RespawPoint
 			local EnemyDist = GetDistance(Enemy_, RespawPoint) --distance between Enemy and Respaw
 			local MyDist	= GetDistance(MyPos, RespawPoint)			
-			if EnemyDist < MyDist then --there is no reason to use "E" if I'm closer to the base than the enemy
+			if EnemyDist < MyDist and TalonCutthroat.ready then --there is no reason to use "E" if I'm closer to the base than the enemy
 				CastE(Enemy_)
 			end
 			EnemyPosT_[i] = nil
@@ -559,7 +572,7 @@ end
 function CastIgnite()
 	--local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
 	local AntiDoubleIgnite_ = Menu.Items.AntiDoubleIgnite
-	if IgniteSpell.slot ~= nil and ValidTarget(Target) and GetDistance(Target) < IgniteSpell.range and IgniteReady then	
+	if IgniteSpell.slot ~= nil and ValidTarget(Target, IgniteSpell.range, true) and IgniteReady then	
 		if AntiDoubleIgnite_ and TargetHaveBuff("SummonerDot", Target) then return end
 		if AntiDoubleIgnite_ and not TargetHaveBuff("SummonerDot", Target) then
 			if Menu.General.UsePacket then
