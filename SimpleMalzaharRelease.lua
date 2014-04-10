@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.748"
+local version = "0.749"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -206,9 +206,9 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 			_G.MMA_AttackAvailable = true
 		end
 		if _G.AutoCarry then
-			_G.AutoCarry.Orbwalker = false
+			--_G.AutoCarry.Orbwalker = false
 			_G.AutoCarry.CanMove = false
-			_G.AutoCarry.CanAttack = true
+			_G.AutoCarry.CanAttack = false
 		end
 
 
@@ -216,6 +216,7 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, AlZaharCalloftheVoid.range, DAMAGE_MAGIC, true)
 	Alvo.name = "Malzahar"
 	Menu:addTS(Alvo)
+	
 	enemyHeroes = GetEnemyHeroes()
 	MinionsInimigos = minionManager(MINION_ENEMY, 1200, myHero, MINION_SORT_HEALTH_ASC)
 	JungleMinions = minionManager(MINION_JUNGLE, 900, myHero, MINION_SORT_MAXHEALTH_DEC)
@@ -394,7 +395,7 @@ function CastCombo()
 				if myHero:CanUseSpell(AlZaharMaleficVision.spellSlot) ~= READY then	CastR()	end
 			end
 			if Menu.Combo.UseQ and not Menu.Combo.UseW and not Menu.Combo.UseE then
-				if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) ~= READY then	CastR()	end
+				if myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) ~= READY then myHero:HoldPosition() CastR() end
 			end
 		end
 		end	
@@ -425,6 +426,7 @@ function GetBestCombo()
 					CastE()
 				end
 				if ListCombo == "R" and not _G.Evade then
+					myHero:HoldPosition()
 					CastR()
 				end
 			end	
@@ -586,14 +588,16 @@ function AtualizaItems()
 	MeuAlvo = GetCustomTarget()
 		if UsandoR then
 			if _G.MMA_Loaded then
-			_G.MMA_Orbwalker = false		
-			_G.MMA_HybridMode = false
-			_G.MMA_LaneClear = false
+				myHero:HoldPosition()
+			--_G.MMA_Orbwalker = false		
+			--_G.MMA_HybridMode = false
+			--_G.MMA_LaneClear = false
 			_G.MMA_AbleToMove = false
 			_G.MMA_AttackAvailable = false
 			end
 			if _G.AutoCarry then
-			_G.AutoCarry.Orbwalker = false
+				myHero:HoldPosition()
+			--_G.AutoCarry.Orbwalker = false
 			_G.AutoCarry.CanMove = false
 			_G.AutoCarry.CanAttack = false
 			end
@@ -660,7 +664,38 @@ function OnTick()
 			AutoSkillLevel()
 		end
 	end
+	if UsandoR then
+		if _G.MMA_Loaded then
+			myHero:HoldPosition()
+			--_G.MMA_Orbwalker = false		
+			--_G.MMA_HybridMode = false
+			--_G.MMA_LaneClear = false
+			_G.MMA_AbleToMove = false
+			_G.MMA_AttackAvailable = false
+		end
+		if _G.AutoCarry then
+			myHero:HoldPosition()
+			--_G.AutoCarry.Orbwalker = false
+			_G.AutoCarry.CanMove = false
+			_G.AutoCarry.CanAttack = false
+		end
+	end
 end
+
+function OnSendPacket(packet)
+ if UsandoR then
+  if packet.header == 113 then
+   local aux = packet.DecodeF(packet)
+   local type = packet.Decode1(packet)
+   if type == 5 or type == 2 or type == 3 or type == 7 and TargetHaveBuff("alzaharnethergraspsound", MeuAlvo) or TargetHaveBuff("AlzaharNetherGrasp", MeuAlvo) then
+    --if (not (SpellData.Q.ready and SpellData.E.ready and SpellData.R.ready)) then
+     packet:Block()
+   -- end
+   end
+  end
+ end
+end
+
 
 --[[target]]
 --[[
