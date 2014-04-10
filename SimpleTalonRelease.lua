@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.0"
+local version = "2.001"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -69,7 +69,7 @@ local UsandoMana			= false
 local UsandoRecall			= false
 local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT", "HYDRA", "RUINEDKING"}
 local DamageText  			= nil
-local RespawPoint 			= GetSpawnPos():normalized()
+local RespawPoint 			= Vector(GetSpawnPos()):normalized()
 local DrawLine1				= nil
 local DrawLine2 			= nil
 function OnLoad()	
@@ -96,7 +96,7 @@ Menu:addSubMenu("Combo System", "Combo")
 			Menu.Combo.CSettings:addParam("Rdelay", "Ultimate delay to second cast", SCRIPT_PARAM_LIST, 4, {"0", "0.5", "1.0", "1.5", "2.0", "2.5"})
 			Menu.Combo.CSettings:addParam("UseItems", "Auto Use Items", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.CSettings:addParam("UseIgnite", "Auto Ignite Target", SCRIPT_PARAM_ONOFF, true)
-			Menu.Combo.CSettings:addParam("scapeMode", "Scape Mode Prioritization", SCRIPT_PARAM_LIST, 1, {"Minion", "Enemy", "Auto"})
+			Menu.Combo.CSettings:addParam("scapeMode", "Scape Mode Prioritization", SCRIPT_PARAM_LIST, 3, {"Enemy Minion", "Enemy", "Auto"})
 			Menu.Combo.CSettings:addParam("scapeKey", "Scape with "..myPlayer:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 Menu:addSubMenu("Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Harass System", SCRIPT_PARAM_ONOFF, true)
@@ -395,12 +395,12 @@ function OnTick()
 		CastR(Target)
 		if UsarItems_ then CastCommonItem()	end
 	end
-	--[[
+	
 	if UsarScape_ and not _G.Evade then
-		_OrbWalk()
+		if UseOrb_ then _OrbWalk() end
 		ScapeRules()
 	end
-	]]
+	
 	if UsarHarass and not _G.Evade then
 		if UsarAutoHarass and MyMana_ > StopCastManaP then
 			CastW(Target)			
@@ -455,10 +455,10 @@ function OnDraw()
 	end
 
 	if DrawLine1 ~= nil then
-		DrawLines3D(DrawLine1.x, DrawLine1.y, DrawLine1.z, 50, ARGB(255, 255, 255, 000))
+		DrawLines3D(DrawLine1.x, DrawLine1.y, DrawLine1.z, 150, ARGB(255, 255, 255, 000))
 	end
 	if DrawLine2 ~= nil then
-		DrawLines3D(DrawLine2, 50, ARGB(255, 255, 000, 000))
+		DrawLines3D(DrawLine2.x, DrawLine2.y, DrawLines2.z, 150, ARGB(255, 255, 000, 000))
 	end
 end
 
@@ -521,7 +521,7 @@ function ScapeRules()
 	end
 
 	--[[Cast E if "Enemy" Option]]
-	if scapeMode_ == "Enemy" and #EnemyPosT_ > 0 then
+	if scapeMode_ == "Enemy" then
 		--PrintChat("Escape Enemy Mode")
 		for i, Enemy_ in pairs(EnemyPosT_) do
 			--local BestPos = Enemy_ - RespawPoint
@@ -560,9 +560,9 @@ function ScapeRules()
 end
 
 function CastIgnite()
-	--local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
+	local IgniteReady 		= (myPlayer:CanUseSpell(IgniteSpell.slot) == READY)	
 	local AntiDoubleIgnite_ = Menu.Items.AntiDoubleIgnite
-	if IgniteSpell.slot ~= nil and ValidTarget(Target, IgniteSpell.range, true) and IgniteReady then	
+	if IgniteSpell.slot ~= nil and ValidTarget(Target, IgniteSpell.range) and IgniteReady then	
 		if AntiDoubleIgnite_ and TargetHaveBuff("SummonerDot", Target) then return end
 		if AntiDoubleIgnite_ and not TargetHaveBuff("SummonerDot", Target) then
 			if Menu.General.UsePacket then
