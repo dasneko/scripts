@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.014"
+local version = "2.015"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -328,10 +328,10 @@ end
 function OnGainBuff(unit, buff)
 	if unit.isMe then
 		for i=1, #BuffNames do
-			if buff.name:Lower():find(BuffNames[i]) then
-				if BuffName[i] == "regenerationpotion" then UsandoHP = true end
-				if BuffName[i] == "flaskofcrystalwater" then UsandoMana = true end
-				if BuffName[i] == "recall" then UsandoRecall = true end
+			if buff.name:lower():find(BuffNames[i]) then
+				if BuffNames[i] == "regenerationpotion" then UsandoHP = true end
+				if BuffNames[i] == "flaskofcrystalwater" then UsandoMana = true end
+				if BuffNames[i] == "recall" then UsandoRecall = true end
 			end
 		end
 	end
@@ -340,10 +340,10 @@ end
 function OnLoseBuff(unit, buff)
 	if unit.isMe then
 		for i=1, #BuffNames do
-			if buff.name:Lower():find(BuffNames[i]) then
-				if BuffName[i] == "regenerationpotion" then UsandoHP = false end
-				if BuffName[i] == "flaskofcrystalwater" then UsandoMana = false end
-				if BuffName[i] == "recall" then UsandoRecall = false end
+			if buff.name:lower():find(BuffNames[i]) then
+				if BuffNames[i] == "regenerationpotion" then UsandoHP = false end
+				if BuffNames[i] == "flaskofcrystalwater" then UsandoMana = false end
+				if BuffNames[i] == "recall" then UsandoRecall = false end
 			end
 		end
 	end
