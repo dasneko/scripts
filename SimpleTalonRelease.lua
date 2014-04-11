@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.010"
+local version = "2.011"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -33,7 +33,7 @@ end
 --[[AUTO UPDATE END]]--
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
-local TalonRake            = 	{spellSlot = _W, range = 675, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
+local TalonRake            = 	{spellSlot = _W, range = 655, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
 local TalonCutthroat       =	{spellSlot = _E, range = 700, width = 0, speed = math.huge, delay = 0.5, ready = nil}
 local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 902, delay = 0.5, ready = nil}
 --[[SPELLS]]--
@@ -69,6 +69,7 @@ local UsandoMana			= false
 local UsandoRecall			= false
 local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT", "HYDRA", "RUINEDKING"}
 local DamageText  			= nil
+local BuffNames = { "regenerationpotion", "flaskofcrystalwater", "recall" }
 local RespawPoint 			= Vector(GetSpawnPos()):normalized()
 local DrawLine1				= nil
 local DrawLine2 			= nil
@@ -325,6 +326,31 @@ end
 
 --[[ULTIMATE/BUFFS CONTROL]]--
 function OnGainBuff(unit, buff)
+	if unit.isMe then
+		for i=1, #BuffNames then
+			if buff.name:Lower():find(BuffNames[i]) then
+				if BuffName[i] == "regenerationpotion" then UsandoHP = true end
+				if BuffName[i] == "flaskofcrystalwater" then UsandoMana = true end
+				if BuffName[i] == "recall" then UsandoRecall = true end
+			end
+		end
+	end
+end
+
+function OnLoseBuff(unit, buff)
+	if unit.isMe then
+		for i=1, #BuffNames then
+			if buff.name:Lower():find(BuffNames[i]) then
+				if BuffName[i] == "regenerationpotion" then UsandoHP = false end
+				if BuffName[i] == "flaskofcrystalwater" then UsandoMana = false end
+				if BuffName[i] == "recall" then UsandoRecall = false end
+			end
+		end
+	end
+end
+
+--[[old OnGainBuff function
+function OnGainBuff(unit, buff)
 	if unit.isMe then		
 		if buff.name:lower():find("regenerationpotion") then 
 			UsandoHP = true
@@ -335,9 +361,11 @@ function OnGainBuff(unit, buff)
 		if buff.name:lower():find("recall") then
 			UsandoRecall = true
 		end
-	end	
+	end		
 end
+]]
 
+--[[old InLoseBuff function
 function OnLoseBuff(unit, buff)
 	if unit.isMe then		
 		if buff.name:lower():find("regenerationpotion") then 
@@ -351,6 +379,7 @@ function OnLoseBuff(unit, buff)
 		end	
 	end	
 end
+]]
 
 
 --[[end]]
@@ -581,6 +610,7 @@ function CastIgnite(myTarget)
 	end
 end 
 
+--[[OLD
 function KillTextDamage()
 	if ValidTarget(Target) then
 		local Damage_     = 0
@@ -599,7 +629,25 @@ function KillTextDamage()
 	end
 	return DamageText
 end
-
+]]
+function KillTextDamage()
+	if ValidTarget(Target) then
+		local Damage_     = 0
+		local TotalDamage = 0		
+		for i = 1, #DamageTable do
+			Damage_ = (getDmg(DamageTable[i], Target, myPlayer) or 0)
+			TotalDamage = TotalDamage + Damage_
+		end
+		--PrintChat(tostring(TotalDamage))
+		if Target.health > TotalDamage then
+			DamageText = "Need Harass"
+		end
+		if Target.health < TotalDamage then		
+			DamageText = "Fatality!"
+		end		
+	end
+	return DamageText
+end
 
 function AutoSkillLevel()	
 	if myPlayer:GetSpellData(_Q).level + myPlayer:GetSpellData(_W).level + myPlayer:GetSpellData(_E).level + myPlayer:GetSpellData(_R).level < myPlayer.level then
@@ -658,7 +706,7 @@ function GetCustomTarget()
  	Alvo:update() 	
     if _G.MMA_Target and _G.MMA_Target.type == myPlayer.type then return _G.MMA_Target end
     if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myPlayer.type then return _G.AutoCarry.Attack_Crosshair.target end
-	if Alvo.taget.type == myPlayer.type then return Alvo.target end
+	if Alvo.target.type == myPlayer.type then return Alvo.target end
 end
 --end
 
