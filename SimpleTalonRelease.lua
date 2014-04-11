@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.002"
+local version = "2.003"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -258,14 +258,14 @@ function CastR(myTarget)
 				DelayAction(function ()
 								CastSpell(TalonShadowAssault.spellSlot, AOECastPosition.x, AOECastPosition.z)
 							end,
-							rDelay + GetLatency() / 2000)
+							rDelay + GetLatency() / 2)
 			end
 		else
 			CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
 			DelayAction(function ()
 						CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
 						end,
-						rDelay + GetLatency() / 2000)
+						rDelay + GetLatency() / 2)
 		end
 	end
 end
@@ -560,7 +560,7 @@ function ScapeRules()
 end
 
 function CastIgnite()
-	local IgniteReady 		= (myPlayer:CanUseSpell(IgniteSpell.slot) == READY)	
+	local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
 	local AntiDoubleIgnite_ = Menu.Items.AntiDoubleIgnite
 	if IgniteSpell.slot ~= nil and ValidTarget(Target, IgniteSpell.range) and IgniteReady then	
 		if AntiDoubleIgnite_ and TargetHaveBuff("SummonerDot", Target) then return end
