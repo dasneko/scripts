@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.008"
+local version = "2.009"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -495,7 +495,7 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 	--PrintChat("Enemy table OK")
 
 	--[[Buff minions vector pos in a table]]
-	for i, Minion_ in pairs(MinionsInimigos.objects) do  MinionsInimigos
+	for i, Minion_ in pairs(MinionsInimigos.objects) do
 		if ValidTarget(Minion_, TalonCutthroat.range, true) then
 			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()
 			table.insert(MinionPosT_, MinionPos)
