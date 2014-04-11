@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.006"
+local version = "2.007"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -394,12 +394,12 @@ function OnTick()
 		CastR(Target)
 		if UsarItems_ then CastCommonItem()	end
 	end
-	--[[
+	
 	if UsarScape_ then
 		if UseOrb_ then _OrbWalk() end
 		ScapeRules()
 	end
-	]]
+	
 	if UsarHarass then
 		if UsarAutoHarass and MyMana_ > StopCastManaP then
 			CastW(Target)			
@@ -410,7 +410,7 @@ function OnTick()
 			end
 		end
 	end		
-	if FarmerrSystem_ and then
+	if FarmerrSystem_ then
 		if UsarAutoFarm and FarmUseW_ and not UsandoRecall then
 			FarmMinionsW()
 		else 
@@ -473,7 +473,7 @@ function OnProcessSpell(object, spell)
 end
 
 --[[others functions]]
---[[
+
 function ScapeRules()
 	local Enemys 		= GetEnemyHeroes() --targetmaneger
 	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized() --vector of myPlayer	
@@ -483,31 +483,31 @@ function ScapeRules()
 	--local BestPos		= nil
 	local ScapeTarget 	= nil --final target to cast E
 
-	[[Buff enemy vector pos in a table	
+	--[[Buff enemy vector pos in a table]]
 	for i, Enemy_ in pairs(Enemys) do
 		if ValidTarget(Enemy_, TalonCutthroat.range) then
 			PrintChat("Testing:"..Enemy_)
 			local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()
 			table.insert(EnemyPosT_, EnemyPos)	
-			DrawLine1 = EnemyPos		
+			--DrawLine1 = EnemyPos		
 		end
 	end
 	PrintChat("Enemy table OK")
 
-	[[Buff minions vector pos in a table
+	--[[Buff minions vector pos in a table]]
 	for i, Minion_ in pairs(MinionsInimigos.objects) do  MinionsInimigos from minionManager
 		if ValidTarget(Minion_, TalonCutthroat.range, true) then
 			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()
 			table.insert(MinionPosT_, MinionPos)
-			PrintChat("Checking Minions:"..Minion_)
-			DrawLine2 = MinionPos
+			--PrintChat("Checking Minions:"..Minion_)
+			--DrawLine2 = MinionPos
 		end
 	end
 	PrintChat("Minion table OK")
 
-	[[Cast E if "Minion" Option
+	--[[Cast E if "Minion" Option]]
 	if scapeMode_ == "Minion" then
-		PrintChat("Escape Minion Mode")
+		--PrintChat("Escape Minion Mode")
 		for i, Minion_ in pairs(MinionPosT_) do
 			local BestPos = Minion_ - RespawPoint
 			local MinionDist = GetDistance(Minion_, RespawPoint)  --distance between Minion and Respaw
@@ -517,12 +517,12 @@ function ScapeRules()
 			end
 			MinionPosT_[i] = nil
 		end
-		PrintChat("Scape minion ok")		
+		--PrintChat("Scape minion ok")		
 	end
 
-	[[Cast E if "Enemy" Option
+	[[Cast E if "Enemy" Option]]
 	if scapeMode_ == "Enemy" then
-		PrintChat("Escape Enemy Mode")
+		--PrintChat("Escape Enemy Mode")
 		for i, Enemy_ in pairs(EnemyPosT_) do
 			local BestPos = Enemy_ - RespawPoint
 			local EnemyDist = GetDistance(Enemy_, RespawPoint) --distance between Enemy and Respaw
@@ -532,12 +532,12 @@ function ScapeRules()
 			end
 			EnemyPosT_[i] = nil
 		end
-		PrintChat("Scape enemy ok")	
+		--PrintChat("Scape enemy ok")	
 	end
 
-	[[Cast E if Auto Option, see what distance is small between Enemy and Minion
+	--[[Cast E if Auto Option, see what distance is small between Enemy and Minion]]
 	if scapeMode_ == "Auto" then
-		PrintChat("Escape Enemy Mode")
+		--PrintChat("Escape Enemy Mode")
 		local BestPos = nil
 		for i, Enemy_ in pairs(EnemyPosT_) do
 			local EnemyDist = GetDistance(Enemy_, RespawPoint)
@@ -558,7 +558,7 @@ function ScapeRules()
 		end
 	end
 end
-]]
+
 
 function CastIgnite(myTarget)
 	--local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
