@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.007"
+local version = "2.008"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -474,7 +474,7 @@ end
 
 --[[others functions]]
 
-function ScapeRules()
+function ScapeRules() -- IN WORK DO NOT USE THIS
 	local Enemys 		= GetEnemyHeroes() --targetmaneger
 	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized() --vector of myPlayer	
 	local EnemyPosT_	= {} --table with vector of all nearby enemies
@@ -492,10 +492,10 @@ function ScapeRules()
 			--DrawLine1 = EnemyPos		
 		end
 	end
-	PrintChat("Enemy table OK")
+	--PrintChat("Enemy table OK")
 
 	--[[Buff minions vector pos in a table]]
-	for i, Minion_ in pairs(MinionsInimigos.objects) do  MinionsInimigos from minionManager
+	for i, Minion_ in pairs(MinionsInimigos.objects) do  MinionsInimigos
 		if ValidTarget(Minion_, TalonCutthroat.range, true) then
 			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()
 			table.insert(MinionPosT_, MinionPos)
@@ -503,7 +503,7 @@ function ScapeRules()
 			--DrawLine2 = MinionPos
 		end
 	end
-	PrintChat("Minion table OK")
+	--PrintChat("Minion table OK")
 
 	--[[Cast E if "Minion" Option]]
 	if scapeMode_ == "Minion" then
@@ -520,7 +520,7 @@ function ScapeRules()
 		--PrintChat("Scape minion ok")		
 	end
 
-	[[Cast E if "Enemy" Option]]
+	--[[Cast E if "Enemy" Option]]
 	if scapeMode_ == "Enemy" then
 		--PrintChat("Escape Enemy Mode")
 		for i, Enemy_ in pairs(EnemyPosT_) do
