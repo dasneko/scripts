@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.012"
+local version = "2.013"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -706,7 +706,7 @@ function GetCustomTarget()
  	Alvo:update() 	
     if _G.MMA_Target and _G.MMA_Target.type == myPlayer.type then return _G.MMA_Target end
     if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myPlayer.type then return _G.AutoCarry.Attack_Crosshair.target end
-	if Alvo.target.type == myPlayer.type then return Alvo.target end
+	return Alvo.target end
 end
 --end
 
