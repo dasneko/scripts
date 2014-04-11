@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.011"
+local version = "2.012"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -327,7 +327,7 @@ end
 --[[ULTIMATE/BUFFS CONTROL]]--
 function OnGainBuff(unit, buff)
 	if unit.isMe then
-		for i=1, #BuffNames then
+		for i=1, #BuffNames do
 			if buff.name:Lower():find(BuffNames[i]) then
 				if BuffName[i] == "regenerationpotion" then UsandoHP = true end
 				if BuffName[i] == "flaskofcrystalwater" then UsandoMana = true end
@@ -339,7 +339,7 @@ end
 
 function OnLoseBuff(unit, buff)
 	if unit.isMe then
-		for i=1, #BuffNames then
+		for i=1, #BuffNames do
 			if buff.name:Lower():find(BuffNames[i]) then
 				if BuffName[i] == "regenerationpotion" then UsandoHP = false end
 				if BuffName[i] == "flaskofcrystalwater" then UsandoMana = false end
