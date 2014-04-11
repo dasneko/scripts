@@ -2,7 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.750"
+local version = "0.751"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
@@ -201,7 +201,7 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 	if UsandoR then
 			if _G.MMA_Loaded then
 				myHero:HoldPosition()
-			--_G.MMA_Orbwalker = false		
+			_G.MMA_Orbwalker = false		
 			--_G.MMA_HybridMode = false
 			--_G.MMA_LaneClear = false
 			_G.MMA_AbleToMove = false
@@ -388,7 +388,7 @@ function CastCombo()
 		if Menu.Combo.UseQ then CastQ() end
 		if Menu.Combo.UseW then CastW() end
 		if Menu.Combo.UseE then CastE() end			
-		if Menu.Combo.UseR and not _G.Evade then
+		if Menu.Combo.UseR then
 			if Menu.Combo.UseQ and Menu.Combo.UseW and Menu.Combo.UseE then			 
 				if not myHero:CanUseSpell(AlZaharCalloftheVoid.spellSlot) ~= READY and 
 					myHero:CanUseSpell(AlZaharNullZone.spellSlot) ~= READY and 
@@ -438,7 +438,7 @@ function GetBestCombo()
 				if ListCombo == "E" then
 					CastE()
 				end
-				if ListCombo == "R" and not _G.Evade then
+				if ListCombo == "R" and then
 					myHero:HoldPosition()
 					CastR()
 				end
@@ -689,7 +689,7 @@ function OnTick()
 		if UsandoR then
 			if _G.MMA_Loaded then
 				myHero:HoldPosition()
-			--_G.MMA_Orbwalker = false		
+			_G.MMA_Orbwalker = false		
 			--_G.MMA_HybridMode = false
 			--_G.MMA_LaneClear = false
 			_G.MMA_AbleToMove = false
@@ -869,7 +869,7 @@ function OnProcessSpell(object, spell)
 end
 
 function _OrbWalk(MeuAlvo)	
-	if UsandoR or _G.Evade then return end
+	if UsandoR then return end
 	if MeuAlvo ~= nil and GetDistance(MeuAlvo) <= myTrueRange then		
 		if timeToShoot() then
 			myHero:Attack(MeuAlvo)
