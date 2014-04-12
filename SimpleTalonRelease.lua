@@ -1,17 +1,14 @@
-if myHero.charName ~= "Talon" or not VIP_USER then return end
-require "VPrediction"
-
-
-local version = "2.016"
+local version = "2.017"
+local TESTVERSION = false
 local AUTOUPDATE = true
-local UPDATE_HOST = "raw.github.com"
+local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = LIB_PATH.."SimpleTalonRelease.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Talon, Tail of the Dragon:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
-	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH, "", 5)
+	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH)
 	if ServerData then
 		local ServerVersion = string.match(ServerData, "local version = \"%d+.%d+\"")
 		ServerVersion = string.match(ServerVersion and ServerVersion or "", "%d+.%d+")
@@ -20,7 +17,7 @@ if AUTOUPDATE then
 			if tonumber(version) < ServerVersion then
 				AutoupdaterMsg("New version available"..ServerVersion)
 				AutoupdaterMsg("Updating, please don't press F9")
-				DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end)	 
+				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
 			else
 				AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
 			end
@@ -29,6 +26,9 @@ if AUTOUPDATE then
 		AutoupdaterMsg("Error downloading version info")
 	end
 end
+
+if myHero.charName ~= "Talon" or not VIP_USER then return end
+require "VPrediction"
 
 --[[AUTO UPDATE END]]--
 
@@ -215,7 +215,7 @@ function CastW(myTarget)
 	if ValidTarget(myTarget, TalonRake.range) and TalonRake.ready then
 		if Menu.General.UseVPred then
 			local mainCastPosition, mainHitChance = VP:GetConeAOECastPosition(myTarget,
-																			  ((TalonRake.delay + 335)/TalonRake.speed), 
+																			  ((TalonRake.delay + 325)/TalonRake.speed), 
 																			  52, 
 																			  TalonRake.range, 
 																			  TalonRake.speed, 
@@ -454,7 +454,7 @@ function OnTick()
 			FarmMinionsW()
 		else 
 			if UsarFarmKey then
-				FarmMinionsW()
+				GetMinionAngle()
 				if UseOrb_ then _OrbWalk() end
 			end
 		end
@@ -491,14 +491,14 @@ function OnDraw()
 			DrawText3D(tostring(DamageText_),Target.x ,Target.y + 50, Target.z, 22, ARGB(255,255,0,0), true)
 		end
 	end
---[[
+
 	if DrawLine1 ~= nil then
-		DrawLines3D(DrawLine1.x, DrawLine1.y, DrawLine1.z, 150, ARGB(255, 255, 255, 000))
+		DrawLines3D(DrawLine1, 100, ARGB(255, 255, 255, 000))
 	end
 	if DrawLine2 ~= nil then
-		DrawLines3D(DrawLine2.x, DrawLine2.y, DrawLines2.z, 150, ARGB(255, 255, 000, 000))
+		DrawLines3D(DrawLine2.x, DrawLine2.y, DrawLine2.z, 10, ARGB(255, 255, 000, 000))
 	end
-	]]
+	
 end
 
 function OnProcessSpell(object, spell)
@@ -528,7 +528,7 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 			PrintChat("Testing:"..Enemy_)
 			local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()
 			table.insert(EnemyPosT_, EnemyPos)	
-			--DrawLine1 = EnemyPos		
+			--DrawLine1 = EnemyPosT_		
 		end
 	end
 	--PrintChat("Enemy table OK")
@@ -676,7 +676,7 @@ function FarmMinionsW()
 	local FarmWithW  = Menu.Farmerr.UseW
 	local manaStop 	 = Menu.Farmerr.StopCastMana
 	local actualMana = (myPlayer.mana / myPlayer.maxMana *100)
-	if FarmWithW == "OFF" then return end
+	if FarmWithW == 6 then return end
 	MinionsInimigos:update()
 	for i, Minion in pairs(MinionsInimigos.objects) do
 		local wDamage = getDmg("W", Minion, myPlayer) *2
@@ -688,27 +688,70 @@ function FarmMinionsW()
 	end
 end
 
-function GetMinionAngle()
+--[[
+function CountVectorsBetween(V1, V2, points)
+		local result = 0	
+		local hitpoints = {} 
+		for i, test in ipairs(points) do
+			local NVector = Vector(V1):crossP(test)
+			local NVector2 = Vector(test):crossP(V2)
+			if NVector.y >= 0 and NVector2.y >= 0 then
+				result = result + 1
+				table.insert(hitpoints, test)
+			elseif i == 1 then
+				return -1 --doesnt hit the main target
+			end
+		end
+		return result, hitpoints
+	end
+	]]
+
+--function MinionBestPosition()
+
+
+function GetMinionAngle() --skill W angle = 52
 	MinionsInimigos:update()
 	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized()
 	local MinionPos     = nil
 	local MinionTable	= {}
 	local MinionTable1  = {}	
 	--local FirstMinion 	= nil
-	for i, Minion in pairs(MinionsInimigos.objects) do		
-		MinionPos = Vector(Vector(Minion.x, Minion.y, Minion.z) + MyPos):normalized()*52
-		table.insert(MinionTable, MinionPos)
+	for i, Minion in ipairs(MinionsInimigos.objects) do
+		if Minion.type ~= myPlayer.type	then
+			MinionPos = Vector(Vector(Minion.x, Minion.y, Minion.z) - MyPos):rotated(0, (52 * math.pi /180 ), 0)
+			table.insert(MinionTable, MinionPos)		
+		end
 	end
-	for a, MinionPos_ in pairs(MinionTable) do
-		for b, Minion in pairs(MinionsInimigos.objects) do
-			local MinionPos_2 = Vector(Vector(Minion.x, Minion.y, Minion.z) + MyPos):normalized()*52
-			if MinionPos_ < MinionPos_2 and #MinionInimigos.objects > 3 then
-				CastW(MinionPos_2)
+
+
+	for i, Test in ipairs(MinionTable) do
+		for i, Minion in ipairs(MinionsInimigos.objects) do
+			local VMinion = Vector(Minion):normalized()
+			local V1 = Vector(Test):crossP(VMinion)
+			local V2 = Vector(VMinion):crossP(Minion)
+			if V1.y >= 0 and V2.y >= 0 then				
+				CastSpell(_W, Test.x, Test.y)
 			end
 		end
 	end
 end
+	--[[
 
+	for a, MinionPos_ in pairs(MinionTable) do
+		for b, Minion in pairs(MinionsInimigos.objects) do
+			if Minion.type ~= myPlayer.type then
+			local MinionPos_2 = Vector(Vector(Minion.x, Minion.y, Minion.z) + MyPos):normalized()
+			if MinionPos_ < MinionPos_2 then
+				--rotate or not, cast in oposite minions position
+				local MinionPos_rotate =  Vector(Vector(MinionPos_.x, MinionPos_.y, MinionPos_.z) + MyPos):rotated(0, 180 / (180*math.pi), 0)				
+				CastSpell(_W, MinionPos_rotate.x, MinionPos_rotate.z)
+			end
+			end
+		end
+	end
+	
+end
+]]
 		
 
 --trees
