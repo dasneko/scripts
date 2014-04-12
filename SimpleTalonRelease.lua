@@ -1,7 +1,6 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
-require "VPrediction"
 
-local version = "2.017"
+local version = "2.018"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -28,6 +27,8 @@ if AUTOUPDATE then
 		AutoupdaterMsg("Error downloading version info")
 	end
 end
+
+require "VPrediction"
 
 --[[AUTO UPDATE END]]--
 
