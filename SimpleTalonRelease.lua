@@ -1,6 +1,6 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
-local version = "2.018"
+local version = "2.019"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -34,7 +34,7 @@ require "VPrediction"
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
 local TalonRake            = 	{spellSlot = _W, range = 655, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
-local TalonCutthroat       =	{spellSlot = _E, range = 700, width = 0, speed = math.huge, delay = 0.5, ready = nil}
+local TalonCutthroat       =	{spellSlot = _E, range = 600, width = 0, speed = math.huge, delay = 0.5, ready = nil}
 local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 902, delay = 0.5, ready = nil}
 --[[SPELLS]]--
 local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
@@ -454,7 +454,7 @@ function OnTick()
 			FarmMinionsW()
 		else 
 			if UsarFarmKey then
-				GetMinionAngle()
+				FarmMinionsW()
 				if UseOrb_ then _OrbWalk() end
 			end
 		end
@@ -525,9 +525,9 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 	--[[Buff enemy vector pos in a table]]
 	for i, Enemy_ in pairs(Enemys) do
 		if ValidTarget(Enemy_, TalonCutthroat.range) then
-			PrintChat("Testing:"..Enemy_)
-			local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()
-			table.insert(EnemyPosT_, EnemyPos)	
+			--PrintChat("Testing:"..Enemy_)
+			local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()			
+			EnemyPosT_[#EnemyPosT_+1] = EnemyPos
 			--DrawLine1 = EnemyPosT_		
 		end
 	end
@@ -536,8 +536,8 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 	--[[Buff minions vector pos in a table]]
 	for i, Minion_ in pairs(MinionsInimigos.objects) do
 		if ValidTarget(Minion_, TalonCutthroat.range, true) then
-			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()
-			table.insert(MinionPosT_, MinionPos)
+			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()			
+			MinionPosT_[#MinionPosT_+1] = MinionPos
 			--PrintChat("Checking Minions:"..Minion_)
 			--DrawLine2 = MinionPos
 		end
