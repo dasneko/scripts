@@ -2,12 +2,23 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
-local version = "0.751"
+local version = "0.752"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = LIB_PATH.."SimpleMalzaharRelease.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+
+function StopMovMMA()
+	if _G.MMA_Loaded then
+		if _G.MMA_OrbWalker then
+			_G.MMA_AbreToMove = false
+			return true
+		else
+			return false
+		end
+	end
+end
 
 function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Simple Malzahar:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
@@ -427,8 +438,7 @@ function GetBestCombo()
 			TotalDamage = TotalDamage + getDmg(ListSpell, MeuAlvo, myHero)				
 		end			
 		if MeuAlvo.health <= TotalDamage then		 			
-			for b, ListCombo in pairs(spelllist) do
-				--local SpellToCast = "_"..ListCombo	-- eg. _Q, _W, _E, _R			
+			for b, ListCombo in pairs(spelllist) do						
 				if ListCombo == "Q" then
 					CastQ()
 				end
@@ -438,7 +448,7 @@ function GetBestCombo()
 				if ListCombo == "E" then
 					CastE()
 				end
-				if ListCombo == "R" and then
+				if ListCombo == "R" then
 					myHero:HoldPosition()
 					CastR()
 				end
