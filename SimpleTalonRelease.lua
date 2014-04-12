@@ -1,6 +1,6 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
-local version = "2.020"
+local version = "2.021"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -271,6 +271,23 @@ function CastR(myTarget)
 		end
 	end
 end
+
+function NewCastR(myTarget)
+	local UseR_  = Menu.Combo.UseR
+	local rDelay = Menu.Combo.CSettings.Rdelay	
+	if not UseR_ then return end
+	if ValidTarget(myTarget, TalonShadowAssault.range) and TalonShadowAssault.ready then
+		local EnemyPosition	=	Vector(myTarget):normalized()
+		local MyPos			= 	Vector(myPlayer):normalized()
+		if EnemyPosition < MyPos then
+			CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
+			DelayAction(function ()
+							CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
+						end,
+						rDelay + GetLatency() / 2)
+		end
+	end
+end
 --[[end]]
 
 --[[cast Spells/items]]
@@ -279,7 +296,7 @@ function CheckItems(tabela)
 		Value.slot = GetInventorySlotItem(Value.SlotId)		
 			if Value.slot ~= nil and (myPlayer:CanUseSpell(Value.slot) == READY) then 				
 			--table.insert(FoundItems, ItemIndex)		
-			FoundItems[#FoundItems+1] = ItemsIndex	
+			FoundItems[#FoundItems+1] = ItemIndex	
 		end
 	end
 end
@@ -425,13 +442,13 @@ function OnTick()
 			CastE(Target)
 			if not TalonCutthroat.ready then CastQ(Target) end
 			if not TalonNoxianDiplomacy.ready then CastW(Target) end
-			if not TalonRake.ready then	CastR(Target) end
+			if not TalonRake.ready then	NewCastR(Target) end
 		end
 		if ComboMode == 2 then --"W-E-Q-R"
 			CastW(Target)
 			if not TalonRake.ready then	CastE(Target) end
 			if not TalonCutthroat.ready then CastQ(Target) end
-			if not TalonNoxianDiplomacy.ready then CastR(Target) end
+			if not TalonNoxianDiplomacy.ready then NewCastR(Target) end
 		end
 		if UsarItems_ then CastCommonItem()	end
 	end
