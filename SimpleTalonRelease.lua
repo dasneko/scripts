@@ -1,6 +1,6 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
-local version = "2.019"
+local version = "2.020"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -33,8 +33,8 @@ require "VPrediction"
 --[[AUTO UPDATE END]]--
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
-local TalonRake            = 	{spellSlot = _W, range = 655, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
-local TalonCutthroat       =	{spellSlot = _E, range = 600, width = 0, speed = math.huge, delay = 0.5, ready = nil}
+local TalonRake            = 	{spellSlot = _W, range = 700, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
+local TalonCutthroat       =	{spellSlot = _E, range = 700, width = 0, speed = math.huge, delay = 0.5, ready = nil}
 local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 902, delay = 0.5, ready = nil}
 --[[SPELLS]]--
 local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
@@ -71,8 +71,8 @@ local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT"
 local DamageText  			= nil
 local BuffNames 			= { "regenerationpotion", "flaskofcrystalwater", "recall" }
 local RespawPoint 			= Vector(GetSpawnPos()):normalized()
-local DrawLine1				= nil
-local DrawLine2 			= nil
+--local DrawLine1				= nil
+--local DrawLine2 			= nil
 function OnLoad()	
 	Menu1()	
 	UpdateVariaveis()
@@ -98,13 +98,14 @@ Menu:addSubMenu("Combo System", "Combo")
 			Menu.Combo.CSettings:addParam("Rdelay", "Ultimate delay to second cast", SCRIPT_PARAM_LIST, 4, {"0", "0.5", "1.0", "1.5", "2.0", "2.5"})
 			Menu.Combo.CSettings:addParam("UseItems", "Auto Use Items", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.CSettings:addParam("UseIgnite", "Auto Ignite Target", SCRIPT_PARAM_ONOFF, true)
-			Menu.Combo.CSettings:addParam("scapeMode", "Scape Mode Prioritization", SCRIPT_PARAM_LIST, 3, {"Enemy Minion", "Enemy", "Auto"})
+			Menu.Combo.CSettings:addParam("scapeMode", "Scape Mode Prioritization", SCRIPT_PARAM_LIST, 3, {"Minion", "Enemy"}) -- "Auto"})
 			Menu.Combo.CSettings:addParam("scapeKey", "Scape with "..myPlayer:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 Menu:addSubMenu("Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Harass System", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Harass:addParam("HarassMode", "Harass Mode", SCRIPT_PARAM_LIST, 1, { "W", "E-Q-W", "E-Q" })
 		Menu.Harass:addParam("UseAutoW", "Auto Cast W", SCRIPT_PARAM_ONOFF, false)
-		Menu.Harass:addParam("StopCastMana", "Stop Cast W if mana below %", SCRIPT_PARAM_SLICE, 40, 20, 100, -1)
+		Menu.Harass:addParam("StopCastMana", "Don't Harass if mana < %", SCRIPT_PARAM_SLICE, 40, 20, 100, -1)
 		Menu.Harass:addParam("UseW", "Use "..myPlayer:GetSpellData(_W).name.." (W)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 --[[Farm]]
@@ -190,7 +191,7 @@ function UpdateVariaveis()
 	Target = GetCustomTarget()
 	if ValidTarget(Target) then enemyRangeHitBox = VP:GetHitBox(Target) else enemyRangeHitBox = 0 end
 --[[MINION MANAGER]]--
-	--MinionsInimigos:update()
+	MinionsInimigos:update()
 end
 
 --[[cast SKILLs]]
@@ -277,7 +278,8 @@ function CheckItems(tabela)
 	for ItemIndex, Value in pairs(tabela) do
 		Value.slot = GetInventorySlotItem(Value.SlotId)		
 			if Value.slot ~= nil and (myPlayer:CanUseSpell(Value.slot) == READY) then 				
-			table.insert(FoundItems, ItemIndex)			
+			--table.insert(FoundItems, ItemIndex)		
+			FoundItems[#FoundItems+1] = ItemsIndex	
 		end
 	end
 end
@@ -393,7 +395,7 @@ function OnTick()
 	local ComboMode				= Menu.Combo.CSettings.Mode
 	--[[Harass]]
 	local UsarHarass 			= Menu.Harass.HarassSystem
-	local UsarHarassKey			= Menu.Harass.HarassKey
+	local UsarHarassKey			= Menu.Harass.HarassKey	
 	local UsarAutoHarass		= Menu.Harass.UseAutoW
 	local StopCastManaP			= Menu.Harass.StopCastMana
 	local MyMana_				= (myPlayer.mana / myPlayer.maxMana *100)
@@ -436,18 +438,18 @@ function OnTick()
 	
 	if UsarScape_ then
 		if UseOrb_ then _OrbWalk() end
-		--ScapeRules()
+		ScapeRules()
 	end
 	
 	if UsarHarass then
-		if UsarAutoHarass and MyMana_ > StopCastManaP then
-			CastW(Target)			
-		else
-			if UsarHarassKey and MyMana_ > StopCastManaP then
-				CastW(Target)
-				if UseOrb_ then _OrbWalk() end
-			end
+		if UsarAutoHarass and MyMana_ >= StopCastManaP then
+			CastW(Target)						
 		end
+		if UsarHarassKey and MyMana_ >= StopCastManaP then
+			SmartHarass(Target)
+			if UseOrb_ then _OrbWalk(Target) end
+		end
+		--end
 	end		
 	if FarmerrSystem_ then
 		if UsarAutoFarm and FarmUseW_ and not UsandoRecall then
@@ -482,7 +484,7 @@ function OnDraw()
 	end
 	if tDraw and ValidTarget(Target) then
 		for i=0, 3, 1 do
-			DrawCircle2(Target.x, Target.y, Target.z, VP:GetHitBox(Target) + i , ARGB(255, 255, 000, 255))	
+			DrawCircle2(Target.x, Target.y, Target.z, 20 + i , ARGB(255, 255, 000, 255))	
 		end
 	end
 	if tdDraw then
@@ -492,12 +494,12 @@ function OnDraw()
 		end
 	end
 
-	if DrawLine1 ~= nil then
-		DrawLines3D(DrawLine1, 100, ARGB(255, 255, 255, 000))
-	end
-	if DrawLine2 ~= nil then
-		DrawLines3D(DrawLine2.x, DrawLine2.y, DrawLine2.z, 10, ARGB(255, 255, 000, 000))
-	end
+	--if DrawLine1 ~= nil then
+	--	DrawLines3D(DrawLine1, 100, ARGB(255, 255, 255, 000))
+	--end
+	--if DrawLine2 ~= nil then
+	--	DrawLines3D(DrawLine2.x, DrawLine2.y, DrawLine2.z, 10, ARGB(255, 255, 000, 000))
+	--end
 	
 end
 
@@ -513,68 +515,84 @@ end
 
 --[[others functions]]
 
-function ScapeRules() -- IN WORK DO NOT USE THIS
+function SmartHarass(myTarget) --"W", "W-E-Q", "E-Q"
+	--[[Harass Menu]]
+	local HarassMode_			= Menu.Harass.HarassMode
+
+	if HarassMode_ == 1 then
+		CastW(myTarget)
+	end
+
+	if HarassMode_ == 2 then
+		CastW(myTarget)
+		if not TalonRake.ready then	CastE(myTarget) end
+		if not TalonCutthroat.ready then CastQ(myTarget) end
+	end
+
+	if HarassMode_ == 3 then		
+		CastE(myTarget) 
+		if not TalonCutthroat.ready then CastQ(myTarget) end
+	end
+end
+
+
+function ScapeRules()
 	local Enemys 		= GetEnemyHeroes() --targetmaneger
 	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized() --vector of myPlayer	
 	local EnemyPosT_	= {} --table with vector of all nearby enemies
 	local MinionPosT_	= {} --table with vector of all nearby minions
-	local scapeMode_	= Menu.Combo.CSettings.scapeMode --{"Minion", "Enemy", "Auto"}]
-	--local BestPos		= nil
+	local scapeMode_	= Menu.Combo.CSettings.scapeMode --{"Minion", "Enemy", "Auto"}]	
 	local ScapeTarget 	= nil --final target to cast E
 
-	--[[Buff enemy vector pos in a table]]
-	for i, Enemy_ in pairs(Enemys) do
-		if ValidTarget(Enemy_, TalonCutthroat.range) then
-			--PrintChat("Testing:"..Enemy_)
-			local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()			
-			EnemyPosT_[#EnemyPosT_+1] = EnemyPos
-			--DrawLine1 = EnemyPosT_		
+	--[[Cast E if "Enemy" Option]]
+	if scapeMode_ == 2 then --Mode 2 = enemy
+	--1.Buffer enemy vector pos in a table
+		for i, Enemy_ in pairs(Enemys) do
+			if ValidTarget(Enemy_, TalonCutthroat.range) then			
+				local EnemyPos = Vector(Enemy_.x, Enemy_.y, Enemy_.z):normalized()			
+				EnemyPosT_[#EnemyPosT_+1] = EnemyPos					
+			end
 		end
-	end
-	--PrintChat("Enemy table OK")
-
-	--[[Buff minions vector pos in a table]]
-	for i, Minion_ in pairs(MinionsInimigos.objects) do
-		if ValidTarget(Minion_, TalonCutthroat.range, true) then
-			local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()			
-			MinionPosT_[#MinionPosT_+1] = MinionPos
-			--PrintChat("Checking Minions:"..Minion_)
-			--DrawLine2 = MinionPos
-		end
-	end
-	--PrintChat("Minion table OK")
+	--1.1. Check for distance and cast E
+		for i, Enemy_ in pairs(EnemyPosT_) do
+			for i, myTarget_ in pairs(Enemys) do				
+			local EnemyDist = GetDistance(Enemy_, RespawPoint) --distance between EnemyPos and Respaw
+			local MyDist	= GetDistance(MyPos, RespawPoint)	--distance between Me and Respaw
+			local RealTarget= GetDistance(myTarget_, RespawPoint) --distance between Actual target and Respaw	
+				if EnemyDist < MyDist or RealTarget < MyDist and TalonCutthroat.ready then --there is no reason to use "E" if I'm closer to the base than the enemy
+					CastSpell(TalonCutthroat.spellSlot, myTarget_)
+				end
+			end
+		EnemyPosT_[i] = nil
+		end		
+	end	
 
 	--[[Cast E if "Minion" Option]]
 	if scapeMode_ == 1 then
-		--PrintChat("Escape Minion Mode")
+	--2. Buff minions vector pos in a table]]
+		for i, Minion_ in pairs(MinionsInimigos.objects) do
+			if ValidTarget(Minion_, TalonCutthroat.range) then
+				local MinionPos = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()			
+				MinionPosT_[#MinionPosT_+1] = MinionPos			
+			end
+		end
+	--2.1. Check for distance and cast E
 		for i, Minion_ in pairs(MinionPosT_) do
-			local BestPos = Minion_ - RespawPoint
-			local MinionDist = GetDistance(Minion_, RespawPoint)  --distance between Minion and Respaw
-			local MyDist	= GetDistance(MyPos, RespawPoint)
-			if MinionDist < MyDist and CountEnemyHeroInRange(400, Minion_) <= 2 and TalonCutthroat.ready then --there is no reason to use "E" if I'm closer to the base than the minion
-				CastE(Minion_)
+			for i, myMinionTarget_ in pairs(MinionsInimigos.objects) do				
+				local MinionDist 	= GetDistance(Minion_, RespawPoint)  --distance between Minion and Respaw
+				local MyDist		= GetDistance(MyPos, RespawPoint)
+				local RealMinion	= GetDistance(myMinionTarget_, RespawPoint)
+				if MinionDist < MyDist or RealMinion < MyDist and CountEnemyHeroInRange(400, Minion_) < 2 and TalonCutthroat.ready then --there is no reason to use "E" if I'm closer to the base than the minion
+					CastSpell(TalonCutthroat.spellSlot, myMinionTarget_)
+				end
 			end
 			MinionPosT_[i] = nil
-		end
-		--PrintChat("Scape minion ok")		
+		end				
 	end
-
-	--[[Cast E if "Enemy" Option]]
-	if scapeMode_ == 2 then
-		--PrintChat("Escape Enemy Mode")
-		for i, Enemy_ in pairs(EnemyPosT_) do
-			local BestPos = Enemy_ - RespawPoint
-			local EnemyDist = GetDistance(Enemy_, RespawPoint) --distance between Enemy and Respaw
-			local MyDist	= GetDistance(MyPos, RespawPoint)			
-			if EnemyDist < MyDist and TalonCutthroat.ready then --there is no reason to use "E" if I'm closer to the base than the enemy
-				CastE(Enemy_)
-			end
-			EnemyPosT_[i] = nil
-		end
-		--PrintChat("Scape enemy ok")	
-	end
-
-	--[[Cast E if Auto Option, see what distance is small between Enemy and Minion]]
+end
+--[[
+	
+	[[Cast E if Auto Option, see what distance is small between Enemy and Minion
 	if scapeMode_ == 3 then
 		--PrintChat("Escape Enemy Mode")
 		local BestPos = nil
@@ -593,10 +611,11 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 			end
 		end
 		if ValidTarget(ScapeTarget, TalonCutthroat.range) then
-			CastE(ScapeTarget)
+			CastSpell(TalonCutthroat.spellSlot, ScapeTarget)
 		end
 	end
 end
+]]
 
 
 function CastIgnite(myTarget)
