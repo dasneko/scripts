@@ -2,7 +2,7 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
 
 
-local version = "2.015"
+local version = "2.016"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -69,7 +69,7 @@ local UsandoMana			= false
 local UsandoRecall			= false
 local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT", "HYDRA", "RUINEDKING"}
 local DamageText  			= nil
-local BuffNames = { "regenerationpotion", "flaskofcrystalwater", "recall" }
+local BuffNames 			= { "regenerationpotion", "flaskofcrystalwater", "recall" }
 local RespawPoint 			= Vector(GetSpawnPos()):normalized()
 local DrawLine1				= nil
 local DrawLine2 			= nil
@@ -93,7 +93,8 @@ Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("UseR", "Use "..myPlayer:GetSpellData(_R).name.." (R)", SCRIPT_PARAM_ONOFF, true)		
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-		Menu.Combo:addSubMenu("Combo/Team Fight Settings", "CSettings")
+		Menu.Combo:addSubMenu("Combo/Team Fight Settings", "CSettings")	
+			Menu.Combo.CSettings:addParam("Mode", "Combo Mode", SCRIPT_PARAM_LIST, 2, {"E-Q-W-R", "W-E-Q-R"})		
 			Menu.Combo.CSettings:addParam("Rdelay", "Ultimate delay to second cast", SCRIPT_PARAM_LIST, 4, {"0", "0.5", "1.0", "1.5", "2.0", "2.5"})
 			Menu.Combo.CSettings:addParam("UseItems", "Auto Use Items", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.CSettings:addParam("UseIgnite", "Auto Ignite Target", SCRIPT_PARAM_ONOFF, true)
@@ -389,6 +390,7 @@ function OnTick()
 	local Usar 		 			= Menu.Combo.ComboKey
 	local UsarItems_ 			= Menu.Combo.CSettings.UseItems
 	local UsarScape_			= Menu.Combo.CSettings.scapeKey
+	local ComboMode				= Menu.Combo.CSettings.Mode
 	--[[Harass]]
 	local UsarHarass 			= Menu.Harass.HarassSystem
 	local UsarHarassKey			= Menu.Harass.HarassKey
@@ -417,16 +419,24 @@ function OnTick()
 		end
 		if UseOrb_ then _OrbWalk(Target) end		
 		if UseIgnite_ then CastIgnite(Target) end
-		CastE(Target)
-		CastQ(Target)
-		CastW(Target)
-		CastR(Target)
+		if ComboMode == 1 then --"E-Q-W-R"
+			CastE(Target)
+			if not TalonCutthroat.ready then CastQ(Target) end
+			if not TalonNoxianDiplomacy.ready then CastW(Target) end
+			if not TalonRake.ready then	CastR(Target) end
+		end
+		if ComboMode == 2 then --"W-E-Q-R"
+			CastW(Target)
+			if not TalonRake.ready then	CastE(Target) end
+			if not TalonCutthroat.ready then CastQ(Target) end
+			if not TalonNoxianDiplomacy.ready then CastR(Target) end
+		end
 		if UsarItems_ then CastCommonItem()	end
 	end
 	
 	if UsarScape_ then
 		if UseOrb_ then _OrbWalk() end
-		ScapeRules()
+		--ScapeRules()
 	end
 	
 	if UsarHarass then
@@ -535,7 +545,7 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 	--PrintChat("Minion table OK")
 
 	--[[Cast E if "Minion" Option]]
-	if scapeMode_ == "Minion" then
+	if scapeMode_ == 1 then
 		--PrintChat("Escape Minion Mode")
 		for i, Minion_ in pairs(MinionPosT_) do
 			local BestPos = Minion_ - RespawPoint
@@ -550,7 +560,7 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 	end
 
 	--[[Cast E if "Enemy" Option]]
-	if scapeMode_ == "Enemy" then
+	if scapeMode_ == 2 then
 		--PrintChat("Escape Enemy Mode")
 		for i, Enemy_ in pairs(EnemyPosT_) do
 			local BestPos = Enemy_ - RespawPoint
@@ -565,7 +575,7 @@ function ScapeRules() -- IN WORK DO NOT USE THIS
 	end
 
 	--[[Cast E if Auto Option, see what distance is small between Enemy and Minion]]
-	if scapeMode_ == "Auto" then
+	if scapeMode_ == 3 then
 		--PrintChat("Escape Enemy Mode")
 		local BestPos = nil
 		for i, Enemy_ in pairs(EnemyPosT_) do
