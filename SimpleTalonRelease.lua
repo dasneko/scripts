@@ -1,8 +1,9 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 require "VPrediction"
+
 local version = "2.017"
 local AUTOUPDATE = true
-local UPDATE_HOST = "raw.githubusercontent.com"
+local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = LIB_PATH.."SimpleTalonRelease.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
