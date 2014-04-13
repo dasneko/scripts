@@ -1,6 +1,6 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
-local version = "2.021"
+local version = "2.022"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -277,8 +277,8 @@ function NewCastR(myTarget)
 	local rDelay = Menu.Combo.CSettings.Rdelay	
 	if not UseR_ then return end
 	if ValidTarget(myTarget, TalonShadowAssault.range) and TalonShadowAssault.ready then
-		local EnemyPosition	=	Vector(myTarget):normalized()
 		local MyPos			= 	Vector(myPlayer):normalized()
+		local EnemyPosition	=	Vector(myTarget - MyPos):normalized()	
 		if EnemyPosition < MyPos then
 			CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
 			DelayAction(function ()
@@ -288,6 +288,8 @@ function NewCastR(myTarget)
 		end
 	end
 end
+
+
 --[[end]]
 
 --[[cast Spells/items]]
@@ -501,7 +503,7 @@ function OnDraw()
 	end
 	if tDraw and ValidTarget(Target) then
 		for i=0, 3, 1 do
-			DrawCircle2(Target.x, Target.y, Target.z, 20 + i , ARGB(255, 255, 000, 255))	
+			DrawCircle2(Target.x, Target.y, Target.z, 80 + i , ARGB(255, 255, 000, 255))	
 		end
 	end
 	if tdDraw then
@@ -512,7 +514,7 @@ function OnDraw()
 	end
 
 	--if DrawLine1 ~= nil then
-	--	DrawLines3D(DrawLine1, 100, ARGB(255, 255, 255, 000))
+	--	DrawCircle2(DrawLine1.x, DrawLine1.y, DrawLine1.z, 400, ARGB(255, 255, 255, 000))
 	--end
 	--if DrawLine2 ~= nil then
 	--	DrawLines3D(DrawLine2.x, DrawLine2.y, DrawLine2.z, 10, ARGB(255, 255, 000, 000))
@@ -707,7 +709,7 @@ function AutoSkillLevel()
 			end
 	end
 end 
-
+--[[
 function FarmMinionsW()
 	local FarmWithW  = Menu.Farmerr.UseW
 	local manaStop 	 = Menu.Farmerr.StopCastMana
@@ -723,6 +725,7 @@ function FarmMinionsW()
 		end
 	end
 end
+]]
 
 --[[
 function CountVectorsBetween(V1, V2, points)
@@ -911,4 +914,48 @@ priorityTable = {
 			end
 		end
 	end
+
+--[[honda]]
+
+function CountObjectsNearPos(pos, radius, objects)
+    local n = 0
+    for i, object in ipairs(objects) do
+        if GetDistanceSqr(pos, object) <= radius * radius then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+function GetBestCircularFarmPosition(range, radius, objects)
+    local BestPos 
+    local BestHit = 0
+    for i, object in ipairs(objects) do
+        local hit = CountObjectsNearPos(object.visionPos or object, radius, objects)
+        if hit > BestHit then
+            BestHit = hit
+            BestPos = Vector(object)
+            if BestHit == #objects then
+               break
+            end
+         end
+    end
+    return BestPos, BestHit
+end
+
+function FarmMinionsW()
+	local FarmWithW  = Menu.Farmerr.UseW
+	local manaStop 	 = Menu.Farmerr.StopCastMana
+	local actualMana = (myPlayer.mana / myPlayer.maxMana *100)
+	if FarmWithW == 6 then return end
+	MinionsInimigos:update()
+	for i, Minion in pairs(MinionsInimigos.objects) do
+		local wDamage = getDmg("W", Minion, myPlayer) * 2
+		local BestPos, BestHit = GetBestCircularFarmPosition(TalonRake.range, 400, MinionsInimigos.objects)		
+			if BestHit > FarmWithW then --check if number of minion is higher than X
+				CastSpell(TalonRake.spellSlot, BestPos.x, BestPos.z)
+			end
+			DrawLine1 = BestPos
+	end
+end
 
