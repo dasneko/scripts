@@ -1,6 +1,6 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
-local version = "2.022"
+local version = "2.023"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -444,13 +444,13 @@ function OnTick()
 			CastE(Target)
 			if not TalonCutthroat.ready then CastQ(Target) end
 			if not TalonNoxianDiplomacy.ready then CastW(Target) end
-			if not TalonRake.ready then	NewCastR(Target) end
+			if not TalonRake.ready then	CastR(Target) end
 		end
 		if ComboMode == 2 then --"W-E-Q-R"
 			CastW(Target)
 			if not TalonRake.ready then	CastE(Target) end
 			if not TalonCutthroat.ready then CastQ(Target) end
-			if not TalonNoxianDiplomacy.ready then NewCastR(Target) end
+			if not TalonNoxianDiplomacy.ready then CastR(Target) end
 		end
 		if UsarItems_ then CastCommonItem()	end
 	end
