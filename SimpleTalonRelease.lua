@@ -1,6 +1,6 @@
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
-local version = "2.023"
+local version = "2.024"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -94,11 +94,11 @@ Menu:addSubMenu("Combo System", "Combo")
 		Menu.Combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Combo:addParam("ComboKey", "Team Fight Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 		Menu.Combo:addSubMenu("Combo/Team Fight Settings", "CSettings")	
-			Menu.Combo.CSettings:addParam("Mode", "Combo Mode", SCRIPT_PARAM_LIST, 2, {"E-Q-W-R", "W-E-Q-R"})		
+			Menu.Combo.CSettings:addParam("Mode", "Combo Mode", SCRIPT_PARAM_LIST, 2, {"E-Q-W-R", "W-E-Q-R", "E-W-R-Q"})		
 			Menu.Combo.CSettings:addParam("Rdelay", "Ultimate delay to second cast", SCRIPT_PARAM_LIST, 4, {"0", "0.5", "1.0", "1.5", "2.0", "2.5"})
 			Menu.Combo.CSettings:addParam("UseItems", "Auto Use Items", SCRIPT_PARAM_ONOFF, true)
 			Menu.Combo.CSettings:addParam("UseIgnite", "Auto Ignite Target", SCRIPT_PARAM_ONOFF, true)
-			Menu.Combo.CSettings:addParam("scapeMode", "Scape Mode Prioritization", SCRIPT_PARAM_LIST, 3, {"Minion", "Enemy"}) -- "Auto"})
+			Menu.Combo.CSettings:addParam("scapeMode", "Scape Mode Prioritization", SCRIPT_PARAM_LIST, 1, {"Minion", "Enemy"}) -- "Auto"})
 			Menu.Combo.CSettings:addParam("scapeKey", "Scape with "..myPlayer:GetSpellData(_E).name.." (E)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 Menu:addSubMenu("Harass System", "Harass")
 		Menu.Harass:addParam("HarassSystem", "Use Harass System", SCRIPT_PARAM_ONOFF, true)
@@ -451,6 +451,12 @@ function OnTick()
 			if not TalonRake.ready then	CastE(Target) end
 			if not TalonCutthroat.ready then CastQ(Target) end
 			if not TalonNoxianDiplomacy.ready then CastR(Target) end
+		end
+		if ComboMode == 3 then --"E-W-R-Q"
+			CastE(Target)
+			if not TalonCutthroat.ready then CastW(Target) end
+			if not TalonRake.ready then CastR(Target) end
+			if not TalonNoxianDiplomacy.ready then CastQ(Target) end
 		end
 		if UsarItems_ then CastCommonItem()	end
 	end
@@ -955,7 +961,7 @@ function FarmMinionsW()
 			if BestHit > FarmWithW then --check if number of minion is higher than X
 				CastSpell(TalonRake.spellSlot, BestPos.x, BestPos.z)
 			end
-			DrawLine1 = BestPos
+			--DrawLine1 = BestPos
 	end
 end
 
