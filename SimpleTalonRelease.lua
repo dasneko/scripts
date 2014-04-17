@@ -1,4 +1,4 @@
-local version = "2.025"
+local version = "2.026"
 
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
@@ -992,7 +992,7 @@ function FarmMinionsW()
 	end
 end
 
---[[getting pos]]
+--[[getting pos
 
 function GetPos()
 	Posx = mousePos.x
@@ -1010,4 +1010,5 @@ function OnWndMsg(msg,key)
 		PrintChat(table.concat({Print1,Print2,Print3},','))
 	end
 end
+]]
 
