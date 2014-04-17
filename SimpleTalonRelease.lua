@@ -1,4 +1,4 @@
-local version = "2.026"
+local version = "2.027"
 
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
@@ -106,7 +106,7 @@ Menu:addSubMenu("Harass System", "Harass")
 		Menu.Harass:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Harass:addParam("HarassMode", "Harass Mode", SCRIPT_PARAM_LIST, 1, { "W", "E-Q-W", "E-Q" })
 		Menu.Harass:addParam("UseAutoW", "Auto Cast W", SCRIPT_PARAM_ONOFF, false)
-		Menu.Harass:addParam("StopCastMana", "Don't Harass if mana < %", SCRIPT_PARAM_SLICE, 40, 20, 100, -1)
+		Menu.Harass:addParam("StopCastMana", "Don't Harass if mana < %", SCRIPT_PARAM_SLICE, 40, 0, 100, -1)
 		Menu.Harass:addParam("UseW", "Use "..myPlayer:GetSpellData(_W).name.." (W)", SCRIPT_PARAM_ONOFF, true)
 		Menu.Harass:addParam("HarassKey", "Manual Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 --[[Farm]]
