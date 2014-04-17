@@ -1,6 +1,7 @@
+local version = "2.025"
+
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
-local version = "2.024"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
@@ -32,7 +33,7 @@ require "VPrediction"
 
 --[[AUTO UPDATE END]]--
 
-local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 0, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
+local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = myTrueRange, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
 local TalonRake            = 	{spellSlot = _W, range = 700, width = 0, speed = 902, delay = 0.4, ready = nil} --0.8 in/out
 local TalonCutthroat       =	{spellSlot = _E, range = 700, width = 0, speed = math.huge, delay = 0.5, ready = nil}
 local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 902, delay = 0.5, ready = nil}
@@ -70,7 +71,7 @@ local UsandoRecall			= false
 local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT", "HYDRA", "RUINEDKING"}
 local DamageText  			= nil
 local BuffNames 			= { "regenerationpotion", "flaskofcrystalwater", "recall" }
-local RespawPoint 			= Vector(GetSpawnPos()):normalized()
+local RespawPoint 			= Vector(cameraPos.x, cameraPos.y, cameraPos.z):normalized()
 --local DrawLine1				= nil
 --local DrawLine2 			= nil
 function OnLoad()	
@@ -139,6 +140,8 @@ Menu:addSubMenu("Draw System", "Paint")
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Paint:addParam("PaintTarget", "Draw Target", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("KillTarget", "Draw Text to Target", SCRIPT_PARAM_ONOFF, true)
+		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Paint:addParam("HotSpot", "Draw Hotspots", SCRIPT_PARAM_ONOFF, false)
 --[[Others]]
 Menu:addSubMenu("General System", "General")
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -198,14 +201,14 @@ end
 
 function CastQ(myTarget)
 	local UseQ_  = Menu.Combo.UseQ
+
 	if not UseQ_ then return end
-	if ValidTarget(myTarget) and TalonNoxianDiplomacy.ready and GetDistance(myTarget) + enemyRangeHitBox <= myTrueRange then		
+	
+	if ValidTarget(myTarget, TalonNoxianDiplomacy.range) and TalonNoxianDiplomacy.ready then --and GetDistance(myTarget) <= TalonNoxianDiplomacy.range then		
 		if Menu.General.UsePacket then
-			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot, targetNetworkId = myPlayer.networkID }):send()
-			lastAttackCD = 0				
+			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot, targetNetworkId = myPlayer.networkID }):send()							
 		else
-			CastSpell(TalonNoxianDiplomacy.spellSlot)
-			lastAttackCD = 0				
+			CastSpell(TalonNoxianDiplomacy.spellSlot)							
 		end
 	end
 end
@@ -222,7 +225,7 @@ function CastW(myTarget)
 																			  TalonRake.speed, 
 																			  myPlayer)
 			if mainHitChance >= 2 then
-				Packet('S_CAST', { spellId = TalonRake.spellSlot, toX = mainCastPosition.x, toY = mainCastPosition.z }):send()	
+				Packet('S_CAST', { spellId = TalonRake.spellSlot, toX = mainCastPosition.x, toY = mainCastPosition.z }):send()
 				--CastSpell(TalonRake.spellSlot, mainCastPosition.x, mainCastPosition.z)
 			end
 		else
@@ -236,9 +239,11 @@ function CastE(myTarget)
 	if not UseE_ then return end
 	if ValidTarget(myTarget, TalonCutthroat.range) and TalonCutthroat.ready then		
 		if Menu.General.UsePacket then
-			Packet('S_CAST', { spellId = TalonCutthroat.spellSlot, targetNetworkId = myTarget.networkID }):send()					
+			Packet('S_CAST', { spellId = TalonCutthroat.spellSlot, targetNetworkId = myTarget.networkID }):send()
+			lastAttackCD = 0					
 		else
-			CastSpell(TalonCutthroat.spellSlot, myTarget)						
+			CastSpell(TalonCutthroat.spellSlot, myTarget)
+			lastAttackCD = 0						
 		end
 	end
 end
@@ -456,7 +461,7 @@ function OnTick()
 			CastE(Target)
 			if not TalonCutthroat.ready then CastW(Target) end
 			if not TalonRake.ready then CastR(Target) end
-			if not TalonNoxianDiplomacy.ready then CastQ(Target) end
+			if not TalonShadowAssault.ready then CastQ(Target) end
 		end
 		if UsarItems_ then CastCommonItem()	end
 	end
@@ -540,6 +545,18 @@ end
 
 --[[others functions]]
 
+local HotSpots = {
+	{x = 4747.55, y = -46.02, z = 8337.48},
+	{x = 1902.06, y = 53.81, z = 9550.72},
+	{x = 2851.71, y = 55.04, z = 7629.16},
+	{x = 3540.07, y = 55.60, z = 6426.89},
+	{x = 6005.74, y = 51.67, z = 4913.65},
+	{x = 6972.89, y = 51.67, z = 4993.82},
+	{x = 8243.45, y = 55.41, z = 4232.10},
+	{x = 9589.52, y = 50.90, z = 6372.92},
+	{x = 8828.17, y = 61.94, z = 1932.64}
+}
+
 function SmartHarass(myTarget) --"W", "W-E-Q", "E-Q"
 	--[[Harass Menu]]
 	local HarassMode_			= Menu.Harass.HarassMode
@@ -562,12 +579,22 @@ end
 
 
 function ScapeRules()
+	if InFountain() then return end
 	local Enemys 		= GetEnemyHeroes() --targetmaneger
 	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized() --vector of myPlayer	
 	local EnemyPosT_	= {} --table with vector of all nearby enemies
 	local MinionPosT_	= {} --table with vector of all nearby minions
 	local scapeMode_	= Menu.Combo.CSettings.scapeMode --{"Minion", "Enemy", "Auto"}]	
 	local ScapeTarget 	= nil --final target to cast E
+
+	if IsWallOfGrass(D3DXVECTOR3(MyPos.x, MyPos.y, MyPos.z)) then
+		for i, Minions_ in pairs(MinionsInimigos.objects) do
+			local MinionPos_ = Vector(Minion_.x, Minion_.y, Minion_.z):normalized()
+			if MinionPos_ > MyPos then
+				CastSpell(TalonCutthroat.spellSlot, Minions_)
+			end
+		end
+	end
 
 	--[[Cast E if "Enemy" Option]]
 	if scapeMode_ == 2 then --Mode 2 = enemy
@@ -962,6 +989,25 @@ function FarmMinionsW()
 				CastSpell(TalonRake.spellSlot, BestPos.x, BestPos.z)
 			end
 			--DrawLine1 = BestPos
+	end
+end
+
+--[[getting pos]]
+
+function GetPos()
+	Posx = mousePos.x
+	Posy = mousePos.y
+	Posz = mousePos.z
+	
+	Print1 = tostring(Posx)
+	Print2 = tostring(Posy)
+	Print3 = tostring(Posz)
+end
+
+function OnWndMsg(msg,key)
+	if msg == KEY_DOWN and key == string.byte("N") then
+		GetPos()
+		PrintChat(table.concat({Print1,Print2,Print3},','))
 	end
 end
 
