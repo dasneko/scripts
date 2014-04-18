@@ -221,10 +221,10 @@ end
 
 function CastR(myTarget)
 
-	--if UltimateUsed or InFountain() then
+	if UltimateUsed then
 		--Packet('S_CAST', { spellId = skilllist[4], fromX = myTarget.x, fromY = myTarget.z,toX = myTarget.x, toY = myTarget.z }):send()	
-	--return
-	--end
+	return
+	end
 
 	updateallys()
 	local packet_	=	menu.system.packet
@@ -280,7 +280,7 @@ function OnGainBuff(unit, buff)
 	end	
 end
 
-function OnloseBuff(unit, buff)
+function OnLoseBuff(unit, buff)
 	if unit.isMe and buff.name:lower():find("yorickreviveallyguide") then
 		UltimateUsed = false		
 	end
