@@ -75,8 +75,8 @@ local FoundItems 							= {}
 local BuffNames 							= { "regenerationpotion", "flaskofcrystalwater", "recall" }
 local UsandoHP, UsandoMana, UsandoRecall	= false, false, false
 --[[spells]]
---local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
---local BarreiraSpell = 	{spellSlot = "SummonerBarrier", slot = nil, range = 0, ready = false}
+local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
+local BarreiraSpell = 	{spellSlot = "SummonerBarrier", slot = nil, range = 0, ready = false}
 --[[Menu variables]]
 local skilllist		=	{_Q, _W, _E, _R}
 local Allys			=	GetAllyHeroes()
