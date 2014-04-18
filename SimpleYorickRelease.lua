@@ -230,17 +230,17 @@ function CastR(myTarget)
 	local packet_	=	menu.system.packet
 	local skillName	=	tostring(skilllist[4])
 	local user_		=	menu.combo["use"..skillName]	
-	for i, aliado in pairs(Allys) do
+	for i, aliado in ipairs(Allys) do
 		local nomealiado	=	aliado.charName
 		local ValidAlly_	=	ValidAlly(aliado, YorickReviveAlly.range)
-		if nomealiado ~= nil and user_ and ValidAlly_ and SkillReady(skilllist[4]) then		
+		if nomealiado ~= nil and user_ and SkillReady(skilllist[4]) then		
 			local use_			=	menu.combo.ultimate["use"..nomealiado]
 			local aliadopercem	=	menu.combo.ultimate["health"..nomealiado]
 			local aliadoperceh	=	(aliado.health / aliado.maxHealth * 100)
 			local myHp			=	(myPlayer.health / myPlayer.maxHealth * 100)
 			local myHpmenu		=	menu.combo.ultimate["use"..myPlayer.charName]
 			local myHpmenuP		=	menu.combo.ultimate["health"..myPlayer.charName]								
-			if aliadoperceh <= aliadopercem and use_ then
+			if aliadoperceh <= aliadopercem and use_ and ValidAlly_ then
 				if packet_ then
 					--DrawAlly = aliado
 					Packet('S_CAST', { spellId = skilllist[4], targetNetworkId = aliado.networkID }):send()
@@ -349,7 +349,8 @@ function CastSurviveItem()
 	end
 end
 
-function OnTick()	
+function OnTick()
+if myPlayer.dead then return end	
 	--[[menu]]
 	local key_	=	menu.combo.key
 	local orb_ 	=	menu.system.orbwalker
