@@ -1,4 +1,4 @@
-local version = "1.0"
+local version = "1.001"
 
 if myHero.charName ~= "Yorick" or not VIP_USER then return end
 
@@ -170,11 +170,13 @@ function SkillReady(skill_)
 end
 
 function CastQ(myTarget)
+	local tick 		= os.clock()
 	local packet_	=	menu.system.packet
 	local skillName =	tostring(skilllist[1])
 	local useq_		=	menu.combo["use"..skillName]
 	local target_ 	=	ValidTarget(myTarget, YorickSpectral.range)
-	if packet_ and SkillReady(skilllist[1]) and target_ and useq_ then 
+	if packet_ and SkillReady(skilllist[1]) and target_ and useq_ and tick ~= nil and os.clock() - tick < 1 then 
+		tick = os.clock()
 		Packet('S_CAST', { spellId = skilllist[1], targetNetworkId = myPlayer.networkID }):send()
 	else
 		if SkillReady(skilllist[1]) and useq_ then
@@ -184,28 +186,34 @@ function CastQ(myTarget)
 end
 
 function CastW(myTarget)
+	local tick 		= os.clock()
 	local packet_	=	menu.system.packet 
 	local skillName	=	tostring(skilllist[2])
 	local usew_		=	menu.combo["use"..skillName]
 	local target_ 	=	ValidTarget(myTarget, YorickDecayed.range)		
-	if packet_ and target_ and SkillReady(skilllist[2]) and usew_ then
+	if packet_ and target_ and SkillReady(skilllist[2]) and usew_ and tick ~= nil and os.clock() - tick < 1 then
+		tick = os.clock()
 		Packet('S_CAST', { spellId = skilllist[2], fromX = myTarget.x, fromY = myTarget.z,toX = myTarget.x, toY = myTarget.z }):send()
 	else
-		if target_ and SkillReady(skilllist[2]) and usew_ then
+		if target_ and SkillReady(skilllist[2]) and usew_  and tick ~= nil and os.clock() - tick < 1 then
+			tick = os.clock()
 			CastSpell(skilllist[2], myTarget.x, myTarget.z)
 		end
 	end
 end
 
 function CastE(myTarget)
+	local tick 		= os.clock()
 	local packet_	=	menu.system.packet
 	local skillName	=	tostring(skilllist[3])
 	local usee_		=	menu.combo["use"..skillName]
 	local target_ 	=	ValidTarget(myTarget, YorickRavenous.range)
-	if packet_ and target_ and SkillReady(skilllist[3]) and usee_ then
+	if packet_ and target_ and SkillReady(skilllist[3]) and usee_ and tick ~= nil and os.clock() - tick < 1 then
+		tick = os.clock()
 		Packet('S_CAST', { spellId = skilllist[3], targetNetworkId = myTarget.networkID }):send()
 	else
-		if target_ and SkillReady(skilllist[3]) and usee_ then
+		if target_ and SkillReady(skilllist[3]) and usee_ and tick ~= nil and os.clock() - tick < 1 then
+			tick = os.clock()
 			CastSpell(skilllist[3], myTarget)
 		end
 	end
@@ -225,6 +233,7 @@ function CastR(myTarget)
 		--Packet('S_CAST', { spellId = skilllist[4], fromX = myTarget.x, fromY = myTarget.z,toX = myTarget.x, toY = myTarget.z }):send()	
 	return
 	end
+	local tick 		= os.clock()
 
 	updateallys()
 	local packet_	=	menu.system.packet
@@ -240,19 +249,21 @@ function CastR(myTarget)
 			local myHp			=	(myPlayer.health / myPlayer.maxHealth * 100)
 			local myHpmenu		=	menu.combo.ultimate["use"..myPlayer.charName]
 			local myHpmenuP		=	menu.combo.ultimate["health"..myPlayer.charName]								
-			if aliadoperceh <= aliadopercem and use_ and ValidAlly_ then
+			if aliadoperceh <= aliadopercem and use_ and ValidAlly_ and tick ~= nil and os.clock() - tick < 1 then
 				if packet_ then
-					--DrawAlly = aliado
+					tick = os.clock()
 					Packet('S_CAST', { spellId = skilllist[4], targetNetworkId = aliado.networkID }):send()
 				else
-					--DrawAlly = aliado
+					tick = os.clock()
 					CastSpell(skilllist[4], aliado)
 				end
 			end
-			if myHp <= myHpmenuP and myHpmenu then
-				if packet_ and not UltimateUsed then
+			if myHp <= myHpmenuP and myHpmenu and tick ~= nil and os.clock() - tick < 1 then
+				if packet_ and not UltimateUsed  then
+					tick = os.clock()
 					Packet('S_CAST', { spellId = skilllist[4], targetNetworkId = myPlayer.networkID }):send()
 				else
+					tick = os.clock()
 					CastSpell(skilllist[4], myPlayer)
 				end
 			end
@@ -479,9 +490,9 @@ function OnDraw()
 			DrawCircle2(Target.x, Target.y, Target.z, 80 + i , ARGB(255, 255, 000, 255))	
 		end
 	end
-	if dAlly and DrawAlly ~= nil then
-		for i=0, 3, 1 do
-			DrawCircle2(DrawAlly.x, DrawAlly.y, DrawAlly.z, 80 + i , ARGB(255, 255, 000, 000))	
-		end
-	end
+	--if dAlly and DrawAlly ~= nil then
+	--	for i=0, 3, 1 do
+	--		DrawCircle2(DrawAlly.x, DrawAlly.y, DrawAlly.z, 80 + i , ARGB(255, 255, 000, 000))	
+	--	end
+	--end
 end
