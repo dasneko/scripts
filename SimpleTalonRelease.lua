@@ -1,4 +1,6 @@
-local version = "2.028"
+local version = "2.029"
+
+require "VPrediction"
 
 if myHero.charName ~= "Talon" or not VIP_USER then return end
 
@@ -29,8 +31,6 @@ if AUTOUPDATE then
 	end
 end
 
-require "VPrediction"
-
 --[[AUTO UPDATE END]]--
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 250, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
@@ -40,7 +40,6 @@ local TalonShadowAssault   =	{spellSlot = _R, range = 650, width = 650, speed = 
 --[[SPELLS]]--
 local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
 local BarreiraSpell = 	{spellSlot = "SummonerBarrier", slot = nil, range = 0, ready = false}
---local FlashSpell = 		{spellSlot = "SummonerFlash", slot = nil, range = 400, ready = false}
 --[[ITEMS]]--
 local Items = {
 			["Brtk"]   = 	{ready = false, range = 450, SlotId = 3153, slot = nil},
@@ -72,8 +71,7 @@ local DamageTable 			= {"P", "AD", "Q", "W", "E", "R", "IGNITE", "BWC", "TIAMAT"
 local DamageText  			= nil
 local BuffNames 			= { "regenerationpotion", "flaskofcrystalwater", "recall" }
 local RespawPoint 			= Vector(cameraPos.x, cameraPos.y, cameraPos.z):normalized()
---local DrawLine1			= nil
---local DrawLine2 			= nil
+
 function OnLoad()	
 	Menu1()	
 	UpdateVariaveis()
@@ -140,7 +138,8 @@ Menu:addSubMenu("Draw System", "Paint")
 		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.Paint:addParam("PaintTarget", "Draw Target", SCRIPT_PARAM_ONOFF, true)
 		Menu.Paint:addParam("KillTarget", "Draw Text to Target", SCRIPT_PARAM_ONOFF, true)
-		--Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
+		Menu.Paint:addParam("", "", SCRIPT_PARAM_INFO, "")
+		--Menu.Paint:addParam("TurretHits", "Draw Turrent AA/Q hits", SCRIPT_PARAM_ONOFF, true)
 		--Menu.Paint:addParam("HotSpot", "Draw Hotspots", SCRIPT_PARAM_ONOFF, false)
 --[[Others]]
 Menu:addSubMenu("General System", "General")
@@ -173,7 +172,6 @@ Menu:addSubMenu("General System", "General")
 		ArrangePriorities()
 	end
 	]]
-	--[[MMA/SAC Disable orbwalk]]--
 	
 --[[Ts/minion/jungle]]
 	Alvo = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200, DAMAGE_PHYSICAL, true)
@@ -188,14 +186,8 @@ function ValidSpell(spellslot_) --_Q, _W...
 	return spellslot_ ~= nil and Ready 
 end
 
-function UpdateVariaveis()
-	--[[SKILLS]]--
-	--if (myPlayer:CanUseSpell(TalonNoxianDiplomacy.spellSlot) == READY) then TalonNoxianDiplomacy.ready = true else TalonNoxianDiplomacy.ready = false end
-	--if (myPlayer:CanUseSpell(TalonRake.spellSlot) == READY) then TalonRake.ready = true else TalonRake.ready = false end
-	--if (myPlayer:CanUseSpell(TalonCutthroat.spellSlot) == READY) then TalonCutthroat.ready = true else TalonCutthroat.ready = false end
-	--if (myPlayer:CanUseSpell(TalonShadowAssault.spellSlot) == READY) then TalonShadowAssault.ready = true else TalonShadowAssault.ready = false end
---[[TARGET SELECTOR]]--
-	--Alvo:update()	
+function UpdateVariaveis()	
+--[[TARGET SELECTOR]]--	
 	Target = GetCustomTarget()
 	if ValidTarget(Target) then enemyRangeHitBox = VP:GetHitBox(Target) else enemyRangeHitBox = 0 end
 --[[MINION MANAGER]]--
@@ -203,26 +195,30 @@ function UpdateVariaveis()
 end
 
 --[[cast SKILLs]]
-
 function CastQ(myTarget)
+	local tick 		=	os.clock()
 	local UseQ_ 	=	Menu.Combo.UseQ
 	local sReady	=	ValidSpell(_Q)
 	if not UseQ_ then return end	
-	if ValidTarget(myTarget, TalonNoxianDiplomacy.range) and sReady then --and GetDistance(myTarget) <= TalonNoxianDiplomacy.range then		
+	if ValidTarget(myTarget, TalonNoxianDiplomacy.range) and sReady and tick - os.clock() < 1 then	
 		if Menu.General.UsePacket then
+			tick = os.clock()
 			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot, targetNetworkId = myPlayer.networkID }):send()							
 		else
+			tick = os.clock()
 			CastSpell(TalonNoxianDiplomacy.spellSlot)					
 		end
 	end
 end
 
 function CastW(myTarget)
+	local tick 		= 	os.clock()
 	local UseW_  	= 	Menu.Combo.UseW
 	local sReady	=	ValidSpell(_W)
 	if not UseW_ then return end
-	if ValidTarget(myTarget, TalonRake.range) and sReady then
+	if ValidTarget(myTarget, TalonRake.range) and sReady and tick - os.clock() < 1 then
 		if Menu.General.UseVPred then
+
 			local mainCastPosition, mainHitChance = VP:GetConeAOECastPosition(myTarget,
 																			  ((TalonRake.delay + 350)/TalonRake.speed), 
 																			  52, 
@@ -230,24 +226,28 @@ function CastW(myTarget)
 																			  TalonRake.speed, 
 																			  myPlayer)
 			if mainHitChance >= 2 then
-				Packet('S_CAST', { spellId = TalonRake.spellSlot, toX = mainCastPosition.x, toY = mainCastPosition.z }):send()
-				--CastSpell(TalonRake.spellSlot, mainCastPosition.x, mainCastPosition.z)
+				tick = os.clock()
+				Packet('S_CAST', { spellId = TalonRake.spellSlot, toX = mainCastPosition.x, toY = mainCastPosition.z }):send()				
 			end
 		else
+			tick = os.clock()
 			CastSpell(TalonRake.spellSlot, myTarget.x, myTarget.z)
 		end
 	end
 end
 
 function CastE(myTarget)
+	local tick 		= 	os.clock()
 	local UseE_  	= 	Menu.Combo.UseE
 	local sReady	=	ValidSpell(_E)
 	if not UseE_ then return end
-	if ValidTarget(myTarget, TalonCutthroat.range) and sReady then		
+	if ValidTarget(myTarget, TalonCutthroat.range) and sReady and tick - os.clock() < 1 then		
 		if Menu.General.UsePacket then
+			tick = os.clock()
 			Packet('S_CAST', { spellId = TalonCutthroat.spellSlot, targetNetworkId = myTarget.networkID }):send()
 			lastAttackCD = 0					
 		else
+			tick = os.clock()
 			CastSpell(TalonCutthroat.spellSlot, myTarget)
 			lastAttackCD = 0						
 		end
@@ -255,11 +255,12 @@ function CastE(myTarget)
 end
 
 function CastR(myTarget)
+	local tick 		= 	os.clock()
 	local UseR_  	= 	Menu.Combo.UseR
 	local rDelay 	= 	Menu.Combo.CSettings.Rdelay
 	local sReady	=	ValidSpell(_R)
 	if not UseR_ then return end
-	if ValidTarget(myTarget, TalonShadowAssault.range) and sReady then
+	if ValidTarget(myTarget, TalonShadowAssault.range) and sReady and tick - os.clock() < 1 then
 		if Menu.General.UseVPred then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(myTarget,
 																								 TalonShadowAssault.delay,
@@ -267,7 +268,8 @@ function CastR(myTarget)
 																								 TalonShadowAssault.range,
 																								 TalonShadowAssault.speed, 
 																								 myPlayer) 
-			if MainTargetHitChance >= 2 then				
+			if MainTargetHitChance >= 2 then
+				tick = os.clock()				
 				CastSpell(TalonShadowAssault.spellSlot, AOECastPosition.x, AOECastPosition.z)
 				DelayAction(function ()
 								CastSpell(TalonShadowAssault.spellSlot, AOECastPosition.x, AOECastPosition.z)
@@ -275,6 +277,7 @@ function CastR(myTarget)
 							rDelay + GetLatency() / 2)
 			end
 		else
+			tick = os.clock()
 			CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
 			DelayAction(function ()
 						CastSpell(TalonShadowAssault.spellSlot, myTarget.x, myTarget.z)
@@ -308,11 +311,8 @@ end
 --[[cast Spells/items]]
 function CheckItems(tabela)
 	for ItemIndex, Value in pairs(tabela) do
-		Value.slot = GetInventorySlotItem(Value.SlotId)
-		--local sReady	=	ValidSpell(Value.slot)
-			--if sReady then 	
-			if Value.slot ~= nil and (myPlayer:CanUseSpell(Value.slot) == READY) then 				
-			--table.insert(FoundItems, ItemIndex)		
+		Value.slot = GetInventorySlotItem(Value.SlotId)			
+			if Value.slot ~= nil and (myPlayer:CanUseSpell(Value.slot) == READY) then				
 			FoundItems[#FoundItems+1] = ItemIndex	
 		end
 	end
@@ -361,7 +361,7 @@ function CastSurviveItem()
 	end
 end
 
---[[ULTIMATE/BUFFS CONTROL]]--
+--[[BUFFS CONTROL]]--
 function OnGainBuff(unit, buff)
 	if unit.isMe then
 		for i=1, #BuffNames do
@@ -385,41 +385,6 @@ function OnLoseBuff(unit, buff)
 		end
 	end
 end
-
---[[old OnGainBuff function
-function OnGainBuff(unit, buff)
-	if unit.isMe then		
-		if buff.name:lower():find("regenerationpotion") then 
-			UsandoHP = true
-		end	
-		if buff.name:lower():find("flaskofcrystalwater") then
-			UsandoMana = true
-		end			
-		if buff.name:lower():find("recall") then
-			UsandoRecall = true
-		end
-	end		
-end
-]]
-
---[[old InLoseBuff function
-function OnLoseBuff(unit, buff)
-	if unit.isMe then		
-		if buff.name:lower():find("regenerationpotion") then 
-			UsandoHP = false
-		end
-		if buff.name:lower():find("flaskofcrystalwater") then
-			UsandoMana = false
-		end			
-		if buff.name:lower():find("recall") then
-			UsandoRecall = false
-		end	
-	end	
-end
-]]
-
-
---[[end]]
 
 function OnTick()
 	--[[Script]]
@@ -446,15 +411,18 @@ function OnTick()
 	local AutoLevelSkills_      = 	Menu.General.LevelSkill
 	local UseOrb_				= 	Menu.General.UseOrb
 	local UseIgnite_			= 	Menu.Combo.CSettings.UseIgnite
+	
 	if not OnOff or myPlayer.dead then return end
-	UpdateVariaveis()	
+
+	UpdateVariaveis()
+
 	if Usar then
 		if _G.MMA_Loaded then			
 			_G.MMA_AbleToMove = false			
 		end
 		if _G.AutoCarry then			
 			_G.AutoCarry.CanMove = false			
-		end
+		end		
 		if UseOrb_ then _OrbWalk(Target) end		
 		if UseIgnite_ then CastIgnite(Target) end
 		if ComboMode == 1 then --"E-Q-W-R"
@@ -490,9 +458,9 @@ function OnTick()
 		if UsarHarassKey and MyMana_ >= StopCastManaP then
 			SmartHarass(Target)
 			if UseOrb_ then _OrbWalk(Target) end
-		end
-		--end
+		end		
 	end		
+
 	if FarmerrSystem_ then
 		if UsarAutoFarm and FarmUseW_ and not UsandoRecall then
 			FarmMinionsW()
@@ -508,12 +476,13 @@ function OnTick()
 end
 
 function OnDraw()
-	local wDraw 	  = Menu.Paint.PaintW
-	local eDraw 	  = Menu.Paint.PaintE
-	local rDraw 	  = Menu.Paint.PaintR	
-	local tDraw 	  = Menu.Paint.PaintTarget
-	local tdDraw	  = Menu.Paint.KillTarget
-	local DrawSystem_ = Menu.Paint.DrawSystem
+	local wDraw 	  	=	Menu.Paint.PaintW
+	local eDraw 	  	=	Menu.Paint.PaintE
+	local rDraw 	  	=	Menu.Paint.PaintR	
+	local tDraw 	  	=	Menu.Paint.PaintTarget
+	local tdDraw	  	=	Menu.Paint.KillTarget
+	local DrawSystem_ 	=	Menu.Paint.DrawSystem
+	--local DrawTurret	=	Menu.Paint.TurretHits
 	if not Menu.LigarScript or myPlayer.dead or not DrawSystem_ then return end	
 	if wDraw then
 		DrawCircle2(myPlayer.x, myPlayer.y, myPlayer.z, TalonRake.range, ARGB(255, 255, 000, 000))
@@ -535,14 +504,6 @@ function OnDraw()
 			DrawText3D(tostring(DamageText_),Target.x ,Target.y + 50, Target.z, 22, ARGB(255,255,0,0), true)
 		end
 	end
-
-	--if DrawLine1 ~= nil then
-	--	DrawCircle2(DrawLine1.x, DrawLine1.y, DrawLine1.z, 400, ARGB(255, 255, 255, 000))
-	--end
-	--if DrawLine2 ~= nil then
-	--	DrawLines3D(DrawLine2.x, DrawLine2.y, DrawLine2.z, 10, ARGB(255, 255, 000, 000))
-	--end
-	
 end
 
 function OnProcessSpell(object, spell)
@@ -568,6 +529,29 @@ local HotSpots = {
 	{x = 9589.52, y = 50.90, z = 6372.92},
 	{x = 8828.17, y = 61.94, z = 1932.64}
 }
+
+function Arredondar(num, idp)
+ return string.format("%." .. (idp or 0) .. "f", num)
+end
+
+function TurretHits()
+	local turrets 		=	GetTurrets()
+	local targetTurret 	=	nil
+	local aahits		=	0
+	local qhits			=	0
+	for i, turret in pairs(turrets) do
+		if turret ~= nil and turret.team ~= myHero.team then
+			targetTurret = turret.object
+			aahits	=	Arredondar(turret.object.health / getDmg("AD", targetTurret, myPlayer))
+			qhits	=	Arredondar(turret.object.health / getDmg("Q", targetTurret, myPlayer))
+			if aahits ~= 0 or qhits ~= 0 then												
+				turrethits_	=	"AA: " .. aahits .. "/Q: " .. qhits								
+			end
+		end
+	end
+	return turrethits_
+end
+	
 
 function SmartHarass(myTarget) --"W", "W-E-Q", "E-Q"
 	--[[Harass Menu]]
@@ -654,33 +638,6 @@ function ScapeRules()
 		end				
 	end
 end
---[[
-	
-	[[Cast E if Auto Option, see what distance is small between Enemy and Minion
-	if scapeMode_ == 3 then
-		--PrintChat("Escape Enemy Mode")
-		local BestPos = nil
-		for i, Enemy_ in pairs(EnemyPosT_) do
-			local EnemyDist = GetDistance(Enemy_, RespawPoint)
-			local MyDist	= GetDistance(MyPos, RespawPoint)
-			if EnemyDist < MyDist then				
-				ScapeTarget = Enemy_
-			end
-		end
-		for i, Minion_ in pairs(MinionPosT_) do
-			local MinionDist 	= GetDistance(Minion_, RespawPoint)
-			local MyDist		= GetDistance(MyPos, RespawPoint)
-			if MinionDist < MyDist then				
-				ScapeTarget = Minion_
-			end
-		end
-		if ValidTarget(ScapeTarget, TalonCutthroat.range) then
-			CastSpell(TalonCutthroat.spellSlot, ScapeTarget)
-		end
-	end
-end
-]]
-
 
 function CastIgnite(myTarget)
 	--local IgniteReady 		= (myHero:CanUseSpell(IgniteSpell.slot) == READY)	
@@ -703,35 +660,30 @@ function CastIgnite(myTarget)
 	end
 end 
 
---[[OLD
-function KillTextDamage()
-	if ValidTarget(Target) then
-		local Damage_     = 0
-		local TotalDamage = 0		
-		for i, DmgTable in pairs(DamageTable) do
-			Damage_ = (getDmg(DmgTable, Target, myPlayer) or 0)
-			TotalDamage = TotalDamage + Damage_
-		end
-		--PrintChat(tostring(TotalDamage))
-		if Target.health > TotalDamage then
-			DamageText = "Need Harass"
-		end
-		if Target.health < TotalDamage then		
-			DamageText = "Fatality!"
-		end		
-	end
-	return DamageText
-end
-]]
 function KillTextDamage()
 	if ValidTarget(Target) then
 		local Damage_     = 0
 		local TotalDamage = 0		
 		for i = 1, #DamageTable do
+			if DamageTable[i] == "Q" and ValidSpell(_Q) then				
+				Damage_ = (getDmg(DamageTable[i], Target, myPlayer) or 0)
+				TotalDamage = TotalDamage + Damage_
+			end
+			if DamageTable[i] == "W" and ValidSpell(_W) then
+				Damage_ = (getDmg(DamageTable[i], Target, myPlayer) or 0)
+				TotalDamage = TotalDamage + Damage_
+			end
+			if DamageTable[i] == "E" and ValidSpell(_E) then
+				Damage_ = (getDmg(DamageTable[i], Target, myPlayer) or 0)
+				TotalDamage = TotalDamage + Damage_
+			end
+			if DamageTable[i] == "R" and ValidSpell(_R) then
+				Damage_ = (getDmg(DamageTable[i], Target, myPlayer) or 0)
+				TotalDamage = TotalDamage + Damage_
+			end
 			Damage_ = (getDmg(DamageTable[i], Target, myPlayer) or 0)
 			TotalDamage = TotalDamage + Damage_
-		end
-		--PrintChat(tostring(TotalDamage))
+		end		
 		if Target.health > TotalDamage then
 			DamageText = "Need Harass"
 		end
@@ -754,90 +706,6 @@ function AutoSkillLevel()
 			end
 	end
 end 
---[[
-function FarmMinionsW()
-	local FarmWithW  = Menu.Farmerr.UseW
-	local manaStop 	 = Menu.Farmerr.StopCastMana
-	local actualMana = (myPlayer.mana / myPlayer.maxMana *100)
-	if FarmWithW == 6 then return end
-	MinionsInimigos:update()
-	for i, Minion in pairs(MinionsInimigos.objects) do
-		local wDamage = getDmg("W", Minion, myPlayer) *2
-		if ValidTarget(Minion) and GetDistance(Minion) <= TalonRake.range and TalonNoxianDiplomacy.ready and actualMana > manaStop then		
-			if Minion.health <= wDamage and MinionsInimigos.iCount > FarmWithW then --check if number of minion is higher than X
-				CastW(Minion)
-			end
-		end
-	end
-end
-]]
-
---[[
-function CountVectorsBetween(V1, V2, points)
-		local result = 0	
-		local hitpoints = {} 
-		for i, test in ipairs(points) do
-			local NVector = Vector(V1):crossP(test)
-			local NVector2 = Vector(test):crossP(V2)
-			if NVector.y >= 0 and NVector2.y >= 0 then
-				result = result + 1
-				table.insert(hitpoints, test)
-			elseif i == 1 then
-				return -1 --doesnt hit the main target
-			end
-		end
-		return result, hitpoints
-	end
-	]]
-
---function MinionBestPosition()
-
---[[
-function GetMinionAngle() --skill W angle = 52
-	MinionsInimigos:update()
-	local MyPos	 		= Vector(myPlayer.x, myPlayer.y, myPlayer.z):normalized()
-	local MinionPos     = nil
-	local MinionTable	= {}
-	local MinionTable1  = {}	
-	--local FirstMinion 	= nil
-	for i, Minion in ipairs(MinionsInimigos.objects) do
-		if Minion.type ~= myPlayer.type	then
-			MinionPos = Vector(Vector(Minion.x, Minion.y, Minion.z) - MyPos):rotated(0, (52 * math.pi /180 ), 0)
-			table.insert(MinionTable, MinionPos)		
-		end
-	end
-
-
-	for i, Test in ipairs(MinionTable) do
-		for i, Minion in ipairs(MinionsInimigos.objects) do
-			local VMinion = Vector(Minion):normalized()
-			local V1 = Vector(Test):crossP(VMinion)
-			local V2 = Vector(VMinion):crossP(Minion)
-			if V1.y >= 0 and V2.y >= 0 then				
-				CastSpell(_W, Test.x, Test.y)
-			end
-		end
-	end
-end
-]]
-	--[[
-
-	for a, MinionPos_ in pairs(MinionTable) do
-		for b, Minion in pairs(MinionsInimigos.objects) do
-			if Minion.type ~= myPlayer.type then
-			local MinionPos_2 = Vector(Vector(Minion.x, Minion.y, Minion.z) + MyPos):normalized()
-			if MinionPos_ < MinionPos_2 then
-				--rotate or not, cast in oposite minions position
-				local MinionPos_rotate =  Vector(Vector(MinionPos_.x, MinionPos_.y, MinionPos_.z) + MyPos):rotated(0, 180 / (180*math.pi), 0)				
-				CastSpell(_W, MinionPos_rotate.x, MinionPos_rotate.z)
-			end
-			end
-		end
-	end
-	
-end
-]]
-		
 
 --trees
 function GetCustomTarget()
@@ -846,7 +714,6 @@ function GetCustomTarget()
     if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myPlayer.type then return _G.AutoCarry.Attack_Crosshair.target end
 	return Alvo.target
 end
---end
 
 function _OrbWalk(myTarget)	
 	if myTarget ~= nil and GetDistance(myTarget) <= myTrueRange then		
@@ -996,13 +863,12 @@ function FarmMinionsW()
 	local actualMana = (myPlayer.mana / myPlayer.maxMana *100)
 	if FarmWithW == 6 then return end
 	MinionsInimigos:update()
-	for i, Minion in pairs(MinionsInimigos.objects) do
-		--local wDamage = getDmg("W", Minion, myPlayer) * 2
+	for i, Minion in pairs(MinionsInimigos.objects) do		
 		local BestPos, BestHit = GetBestCircularFarmPosition(TalonRake.range, 400, MinionsInimigos.objects)		
 			if BestHit > FarmWithW then --check if number of minion is higher than X
 				CastSpell(TalonRake.spellSlot, BestPos.x, BestPos.z)
 			end
-			--DrawLine1 = BestPos
+			
 	end
 end
 
