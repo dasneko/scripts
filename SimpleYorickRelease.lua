@@ -1,4 +1,4 @@
-local version = "1.001"
+local version = "1.002"
 
 if myHero.charName ~= "Yorick" or not VIP_USER then return end
 
@@ -58,22 +58,29 @@ local UltimateUsed = false
 
 --[[items]]
 local Items = {
-			["Brtk"]   = 	{ready = false, range = 450, SlotId = 3153, slot = nil}, --Blade of the Ruined King
-			["Bc"]     = 	{ready = false, range = 450, SlotId = 3144, slot = nil},
-			["Rh"]     = 	{ready = false, range = 400, SlotId = 3074, slot = nil}, --Ravenous Hydra
-			["Tiamat"] = 	{ready = false, range = 400, SlotId = 3077, slot = nil},
-			["Hg"]     = 	{ready = false, range = 700, SlotId = 3146, slot = nil},
-			["Yg"]     = 	{ready = false, range = 150, SlotId = 3142, slot = nil}, --Youmuu's Ghostblade
-			["RO"]     = 	{ready = false, range = 500, SlotId = 3143, slot = nil}, --Randuin\'s Omen
-			["SD"]	   =	{ready = false, range = 150, SlotId = 3131, slot = nil}	 --Sword of the Divine			
+			["Brtk"]   	= 	{ready = false, range = 450, SlotId = 3153, slot = nil}, --Blade of the Ruined King
+			["Bc"]     	= 	{ready = false, range = 450, SlotId = 3144, slot = nil},
+			["Rh"]     	= 	{ready = false, range = 400, SlotId = 3074, slot = nil}, --Ravenous Hydra
+			["Tiamat"] 	= 	{ready = false, range = 400, SlotId = 3077, slot = nil},
+			["Hg"]     	= 	{ready = false, range = 700, SlotId = 3146, slot = nil},
+			["Yg"]     	= 	{ready = false, range = 150, SlotId = 3142, slot = nil}, --Youmuu's Ghostblade
+			["RO"]     	= 	{ready = false, range = 500, SlotId = 3143, slot = nil}, --Randuin\'s Omen
+			["SD"]	   	=	{ready = false, range = 150, SlotId = 3131, slot = nil}, --Sword of the Divine			
+			["MU"]		=	{ready = false, range = 150, SlotId = 3042, slot = nil}, --Muramana
+			["MA"]		=	{ready = false, range = 150, SlotId	= 3004, slot = nil}, --Manamune
+			["Tear"]	=	{ready = false, range = 150, SlotId = 3070, slot = nil}	 --Tear of the Goddess
 			}
 local HP_MANA = { 
 				["Hppotion"] 	= {SlotId = 2003, ready = false, slot = nil},
 				["Manapotion"] 	= {SlotId = 2004 , ready = false, slot = nil}				  
 				}
 local FoundItems 							= {}
-local BuffNames 							= { "regenerationpotion", "flaskofcrystalwater", "recall" }
-local UsandoHP, UsandoMana, UsandoRecall	= false, false, false
+local BuffNames 							= { "regenerationpotion",
+ 												"flaskofcrystalwater",
+  												"recall" , 
+  												"yorickreviveallyguide",
+   												"muramana"}
+local UsandoHP, UsandoMana, UsandoRecall, UltimateUsed, MuramanaUsed	= false, false, false, false, false
 --[[spells]]
 local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, ready = false}
 local BarreiraSpell = 	{spellSlot = "SummonerBarrier", slot = nil, range = 0, ready = false}
@@ -116,6 +123,10 @@ function Menu()
 		menu.combo.ultimate:addParam("health"..myPlayer.charName, "Health missing in % "..myPlayer.charName, SCRIPT_PARAM_SLICE, 30, 20, 80, -1)
 	--[[harass]]
 	menu:addSubMenu("[Harass System]", "harass")
+	menu.harass:addSubMenu("[Extra Harass System]", "extra")
+	menu.harass.extra:addParam("tear", "Stack Tear in Minions Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("A"))
+	menu.harass.extra:addParam("w", "Stack Tear with W", SCRIPT_PARAM_ONOFF, false)
+	menu.harass.extra:addParam("e", "Stack Tear with E", SCRIPT_PARAM_ONOFF, true)
 	menu.harass:addParam("auto", "Auto Harass", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))	
 	menu.harass:addParam("w", "Use "..myPlayer:GetSpellData(_W).name, SCRIPT_PARAM_ONOFF, true)
 	menu.harass:addParam("e", "Use "..myPlayer:GetSpellData(_E).name, SCRIPT_PARAM_ONOFF, true)
@@ -130,9 +141,10 @@ function Menu()
 	menu.extra:addParam("items2", "Use Consumable Items", SCRIPT_PARAM_ONOFF, true)
 	menu.extra:addParam("hp", "Auto Use HP Potions", SCRIPT_PARAM_ONOFF, true)
 	menu.extra:addParam("hppercent", "Use HP if my Health < %", SCRIPT_PARAM_SLICE, 60, 10, 90, -1)
+	menu.extra:addParam("", "", SCRIPT_PARAM_INFO, "")
 	menu.extra:addParam("mana", "Auto use Mana Potions", SCRIPT_PARAM_ONOFF, true)
 	menu.extra:addParam("manapercent", "Use Mana if my Mana < %", SCRIPT_PARAM_SLICE, 70, 10, 90, -1)
-	menu.extra:addParam("", "", SCRIPT_PARAM_INFO, "")
+	
 	--menu.extra:addParam("barrier", "Auto Barrier", SCRIPT_PARAM_ONOFF, true)
 	--menu.extra:addParam("barrierpercent", "Auto Use Barrier %", SCRIPT_PARAM_SLICE, 30, 10, 90, -1)
 	--[[draw]]
@@ -150,6 +162,7 @@ function Menu()
 	--[[permashow]]
 	menu:permaShow("Version")
 	menu.combo:permaShow("key")
+	menu.harass.extra:permaShow("tear")
 	menu.harass:permaShow("auto")
 	menu.harass:permaShow("key1")
 	--[[spells check slot]]	 -- need better
@@ -161,6 +174,8 @@ function Menu()
 	TargetManager		=	TargetSelector(TARGET_LOW_HP, 850, DAMAGE_PHYSICAL)
 	TargetManager.name 	= 	"Yorick"
 	menu:addTS(TargetManager)
+	--[[minions lane]]
+	laneminions = minionManager(MINION_ENEMY, 600, myPlayer, MINION_SORT_HEALTH_ASC)
 	--[[orbwalk]]
 	myTrueRange = myHero.range + GetDistance(myPlayer.minBBox)		
 end
@@ -276,34 +291,53 @@ function updatetarget()
 	return TargetManager.target
 end
 
-function OnGainBuff(unit, buff)
-	if unit.isMe and buff.name:lower():find("yorickreviveallyguide") then
-		UltimateUsed = true			
-	end	
+function OnGainBuff(unit, buff)		
 	if unit.isMe then
 		for i=1, #BuffNames do
 			if buff.name:lower():find(BuffNames[i]) then
+				if BuffNames[i] == "yorickreviveallyguide" then UltimateUsed = true end
+				if BuffNames[i] == "muramana" then MuramanaUsed = true end
 				if BuffNames[i] == "regenerationpotion" then UsandoHP = true end
 				if BuffNames[i] == "flaskofcrystalwater" then UsandoMana = true end
-				if BuffNames[i] == "recall" then UsandoRecall = true end
+				if BuffNames[i] == "recall" then UsandoRecall = true end				
 			end
 		end
 	end	
 end
 
-function OnLoseBuff(unit, buff)
-	if unit.isMe and buff.name:lower():find("yorickreviveallyguide") then
-		UltimateUsed = false		
-	end
+function OnLoseBuff(unit, buff)	
 	if unit.isMe then
 		for i=1, #BuffNames do
 			if buff.name:lower():find(BuffNames[i]) then
+				if BuffNames[i] == "yorickreviveallyguide" then UltimateUsed = false end
+				if BuffNames[i] == "muramana" then MuramanaUsed = false end
 				if BuffNames[i] == "regenerationpotion" then UsandoHP = false end
 				if BuffNames[i] == "flaskofcrystalwater" then UsandoMana = false end
-				if BuffNames[i] == "recall" then UsandoRecall = false end
+				if BuffNames[i] == "recall" then UsandoRecall = false end				
 			end
 		end
 	end	
+end
+
+--[[tear of godness farm stack]]
+function FarmWETear()	
+	local havetear	=	GetInventorySlotItem(3070)
+	local haveMA	=	GetInventorySlotItem(3004)	
+	--[[menu]]	
+	local usew_		=	menu.harass.extra.w
+	local usee_ 	=	menu.harass.extra.e	
+	laneminions:update()
+	for i, minion_ in pairs(laneminions.objects) do		
+		--local BestPos, BestHit = GetBestCircularFarmPosition(YorickRavenous.range, 400, laneminions.objects)		
+		if havetear ~= nil or haveMA ~= nil then
+			if SkillReady(skilllist[2]) and usew_ then				
+				CastSpell(skilllist[2], minion_.x, minion_.z)
+			end	
+			if SkillReady(skilllist[3]) and usee_ then							
+				CastSpell(skilllist[3], minion_)
+			end				
+		end
+	end
 end
 
 --[[cast Spells/items]]
@@ -316,17 +350,21 @@ function CheckItems(tabela)
 	end
 end
 
-function CastCommonItem()
+function CastCommonItem(myTarget)
 	CheckItems(Items)
 	if #FoundItems ~= 0 then
 		for i, Items_ in pairs(FoundItems) do
 			if Target ~= nil then				
-				if GetDistance(Target) <= Items[Items_].range then 
+				if GetDistance(myTarget) <= Items[Items_].range then 
 					if 	Items_ == "Brtk" or Items_ == "Bc" then
 						CastSpell(Items[Items_].slot, Target)
+						if Items_ == "MU" and not MuramanaUsed then
+							CastSpell(Items[Items_].slot)
+						end
 					else					
 						CastSpell(Items[Items_].slot)					
 					end
+					--if Items_ == "MU" and 
 				end
 			end			 
 		end	
@@ -363,20 +401,24 @@ end
 function OnTick()
 if myPlayer.dead then return end	
 	--[[menu]]
-	local key_	=	menu.combo.key
-	local orb_ 	=	menu.system.orbwalker
+	local key_		=	menu.combo.key
+	local orb_ 		=	menu.system.orbwalker
 	--[[harass]]
-	local auto_	=	menu.harass.auto
-	local keyh_	=	menu.harass.key1
-	local usew_	=	menu.harass.w
-	local usee_	=	menu.harass.e
-	local stop_	=	menu.harass.manastop
-	local myMana =	(myPlayer.mana / myPlayer.maxMana * 100)
+	local auto_		=	menu.harass.auto
+	local keyh_		=	menu.harass.key1
+	local usew_		=	menu.harass.w
+	local usee_		=	menu.harass.e
+	local stop_		=	menu.harass.manastop
+	local myMana 	=	(myPlayer.mana / myPlayer.maxMana * 100)
+	local tearkey 	=	menu.harass.extra.tear
 	--[[extra]]
 	local Items_ 	=	menu.extra.items
-	local Items2_	=	menu.extra.items2		
+	local Items2_	=	menu.extra.items2
+	
 	--[[update target]]
 	Target = updatetarget()	
+	--[[tear stack]]
+	if tearkey then FarmWETear() if orb_ then OrbWalk_() end  end	
 	--[[combo]]
 	if Items2_ then CastSurviveItem() end
 	if key_ then				
@@ -385,7 +427,7 @@ if myPlayer.dead then return end
 		CastE(Target)
 		CastR(Target)
 		if orb_ then OrbWalk_(Target) end
-		if Items_ then CastCommonItem() end		
+		if Items_ then CastCommonItem(Target) end		
 	end
 	--[[harass]]	
 	if auto_ and not UsandoRecall then
