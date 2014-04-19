@@ -515,7 +515,7 @@ function OnDraw()
 	local e_ 		=	menu.draw.e
 	local r_ 		=	menu.draw.r
 	local dTarget	=	menu.draw.target
-	--local dAlly		=	menu.draw.ally
+	--[[local dAlly		=	menu.draw.ally]]
 
 	if w_ then
 		DrawCircle2(myPlayer.x, myPlayer.y, myPlayer.z, YorickDecayed.range, ARGB(255, 000, 000, 255))
