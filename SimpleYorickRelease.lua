@@ -357,11 +357,11 @@ function CastCommonItem(myTarget)
 			if Target ~= nil then				
 				if GetDistance(myTarget) <= Items[Items_].range then 
 					if 	Items_ == "Brtk" or Items_ == "Bc" then
-						CastSpell(Items[Items_].slot, Target)
+						CastSpell(Items[Items_].slot, Target)						
+					else
 						if Items_ == "MU" and not MuramanaUsed then
 							CastSpell(Items[Items_].slot)
-						end
-					else					
+						end					
 						CastSpell(Items[Items_].slot)					
 					end
 					--if Items_ == "MU" and 
