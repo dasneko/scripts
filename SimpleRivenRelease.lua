@@ -108,7 +108,7 @@ end
 
 function OnLoad()
 	Menu()
-	PrintChat("<font color=\"#6699ff\"><b>Riven, I'm not a Bunny by Jus</b></font>"
+	PrintChat("<font color=\"#6699ff\"><b>Riven, I'm not a Bunny by Jus</b></font>")
 end
 
 function Menu()
