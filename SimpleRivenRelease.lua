@@ -135,8 +135,8 @@ function Menu()
 	--[[harass]]
 	menu:addSubMenu("[Harass System]", "harass")
 	menu.harass:addParam("Q", "Use "..SpellName(skilllist[1]).." (Q)", SCRIPT_PARAM_ONOFF, false)
-	menu.harass:addParam("W"), "Use "..SpellName(skilllist[2]).." (W)", SCRIPT_PARAM_ONOFF, true)
-	menu.harass:addParam("E"), "Use "..SpellName(skilllist[3]).." (E)", SCRIPT_PARAM_ONOFF, false)
+	menu.harass:addParam("W", "Use "..SpellName(skilllist[2]).." (W)", SCRIPT_PARAM_ONOFF, true)
+	menu.harass:addParam("E", "Use "..SpellName(skilllist[3]).." (E)", SCRIPT_PARAM_ONOFF, false)
 	menu.harass:addParam("", "", SCRIPT_PARAM_INFO, "")
 	menu.harass:addParam("key", "Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 	--[[extra]]
@@ -569,7 +569,3 @@ function OnDraw()
 		end
 	end
 end
-
-
-
-
