@@ -11,7 +11,7 @@ local UPDATE_PATH = "/Jusbol/scripts/master/SimpleRivenRelease.lua".."?rand="..m
 local UPDATE_FILE_PATH = LIB_PATH.."SimpleRivenRelease.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Riven, I'm not a Rabbit:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Riven, I'm not a Bunny:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH)
 	if ServerData then
@@ -108,7 +108,7 @@ end
 
 function OnLoad()
 	Menu()
-	PrintChat("<font color=\"#6699ff\"><b>Riven, I'm not a Rabbit by Jus</b></font>"
+	PrintChat("<font color=\"#6699ff\"><b>Riven, I'm not a Bunny by Jus</b></font>"
 end
 
 function Menu()
