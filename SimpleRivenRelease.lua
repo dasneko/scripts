@@ -1,9 +1,6 @@
-local version	=	"1.0"
-
-require "VPrediction"
-
 if myHero.charName ~= "Riven" or not VIP_USER then return end
 
+local version	=	"1.001"
 
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
@@ -32,7 +29,7 @@ if AUTOUPDATE then
 	end
 end
 
-
+require "VPrediction"
 local myPlayer				=	GetMyHero()
 local VP
 
@@ -122,7 +119,13 @@ function Menu()
 	menu.combo:addParam("", "", SCRIPT_PARAM_INFO, "")
 	menu.combo:addParam("key", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 		menu.combo:addSubMenu("[Combo Settings]", "settings")		
-		menu.combo.settings:addParam("boxbox", "Always BoxBox (Try AA Passive)", SCRIPT_PARAM_ONOFF, true)
+		menu.combo.settings:addParam("boxbox", "Riven Combo Mode", SCRIPT_PARAM_LIST, 1, { "BoxBox", "Animation Canceling"})
+		menu.combo:addSubMenu("[Animation Canceling Settings]", "animation")
+		menu.combo.animation:addParam("info", "Only Valid if Mode Seted", SCRIPT_PARAM_INFO, "Need to set")
+		menu.combo.animation:addParam("q", "Cancel Animation (Q)", SCRIPT_PARAM_ONOFF, true)
+		menu.combo.animation:addParam("w", "Cancel Animation (W)", SCRIPT_PARAM_ONOFF, true)
+		menu.combo.animation:addParam("e", "Cancel Animation (E)", SCRIPT_PARAM_ONOFF, true)
+		menu.combo.animation:addParam("rr", "Cancel Animation (R)", SCRIPT_PARAM_ONOFF, true)
 		menu.combo.settings:addParam("stun", "Auto Stun if Possible", SCRIPT_PARAM_ONOFF, true)
 		menu.combo.settings:addParam("e", "Use (E) with Combo Key", SCRIPT_PARAM_ONOFF, true)
 		menu.combo.settings:addParam("", "", SCRIPT_PARAM_INFO, "")
@@ -218,7 +221,7 @@ function CastQ(myTarget)
 	local skillname		=	tostring(skilllist[1]) --_Q
 	local useq_			=	menu.combo[skillname]	--menu.combo._Q
 	local validT		=	ValidTarget(myTarget, RivenTriCleave.range)	
-	if boxbox_ then
+	if boxbox_ == 1 then
 		if CheckAABoost() and ValidTarget(myTarget, myTrueRange) then
 			TryAutoAttack(myTarget)
 			CanUseQ = true	
@@ -239,7 +242,7 @@ function CastW(myTarget)
 	local skillname	=	tostring(skilllist[2])
 	local usew_		=	menu.combo[skillname]
 	local validT	=	ValidTarget(myTarget, RivenMartyr.range)
-	if boxbox_ then
+	if boxbox_ == 1 then
 		if CheckAABoost() and ValidTarget(myTarget, myTrueRange) then
 			TryAutoAttack(myTarget)
 			CanUseQ = true				
@@ -261,7 +264,7 @@ function CastE(myTarget)
 	local skillname		=	tostring(skilllist[3])
 	local usee_			=	menu.combo[skillname]
 	local validT	=	ValidTarget(myTarget, RivenFeint.range)
-	if boxbox_ then
+	if boxbox_ == 1 then
 		if CheckAABoost() and ValidTarget(myTarget, myTrueRange) then
 			TryAutoAttack(myTarget)	
 			CanUseQ = true			
@@ -310,15 +313,38 @@ function CastR(myTarget)
 end
 
 function OnProcessSpell(object, spell)
+	--[[animation cancel menu]]
+	local cancelQ	=	menu.combo.animation.q
+	local cancelW	=	menu.combo.animation.w
+	local cancelE	=	menu.combo.animation.e
+	local cancelR	=	menu.combo.animation.rr
+	local items_ 	=	menu.combo.settings.items
+	--[[system]]
+	local orb_			=	menu.system.orbwalker
 	if object == myPlayer then
 		if spell.name:lower():find("attack") then			
 			lastAttack = GetTickCount() - GetLatency() / 2
 			lastWindUpTime = spell.windUpTime * 2000
 			lastAttackCD = spell.animationTime * 2000
 		end
-		if spell.name == "RivenTriCleave" then
+		if spell.name == "RivenFengShuiEngine" and boxbox_ == 1 then
 			rTick = os.clock() + (GetLatency() *1000)
-		end		
+		end	
+		if boxbox_ == 2 and ValidTarget(Target) then
+			if spell.name == "RivenFengShuiEngino" and cancelR then
+				rTick = os.clock() + (GetLatency() *1000)
+				if SkillReady(skilllist[3]) then CastSpell(_E, mousePos.x, mousePos.z) end
+				if SkillReady(skilllist[2]) then CastSpell(_W, mousePox.x, mousePos.z) end
+			end
+			if spell.name == "RivenMartyr" and cancelW then				
+				if items_ then CastCommonItem() end
+			--else
+				--Packet('S_MOVE', {x = spell.startPos.x, y = spell.startPos.z}):send()
+			end
+			if spell.name == "RivenMartyr" and cancelE then
+				CastSpell(_E, mousePos.x, mousePos.z)
+			end			
+		end
 	end
 end
 
@@ -498,13 +524,23 @@ function OnTick()
 	if items_2 then CastSurviveItem() end
 	--[[combo active]]		
 	if combokey_ then 
-		if r_ then CastR(Target) end		
-		if e_ then CastE(Target) end
-		CastW(Target)
-		CastQ(Target)		
-		if orb_ 	then OrbWalk(Target) end
+		if boxbox_ == 1 then
+			if r_ then CastR(Target) end		
+			if e_ then CastE(Target) end
+			CastW(Target)
+			CastQ(Target)
+			if orb_ 	then OrbWalk(Target) end
+		end	
+		if boxbox_ == 2 then
+			if r_ then CastR(Target) end		
+			if e_ then CastE(Target) end
+			CastW(Target)
+			CastQ(Target)
+			if orb_ 	then OrbWalk(Target) end			
+		end			
 		if ignite_ 	then CastIgnite(Target) end
 		if items_ 	then CastCommonItem() end
+
 	end
 	if stun_ 		then CastW(Target) end
 	if key_2		then
@@ -569,3 +605,7 @@ function OnDraw()
 		end
 	end
 end
+
+
+
+
