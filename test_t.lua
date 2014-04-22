@@ -30,7 +30,7 @@ function OnLoseBuff(unit, buff)
 end
 
 function CastQ(myTarget)
-	if ValidTarget(Target, 560) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
+	if ValidTarget(Target, 650) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
 		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
 end
@@ -67,13 +67,16 @@ function _OrbWalk(myTarget)
 		moveToCursor() 
 	end
 end
+function OwYew()
+	return aaboost and qCount > 0 
+end
 
 function heroCanMove()
 	return ( GetTickCount() + GetLatency() / 2 > lastAttack + lastWindUpTime + 20 )
 end 
  
 function timeToShoot()
-	return aaboost or GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD
+	return OwYew() or GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD
 end 
  
 function moveToCursor()
@@ -99,13 +102,14 @@ end
 
 function DoMyCombo(myTarget)
 	if ValidTarget(myTarget) then
-	if myHero:CanUseSpell(_E) == READY then
+		CastQ(myTarget)
+	if myHero:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 then
         CastSpell(_E, myTarget.x, myTarget.z)
     end
     if myHero:CanUseSpell(_W) == READY and GetDistance(myTarget) < 250 then
         CastSpell(_W)
     end
-end
+	end
 end
 
 
@@ -142,11 +146,11 @@ function OnTick()
 	Target = Ts.target
 	if menu.key then
 		--Packet('S_CAST', { spellId = _Q, x = mousePos.x, y = mousePos.z }):send()
-		--CastSpell(_Q, mousePos.x, mousePos.z)
-		DoMyCombo(Target)
-		CastQ(Target)
+		--CastSpell(_Q, mousePos.x, mousePos.z)		
+		DoMyCombo(Target)		
 		_OrbWalk(Target)
 		--if not CanUseQ then TryAttack(Target) end
 	end
+	if not myPlayer:CanUseSpell(_Q) == READY then qCount = 0 end
 	
 end
