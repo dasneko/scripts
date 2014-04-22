@@ -33,7 +33,7 @@ function CastQ(myTarget)
 	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
 		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 126 then
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 385 then
 		CastSpell(_Q, myTarget.x, myTarget.z)
 	end	
 end
@@ -70,7 +70,7 @@ function _OrbWalk(myTarget)
 	end
 end
 function OwYew(myTarget)
-	return aaboost and qCount > 0 and ValidTarget(myTarget) and GetDistance(myTarget) <= 125
+	return aaboost and qCount > 0 and ValidTarget(myTarget, myTrueRange)
 end
 
 function heroCanMove()
