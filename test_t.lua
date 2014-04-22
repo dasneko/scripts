@@ -6,6 +6,7 @@ local AABuff = "rivenpassiveaaboost"
 local aaboost, CanUseQ, Target = false, true, nil
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local myTrueRange 							   = myPlayer.range + GetDistance(myPlayer.minBBox)
+local qCount = 0
 
 function OnLoad()
 	menu = scriptConfig("Test", "test")
@@ -18,18 +19,18 @@ end
 
 function OnGainBuff(unit, buff)	
 	if unit.isMe then		
-		if buff.name:lower():find("rivenpassiveaaboost") then aaboost = true CanUseQ = false end
+		if buff.name:lower():find("rivenpassiveaaboost") then aaboost = true end
 	end
 end
 
 function OnLoseBuff(unit, buff)	
 	if unit.isMe then		
-		if buff.name:lower():find("rivenpassiveaaboost") then aaboost = false CanUseQ = true end
+		if buff.name:lower():find("rivenpassiveaaboost") then aaboost = false end
 	end
 end
 
 function CastQ(myTarget)
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and CanUseQ then
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
 		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
 end
@@ -43,7 +44,7 @@ function OnProcessSpell(object, spell)
 			--CanUseQ = true
 		end 
 	end
-
+--[[
 	if spell.name == "RivenTriCleave" then          
         if ValidTarget(Target) then
         local movePos = Target + (Vector(myPlayer) - Target):normalized()*(GetDistance(Target)+25)
@@ -54,6 +55,7 @@ function OnProcessSpell(object, spell)
     		Packet('S_MOVE', {x = mousePos.x, y = mousePos.z}):send()
     	end
     end 
+    ]]
 
 end
 
@@ -97,6 +99,16 @@ function OnSendPacket(packet)
 	end
 end
 ]]
+
+function OnAnimation(unit,animation)
+        if unit.isMe and animation:find("Spell1a") then
+                qCount = 1
+        elseif unit.isMe and animation:find("Spell1b") then
+                qCount = 2
+        elseif unit.isMe and animation:find("Spell1c") then
+                qCount = 3
+        end
+end
 
 function OnSendPacket(p)
 	if p.header == Packet.headers.S_CAST then
