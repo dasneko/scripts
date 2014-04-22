@@ -30,7 +30,7 @@ function OnLoseBuff(unit, buff)
 end
 
 function CastQ(myTarget)
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
+	if ValidTarget(Target, 560) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
 		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
 end
@@ -44,18 +44,15 @@ function OnProcessSpell(object, spell)
 			--CanUseQ = true
 		end 
 	end
---[[
+
 	if spell.name == "RivenTriCleave" then          
         if ValidTarget(Target) then
-        local movePos = Target + (Vector(myPlayer) - Target):normalized()*(GetDistance(Target)+25)
+        local movePos = Target + (Vector(myPlayer) - Target):normalized()*(GetDistance(Target)+50)
             if movePos then
                 Packet('S_MOVE', {x = movePos.x, y = movePos.z}):send()
             end
-    	else
-    		Packet('S_MOVE', {x = mousePos.x, y = mousePos.z}):send()
     	end
-    end 
-    ]]
+    end    
 
 end
 
@@ -100,6 +97,18 @@ function OnSendPacket(packet)
 end
 ]]
 
+function DoMyCombo(myTarget)
+	if ValidTarget(myTarget) then
+	if myHero:CanUseSpell(_E) == READY then
+        CastSpell(_E, myTarget.x, myTarget.z)
+    end
+    if myHero:CanUseSpell(_W) == READY and GetDistance(myTarget) < 250 then
+        CastSpell(_W)
+    end
+end
+end
+
+
 function OnAnimation(unit,animation)
         if unit.isMe and animation:find("Spell1a") then
                 qCount = 1
@@ -109,6 +118,7 @@ function OnAnimation(unit,animation)
                 qCount = 3
         end
 end
+
 
 function OnSendPacket(p)
 	if p.header == Packet.headers.S_CAST then
@@ -126,12 +136,14 @@ function Emote()
 	SendPacket(p)
 end
 
+
 function OnTick()
 	Ts:update()
 	Target = Ts.target
 	if menu.key then
 		--Packet('S_CAST', { spellId = _Q, x = mousePos.x, y = mousePos.z }):send()
 		--CastSpell(_Q, mousePos.x, mousePos.z)
+		DoMyCombo(Target)
 		CastQ(Target)
 		_OrbWalk(Target)
 		--if not CanUseQ then TryAttack(Target) end
