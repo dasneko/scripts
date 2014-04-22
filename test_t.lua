@@ -30,12 +30,8 @@ function OnLoseBuff(unit, buff)
 end
 
 function CastQ(myTarget)
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
-		CastSpell(_Q, myTarget.x, myTarget.z)		
-	else
-		if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and timeToShoot() and GetDistance(myTarget) <= 650 then
-			CastSpell(_Q, myTarget.x, myTarget.z)
-		end
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() and GetDistance(myTarget) <= 650 then
+		CastSpell(_Q, myTarget.x, myTarget.z)			
 	end
 end
 
