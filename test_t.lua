@@ -11,7 +11,7 @@ local qCount = 0
 function OnLoad()
 	menu = scriptConfig("Test", "test")
 	menu:addParam("key", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-	Ts		=	TargetSelector(TARGET_NEAR_MOUSE, 780, DAMAGE_PHYSICAL)
+	Ts		=	TargetSelector(TARGET_NEAR_MOUSE, 825, DAMAGE_PHYSICAL)
 	Ts.name 	= 	"Riven"
 	menu:addTS(Ts)
 	PrintChat("ok jus let's do it")
@@ -30,7 +30,7 @@ function OnLoseBuff(unit, buff)
 end
 
 function CastQ(myTarget)
-	if ValidTarget(Target, 650) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
 		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
 end
