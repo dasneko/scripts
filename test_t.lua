@@ -30,9 +30,12 @@ function OnLoseBuff(unit, buff)
 end
 
 function CastQ(myTarget)
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() and GetDistance(myTarget) <= 650 then
-		CastSpell(_Q, myTarget.x, myTarget.z)			
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
+		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 126 then
+		CastSpell(_Q, myTarget.x, myTarget.z)
+	end	
 end
 
 function OnProcessSpell(object, spell)
@@ -52,8 +55,7 @@ function OnProcessSpell(object, spell)
                 Packet('S_MOVE', {x = movePos.x, y = movePos.z}):send()
             end
     	end
-    end    
-
+    end
 end
 
 function _OrbWalk(myTarget)	
@@ -67,8 +69,8 @@ function _OrbWalk(myTarget)
 		moveToCursor() 
 	end
 end
-function OwYew()
-	return aaboost and qCount > 0 
+function OwYew(myTarget)
+	return aaboost and qCount > 0 and ValidTarget(myTarget) and GetDistance(myTarget) <= 125
 end
 
 function heroCanMove()
@@ -76,9 +78,9 @@ function heroCanMove()
 end 
  
 function timeToShoot()
-	return OwYew() or GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD
+	return OwYew(Target) or GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD
 end 
- 
+
 function moveToCursor()
 	if GetDistance(mousePos) > 1 then
 		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 250
@@ -103,7 +105,7 @@ end
 function DoMyCombo(myTarget)
 	if ValidTarget(myTarget) then
 		CastQ(myTarget)
-	if myHero:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 then
+	if myHero:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and not timeToShoot() then
         CastSpell(_E, myTarget.x, myTarget.z)
     end
     if myHero:CanUseSpell(_W) == READY and GetDistance(myTarget) < 250 then
