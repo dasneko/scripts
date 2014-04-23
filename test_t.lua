@@ -136,7 +136,7 @@ function KillEverybodyMothaFucker(myTarget)
    		if myPlayer:CanUseSpell(_W) == READY and GetDistance(myTarget) < 260 then
         	CastSpell(_W)
     	end
-    	if myPlayer:CanUseSpell(_R) == READY and (myTarget.health / myTarget.maxHealth * 100) <= 50 then
+    	if myPlayer:CanUseSpell(_R) == READY and (myTarget.health / myTarget.maxHealth * 100) <= 30 then
 			CastSpell(_R, myTarget.x, myTarget.z)			
 		end
 	end
