@@ -3,7 +3,7 @@ if myHero.charName ~= "Riven" or not VIP_USER then return end
 local myPlayer			=	GetMyHero()
 
 local AABuff = "rivenpassiveaaboost"
-local aaboost, CanUseQ, Target = false, true, nil
+local aaboost, fristRCast, Target = false, true, nil
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local myTrueRange 							   = myPlayer.range + GetDistance(myPlayer.minBBox)
 local qCount = 0
@@ -61,11 +61,15 @@ function OnProcessSpell(object, spell)
     if spell.name == "RivenFengShuiEngine" then
    	rTick = GetTickCount()
    	end
-   	if spell.name == "RivenFeint" and not TargetHaveBuff("RivenFengShuiEngine", myPlayer) and ValidTarget(Target) then
-   		if myPlayer:CanUseSpell(_R) == READY and GetDistance(Target) <= myTrueRange then
-   			
+
+   	if spell.name == "RivenFeint" and ValidTarget(Target) then
+   		if myPlayer:CanUseSpell(_R) == READY and fristRCast then   			
    			CastSpell(_R)
-   		end   		
+   			fristRCast = false
+   		end
+   		if myPlayer:CanUseSpell(_W) == READY and GetDistance(Target) < 260 then
+        	CastSpell(_W)
+    	end 		
    	end
 
 end
@@ -119,7 +123,7 @@ function CastQ(myTarget)
 	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
 		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 385 then
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 610 and GetDistance(myTarget) >= 365 then
 		CastSpell(_Q, myTarget.x, myTarget.z)
 	end	
 end
@@ -136,8 +140,9 @@ function KillEverybodyMothaFucker(myTarget)
    		if myPlayer:CanUseSpell(_W) == READY and GetDistance(myTarget) < 260 then
         	CastSpell(_W)
     	end
-    	if myPlayer:CanUseSpell(_R) == READY and (myTarget.health / myTarget.maxHealth * 100) <= 30 then
-			CastSpell(_R, myTarget.x, myTarget.z)			
+    	if myPlayer:CanUseSpell(_R) == READY and (myTarget.health / myTarget.maxHealth * 100) <= 30 and not fristRCast then
+			CastSpell(_R, myTarget.x, myTarget.z)
+			fristRCast = true			
 		end
 	end
 end
@@ -146,7 +151,7 @@ function OnSendPacket(p)
 	if p.header == Packet.headers.S_CAST then
 		local decodedPacket = Packet(p)
 		if decodedPacket:get('spellId') == _Q then Emote() end
-		if ValidTarget(Target) and decodedPacket:get('spellId') == _Q and aaboost and GetDistance(Target) <= 124 then decodedPacket:block() end
+		if ValidTarget(Target) and decodedPacket:get('spellId') == _Q and aaboost and GetDistance(Target) <= myTrueRange then decodedPacket:block() end
 	end
 end
 
