@@ -7,6 +7,7 @@ local aaboost, CanUseQ, Target = false, true, nil
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local myTrueRange 							   = myPlayer.range + GetDistance(myPlayer.minBBox)
 local qCount = 0
+local qTick, rTick = 0, 0
 
 function OnLoad()
 	menu = scriptConfig("Test", "test")
@@ -20,6 +21,7 @@ end
 function OnGainBuff(unit, buff)	
 	if unit.isMe then		
 		if buff.name:lower():find("rivenpassiveaaboost") then aaboost = true end
+		PrintChat(buff.name)
 	end
 end
 
@@ -29,33 +31,33 @@ function OnLoseBuff(unit, buff)
 	end
 end
 
-function CastQ(myTarget)
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
-		CastSpell(_Q, myTarget.x, myTarget.z)		
-	end
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 385 then
-		CastSpell(_Q, myTarget.x, myTarget.z)
-	end	
-end
-
 function OnProcessSpell(object, spell)
 	if object == myPlayer then
 		if spell.name:lower():find("attack") then			
 			lastAttack = GetTickCount() - GetLatency() / 2
 			lastWindUpTime = spell.windUpTime * 1000
-			lastAttackCD = spell.animationTime * 1000			
-			--CanUseQ = true
+			lastAttackCD = spell.animationTime * 1000	
+			--PrintChat("windUpTime: "..tostring(spell.windUpTime))
+			--PrintChat("animationTime: "..tostring(spell.animationTime))
+			--PrintChat("lastAttack: "..tostring(lastAttack))		
 		end 
 	end
 
-	if spell.name == "RivenTriCleave" then          
+	if spell.name == "RivenTriCleave" then 
+	qTick = GetTickCount()         
         if ValidTarget(Target) then
+        
         local movePos = Target + (Vector(myPlayer) - Target):normalized()*(GetDistance(Target)+50)
             if movePos then
                 Packet('S_MOVE', {x = movePos.x, y = movePos.z}):send()
             end
     	end
     end
+
+    if spell.name == "RivenFengShuiEngine" then
+   	rTick = GetTickCount()
+   	end
+
 end
 
 function _OrbWalk(myTarget)	
@@ -74,15 +76,15 @@ function OwYew(myTarget)
 end
 
 function heroCanMove()
-	return ( GetTickCount() + GetLatency() / 2 > lastAttack + lastWindUpTime + 20 )
+	return (GetTickCount() + GetLatency() / 2 > lastAttack + lastWindUpTime)
 end 
  
 function timeToShoot()
-	return OwYew(Target) or GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD
+	return OwYew(Target) or (GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD)
 end 
 
 function moveToCursor()
-	if GetDistance(mousePos) > 1 then
+	if GetDistance(mousePos) > myTrueRange then
 		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 250
 		myPlayer:MoveTo(moveToPos.x, moveToPos.z)
 	end 
@@ -102,27 +104,44 @@ function OnSendPacket(packet)
 end
 ]]
 
-function DoMyCombo(myTarget)
+function CastQ(myTarget)
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
+		CastSpell(_Q, myTarget.x, myTarget.z)		
+	end
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 385 and timeToShoot() then
+		CastSpell(_Q, myTarget.x, myTarget.z)
+	end	
+end
+
+function KillEverybodyMothaFucker(myTarget)
 	if ValidTarget(myTarget) then
+		if myPlayer:CanUseSpell(_R) == READY and qCount > 2 then
+			CastSpell(_R)
+		end
+		if myPlayer:CanUseSpell(_R) == READY and GetTickCount() > rTick + 15000 or (myTarget.health / myTarget.maxHealth)*100 < 10 then
+			CastSpell(_R, myTarget.x, myTarget.z)
+		end
 		CastQ(myTarget)
-	if myHero:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and not timeToShoot() then
-        CastSpell(_E, myTarget.x, myTarget.z)
-    end
-    if myHero:CanUseSpell(_W) == READY and GetDistance(myTarget) < 250 then
-        CastSpell(_W)
-    end
+		if myPlayer:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and not timeToShoot() then
+        	CastSpell(_E, myTarget.x, myTarget.z)
+    	end
+    	if myPlayer:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and GetDistance(myTarget) >= 125 and timeToShoot() then
+    		CastSpell(_E, myTarget.x, myTarget.z)
+    	end
+   		if myPlayer:CanUseSpell(_W) == READY and GetDistance(myTarget) < 260 then
+        	CastSpell(_W)
+    	end
 	end
 end
 
-
 function OnAnimation(unit,animation)
-        if unit.isMe and animation:find("Spell1a") then
-                qCount = 1
-        elseif unit.isMe and animation:find("Spell1b") then
-                qCount = 2
-        elseif unit.isMe and animation:find("Spell1c") then
-                qCount = 3
-        end
+    if unit.isMe and animation:find("Spell1a") then
+        qCount = 1
+    elseif unit.isMe and animation:find("Spell1b") then
+        qCount = 2
+    elseif unit.isMe and animation:find("Spell1c") then
+        qCount = 3
+    end
 end
 
 
@@ -135,7 +154,7 @@ end
 
 function Emote()
 	p = CLoLPacket(0x47)
-	p:EncodeF(myHero.networkID)
+	p:EncodeF(myPlayer.networkID)
 	p:Encode1(2)
 	p.dwArg1 = 1
 	p.dwArg2 = 0
@@ -146,13 +165,10 @@ end
 function OnTick()
 	Ts:update()
 	Target = Ts.target
-	if menu.key then
-		--Packet('S_CAST', { spellId = _Q, x = mousePos.x, y = mousePos.z }):send()
-		--CastSpell(_Q, mousePos.x, mousePos.z)		
-		DoMyCombo(Target)		
-		_OrbWalk(Target)
-		--if not CanUseQ then TryAttack(Target) end
+	if menu.key then			
+		KillEverybodyMothaFucker(Target)		
+		_OrbWalk(Target)		
 	end
-	if not myPlayer:CanUseSpell(_Q) == READY then qCount = 0 end
-	
+	if myPlayer:GetSpellData(_Q).cd == 13 then qCount = 0 end	
+	--PrintChat(tostring(myPlayer:GetSpellData(_Q).cd))		
 end
