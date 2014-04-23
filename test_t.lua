@@ -8,6 +8,7 @@ local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local myTrueRange 							   = myPlayer.range + GetDistance(myPlayer.minBBox)
 local qCount = 0
 local qTick, rTick = 0, 0
+local lastAnimationQ = nil
 
 function OnLoad()
 	menu = scriptConfig("Test", "test")
@@ -21,7 +22,7 @@ end
 function OnGainBuff(unit, buff)	
 	if unit.isMe then		
 		if buff.name:lower():find("rivenpassiveaaboost") then aaboost = true end
-		PrintChat(buff.name)
+		
 	end
 end
 
@@ -36,10 +37,7 @@ function OnProcessSpell(object, spell)
 		if spell.name:lower():find("attack") then			
 			lastAttack = GetTickCount() - GetLatency() / 2
 			lastWindUpTime = spell.windUpTime * 1000
-			lastAttackCD = spell.animationTime * 1000	
-			--PrintChat("windUpTime: "..tostring(spell.windUpTime))
-			--PrintChat("animationTime: "..tostring(spell.animationTime))
-			--PrintChat("lastAttack: "..tostring(lastAttack))		
+			lastAttackCD = spell.animationTime * 1000		
 		end 
 	end
 
@@ -51,11 +49,23 @@ function OnProcessSpell(object, spell)
             if movePos then
                 Packet('S_MOVE', {x = movePos.x, y = movePos.z}):send()
             end
+
+        if myPlayer:CanUseSpell(_E) == READY and GetDistance(Target) <= 385 and GetDistance(Target) >= 125 then
+    		CastSpell(_E, Target.x, Target.z)
     	end
+
+    	end
+
     end
 
     if spell.name == "RivenFengShuiEngine" then
    	rTick = GetTickCount()
+   	end
+   	if spell.name == "RivenFeint" and not TargetHaveBuff("RivenFengShuiEngine", myPlayer) and ValidTarget(Target) then
+   		if myPlayer:CanUseSpell(_R) == READY and GetDistance(Target) <= myTrueRange then
+   			
+   			CastSpell(_R)
+   		end   		
    	end
 
 end
@@ -71,16 +81,17 @@ function _OrbWalk(myTarget)
 		moveToCursor() 
 	end
 end
+
 function OwYew(myTarget)
-	return aaboost and qCount > 0 and ValidTarget(myTarget, myTrueRange)
+	return aaboost and ValidTarget(myTarget, myTrueRange)
 end
 
 function heroCanMove()
-	return (GetTickCount() + GetLatency() / 2 > lastAttack + lastWindUpTime)
+	return ( GetTickCount() + GetLatency() / 2 > lastAttack + lastWindUpTime + 20 )
 end 
  
 function timeToShoot()
-	return OwYew(Target) or (GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD)
+	return OwYew(Target) or ( GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD)
 end 
 
 function moveToCursor()
@@ -108,47 +119,34 @@ function CastQ(myTarget)
 	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and not timeToShoot() then
 		CastSpell(_Q, myTarget.x, myTarget.z)		
 	end
-	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 385 and timeToShoot() then
+	if ValidTarget(Target) and myPlayer:CanUseSpell(_Q) == READY and GetDistance(myTarget) <= 550 and GetDistance(myTarget) >= 385 then
 		CastSpell(_Q, myTarget.x, myTarget.z)
 	end	
 end
 
 function KillEverybodyMothaFucker(myTarget)
-	if ValidTarget(myTarget) then
-		if myPlayer:CanUseSpell(_R) == READY and qCount > 2 then
-			CastSpell(_R)
-		end
-		if myPlayer:CanUseSpell(_R) == READY and GetTickCount() > rTick + 15000 or (myTarget.health / myTarget.maxHealth)*100 < 10 then
-			CastSpell(_R, myTarget.x, myTarget.z)
-		end
+	if ValidTarget(myTarget) then		
 		CastQ(myTarget)
-		if myPlayer:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and not timeToShoot() then
+		if myPlayer:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and not aaboost then
         	CastSpell(_E, myTarget.x, myTarget.z)
     	end
-    	if myPlayer:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and GetDistance(myTarget) >= 125 and timeToShoot() then
+    	if myPlayer:CanUseSpell(_E) == READY and GetDistance(myTarget) <= 385 and GetDistance(myTarget) >= 125 then
     		CastSpell(_E, myTarget.x, myTarget.z)
     	end
    		if myPlayer:CanUseSpell(_W) == READY and GetDistance(myTarget) < 260 then
         	CastSpell(_W)
     	end
+    	if myPlayer:CanUseSpell(_R) == READY and (myTarget.health / myTarget.maxHealth * 100) <= 50 then
+			CastSpell(_R, myTarget.x, myTarget.z)			
+		end
 	end
 end
-
-function OnAnimation(unit,animation)
-    if unit.isMe and animation:find("Spell1a") then
-        qCount = 1
-    elseif unit.isMe and animation:find("Spell1b") then
-        qCount = 2
-    elseif unit.isMe and animation:find("Spell1c") then
-        qCount = 3
-    end
-end
-
 
 function OnSendPacket(p)
 	if p.header == Packet.headers.S_CAST then
 		local decodedPacket = Packet(p)
 		if decodedPacket:get('spellId') == _Q then Emote() end
+		if ValidTarget(Target) and decodedPacket:get('spellId') == _Q and aaboost and GetDistance(Target) <= 124 then decodedPacket:block() end
 	end
 end
 
