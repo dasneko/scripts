@@ -1,6 +1,6 @@
-Malzahar, A Void Call, Talon,
+Malzahar, A Void Call (, 
 
-Tail of The Dragon, 
+Talon,Tail of The Dragon, 
 
 Yorick, The King of Rock'n Roll,
 
