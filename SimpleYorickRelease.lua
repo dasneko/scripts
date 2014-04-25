@@ -1,34 +1,32 @@
-local version = "1.002"
+local version = "1.003"
 
 if myHero.charName ~= "Yorick" or not VIP_USER then return end
+--SimpleYorickRelease.lua
 
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Jusbol/scripts/master/SimpleYorickRelease.lua".."?rand="..math.random(1,10000)
-local UPDATE_FILE_PATH = LIB_PATH.."SimpleYorickRelease.lua"
+local UPDATE_FILE_PATH = SCRIPT_PATH.."SimpleYorickRelease.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Yorick, The King Of Rock'n Roll:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+function _AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Yorick, The King Of Rock'n Roll:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
-	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH)
-	if ServerData then
-		local ServerVersion = string.match(ServerData, "local version = \"%d+.%d+\"")
-		ServerVersion = string.match(ServerVersion and ServerVersion or "", "%d+.%d+")
-		if ServerVersion then
-			ServerVersion = tonumber(ServerVersion)
-			if tonumber(version) < ServerVersion then
-				AutoupdaterMsg("New version available"..ServerVersion)
-				AutoupdaterMsg("Updating, please don't press F9")
-				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
-			else
-				AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
-			end
-		end
-	else
-		AutoupdaterMsg("Error downloading version info")
-	end
+        local ServerData = GetWebResult(UPDATE_HOST, "/Jusbol/scripts/master/VersionFiles/Yorick.version")
+        if ServerData then
+                ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
+                if ServerVersion then
+                        if tonumber(version) < ServerVersion then
+                                _AutoupdaterMsg("New version available"..ServerVersion)
+                                _AutoupdaterMsg("Updating, please don't press F9")
+                                DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
+                        else
+                                _AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
+                        end
+                end
+        else
+                _AutoupdaterMsg("Error downloading version info")
+        end
 end
-
 
 local myPlayer	=	GetMyHero()
 
@@ -185,7 +183,7 @@ function SkillReady(skill_)
 end
 
 function CastQ(myTarget)
-	local tick 		= os.clock()
+	local tick 		= 	os.clock()
 	local packet_	=	menu.system.packet
 	local skillName =	tostring(skilllist[1])
 	local useq_		=	menu.combo["use"..skillName]
@@ -244,12 +242,12 @@ end
 
 function CastR(myTarget)
 
-	if UltimateUsed then
+	--if UltimateUsed then
 		--Packet('S_CAST', { spellId = skilllist[4], fromX = myTarget.x, fromY = myTarget.z,toX = myTarget.x, toY = myTarget.z }):send()	
-	return
-	end
+	--return
+	--end
 	local tick 		= os.clock()
-
+	local ultTick	= os.clock()
 	updateallys()
 	local packet_	=	menu.system.packet
 	local skillName	=	tostring(skilllist[4])
@@ -284,6 +282,15 @@ function CastR(myTarget)
 			end
 		end
 	end
+
+	if UltimateUsed then
+		if os.clock + GetLantecy() / 2 > ultTick + GetLantecy() / 2 + 3 then
+			CastSpell(skilllist[4], myTarget.x, myTarget.z)
+		end
+		ultTick	= os.clock()
+	end
+
+
 end
 
 function updatetarget()
@@ -515,7 +522,7 @@ function OnDraw()
 	local e_ 		=	menu.draw.e
 	local r_ 		=	menu.draw.r
 	local dTarget	=	menu.draw.target
-	--[[local dAlly		=	menu.draw.ally]]
+	local dAlly		=	menu.draw.ally
 
 	if w_ then
 		DrawCircle2(myPlayer.x, myPlayer.y, myPlayer.z, YorickDecayed.range, ARGB(255, 000, 000, 255))
