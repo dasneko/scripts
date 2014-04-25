@@ -1,4 +1,4 @@
-local version = "2.029"
+local version = "2.03"
 
 require "VPrediction"
 
@@ -6,29 +6,27 @@ if myHero.charName ~= "Talon" or not VIP_USER then return end
 
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua".."?rand="..math.random(1,10000)
-local UPDATE_FILE_PATH = LIB_PATH.."SimpleTalonRelease.lua"
+local UPDATE_PATH = "/Jusbol/scripts/master/SimpleTalonRelease.lua.lua".."?rand="..math.random(1,10000)
+local UPDATE_FILE_PATH = SCRIPT_PATH.."SimpleTalonRelease.lua.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Talon, Tail of the Dragon:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+function _AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Talon, Tail of the Dragon:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
-	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH)
-	if ServerData then
-		local ServerVersion = string.match(ServerData, "local version = \"%d+.%d+\"")
-		ServerVersion = string.match(ServerVersion and ServerVersion or "", "%d+.%d+")
-		if ServerVersion then
-			ServerVersion = tonumber(ServerVersion)
-			if tonumber(version) < ServerVersion then
-				AutoupdaterMsg("New version available"..ServerVersion)
-				AutoupdaterMsg("Updating, please don't press F9")
-				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
-			else
-				AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
-			end
-		end
-	else
-		AutoupdaterMsg("Error downloading version info")
-	end
+        local ServerData = GetWebResult(UPDATE_HOST, "/Jusbol/scripts/master/VersionFiles/Talon.version")
+        if ServerData then
+                ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
+                if ServerVersion then
+                        if tonumber(version) < ServerVersion then
+                                _AutoupdaterMsg("New version available"..ServerVersion)
+                                _AutoupdaterMsg("Updating, please don't press F9")
+                                DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
+                        else
+                                _AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
+                        end
+                end
+        else
+                _AutoupdaterMsg("Error downloading version info")
+        end
 end
 
 --[[AUTO UPDATE END]]--
@@ -42,14 +40,15 @@ local IgniteSpell   = 	{spellSlot = "SummonerDot", slot = nil, range = 600, read
 local BarreiraSpell = 	{spellSlot = "SummonerBarrier", slot = nil, range = 0, ready = false}
 --[[ITEMS]]--
 local Items = {
-			["Brtk"]   = 	{ready = false, range = 450, SlotId = 3153, slot = nil},
-			["Bc"]     = 	{ready = false, range = 450, SlotId = 3144, slot = nil},
-			["Rh"]     = 	{ready = false, range = 400, SlotId = 3074, slot = nil},
-			["Tiamat"] = 	{ready = false, range = 400, SlotId = 3077, slot = nil},
-			["Hg"]     = 	{ready = false, range = 700, SlotId = 3146, slot = nil},
-			["Yg"]     = 	{ready = false, range = 150, SlotId = 3142, slot = nil},
-			["RO"]     = 	{ready = false, range = 500, SlotId = 3143, slot = nil}, 
-			["SD"]	   =	{ready = false, range = 150, SlotId = 3131, slot = nil}				
+			["Brtk"]   	= 	{ready = false, range = 450, SlotId = 3153, slot = nil},
+			["Bc"]     	= 	{ready = false, range = 450, SlotId = 3144, slot = nil},
+			["Rh"]     	= 	{ready = false, range = 400, SlotId = 3074, slot = nil},
+			["Tiamat"] 	= 	{ready = false, range = 400, SlotId = 3077, slot = nil},
+			["Hg"]     	= 	{ready = false, range = 700, SlotId = 3146, slot = nil},
+			["Yg"]     	= 	{ready = false, range = 150, SlotId = 3142, slot = nil},
+			["RO"]     	= 	{ready = false, range = 500, SlotId = 3143, slot = nil}, 
+			["SD"]	   	=	{ready = false, range = 150, SlotId = 3131, slot = nil},
+			["MU"]		=	{ready = false, range = 150, SlotId = 3042, slot = nil}		
 			}
 local HP_MANA = { 
 				["Hppotion"] = {SlotId = 2003, ready = false, slot = nil},
@@ -203,10 +202,16 @@ function CastQ(myTarget)
 	if ValidTarget(myTarget, TalonNoxianDiplomacy.range) and sReady and tick - os.clock() < 1 then	
 		if Menu.General.UsePacket then
 			tick = os.clock()
-			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot, targetNetworkId = myPlayer.networkID }):send()							
+			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot, targetNetworkId = myPlayer.networkID }):send()	
+			if GetDistance(myTarget) <= 125 then
+				myPlayer:Attack(myTarget)
+			end					
 		else
 			tick = os.clock()
-			CastSpell(TalonNoxianDiplomacy.spellSlot)					
+			CastSpell(TalonNoxianDiplomacy.spellSlot)
+			if GetDistance(myTarget) <= 125 then
+				myPlayer:Attack(myTarget)
+			end					
 		end
 	end
 end
@@ -245,11 +250,11 @@ function CastE(myTarget)
 		if Menu.General.UsePacket then
 			tick = os.clock()
 			Packet('S_CAST', { spellId = TalonCutthroat.spellSlot, targetNetworkId = myTarget.networkID }):send()
-			lastAttackCD = 0					
+			lastAttack = 0					
 		else
 			tick = os.clock()
 			CastSpell(TalonCutthroat.spellSlot, myTarget)
-			lastAttackCD = 0						
+			lastAttack = 0						
 		end
 	end
 end
@@ -442,8 +447,7 @@ function OnTick()
 			if not TalonCutthroat.ready then CastW(Target) end
 			if not TalonRake.ready then CastR(Target) end
 			if not TalonShadowAssault.ready then CastQ(Target) end
-		end
-		if UsarItems_ then CastCommonItem()	end
+		end		
 	end
 	
 	if UsarScape_ then
@@ -513,6 +517,10 @@ function OnProcessSpell(object, spell)
 			lastWindUpTime = spell.windUpTime * 1000
 			lastAttackCD = spell.animationTime * 1000
 		end 
+		if spell.name == "TalonNoxianDiplomacy" then
+			local UsarItems_ 			= 	Menu.Combo.CSettings.UseItems
+			if UsarItems_ then CastCommonItem()	end
+		end
 	end
 end
 
@@ -716,7 +724,7 @@ function GetCustomTarget()
 end
 
 function _OrbWalk(myTarget)	
-	if myTarget ~= nil and GetDistance(myTarget) <= myTrueRange then		
+	if ValidTarget(myTarget, 125) then		
 		if timeToShoot() then
 			myPlayer:Attack(myTarget)
 		elseif heroCanMove()  then
@@ -736,7 +744,7 @@ function timeToShoot()
 end 
  
 function moveToCursor()
-	if GetDistance(mousePos) > 1 or lastAnimation == "Idle1" then
+	if GetDistance(mousePos) > 125 then
 		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 250
 		myPlayer:MoveTo(moveToPos.x, moveToPos.z)
 	end 
