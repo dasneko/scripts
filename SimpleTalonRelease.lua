@@ -1,4 +1,4 @@
-local version = "2.03"
+local version = "2.04"
 
 require "VPrediction"
 
@@ -193,6 +193,16 @@ function UpdateVariaveis()
 	MinionsInimigos:update()
 end
 
+function getHitBoxRadius(hero_)
+    return GetDistance(hero_.minBBox, hero_.maxBBox)/2
+end
+
+function ThisIsReal(myTarget) -- < myPlayer.range
+    local range = GetDistance(myTarget) - getHitBoxRadius(myTarget) - getHitBoxRadius(myPlayer)
+    return range
+end
+
+
 --[[cast SKILLs]]
 function CastQ(myTarget)
 	local tick 		=	os.clock()
@@ -203,15 +213,11 @@ function CastQ(myTarget)
 		if Menu.General.UsePacket then
 			tick = os.clock()
 			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot, targetNetworkId = myPlayer.networkID }):send()	
-			if GetDistance(myTarget) <= 125 then
-				myPlayer:Attack(myTarget)
-			end					
+							
 		else
 			tick = os.clock()
 			CastSpell(TalonNoxianDiplomacy.spellSlot)
-			if GetDistance(myTarget) <= 125 then
-				myPlayer:Attack(myTarget)
-			end					
+							
 		end
 	end
 end
@@ -516,6 +522,7 @@ function OnProcessSpell(object, spell)
 			lastAttack = GetTickCount() - GetLatency() / 2
 			lastWindUpTime = spell.windUpTime * 1000
 			lastAttackCD = spell.animationTime * 1000
+			if ValidTarget(Target) then CastQ(Target) end
 		end 
 		if spell.name == "TalonNoxianDiplomacy" then
 			local UsarItems_ 			= 	Menu.Combo.CSettings.UseItems
@@ -724,7 +731,7 @@ function GetCustomTarget()
 end
 
 function _OrbWalk(myTarget)	
-	if ValidTarget(myTarget, 125) then		
+	if ValidTarget(myTarget) and ThisIsReal(myTarget) <= myPlayer.range then		
 		if timeToShoot() then
 			myPlayer:Attack(myTarget)
 		elseif heroCanMove()  then
@@ -744,7 +751,7 @@ function timeToShoot()
 end 
  
 function moveToCursor()
-	if GetDistance(mousePos) > 125 then
+	if GetDistance(mousePos) > myPlayer.range then
 		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 250
 		myPlayer:MoveTo(moveToPos.x, moveToPos.z)
 	end 
