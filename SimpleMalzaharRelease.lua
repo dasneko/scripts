@@ -9,17 +9,6 @@ local UPDATE_PATH = "/Jusbol/scripts/master/SimpleMalzaharRelease.lua".."?rand="
 local UPDATE_FILE_PATH = LIB_PATH.."SimpleMalzaharRelease.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-function StopMovMMA()
-	if _G.MMA_Loaded then
-		if _G.MMA_OrbWalker then
-			_G.MMA_AbreToMove = false
-			return true
-		else
-			return false
-		end
-	end
-end
-
 function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Simple Malzahar:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH, "", 5)
@@ -256,6 +245,18 @@ Menu:addParam("VersaoInfo", "Malzahar Version", SCRIPT_PARAM_INFO, version)
 	VP = VPrediction()
 	PrintChat("-[ <font color='#000FFF'> -- Malzahar by Jus loaded !Good Luck! -- </font> ]-")
 end
+
+function StopMovMMA()
+	if _G.MMA_Loaded then
+		if _G.MMA_OrbWalker then
+			_G.MMA_AbreToMove = false
+			return true
+		else
+			return false
+		end
+	end
+end
+
 --[[SKILLS]]--
 function CastQ()	
 	if EncontrarAlvoQ() ~= nil and not UsandoR and GetDistance(EncontrarAlvoQ()) <= AlZaharCalloftheVoid.range then
