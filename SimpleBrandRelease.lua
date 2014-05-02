@@ -33,6 +33,7 @@ if autoupdateenabled then
 end
 --[[AUTO UPDATE END]]--
 
+
 --[[SKILLS]]--
 local BrandBlaze = {ready = nil, spellSlot = _Q, range = 900, width = 80, speed = 1200,  hitLineCheck = true, delay = 0.5}
 local BrandFissure = {ready = nil, spellSlot = _W, range = 900, width = 0, speed = 20, hitLineCheck = false, delay = 0.5}
