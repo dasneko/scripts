@@ -33,7 +33,7 @@ end
 --[[honda update function]]
 
 --[[SKILLS]]--
-local AlZaharCalloftheVoid = {ready = nil, spellSlot = _Q, range = 900, width = 110, speed = math.huge, delay = .8}
+local AlZaharCalloftheVoid = {ready = nil, spellSlot = _Q, range = 900, width = 110, speed = math.huge, delay = .7}
 local AlZaharNullZone = {ready = nil, spellSlot = _W, range = 800, width = 250, speed = math.huge, delay = .5}
 local AlZaharMaleficVision = {ready = nil, spellSlot = _E, range = 650, width = 0, speed = math.huge, delay = .5}
 local AlZaharNetherGrasp = {ready = nil, spellSlot = _R, range = 700, width = 0, speed = math.huge, delay = .5}
