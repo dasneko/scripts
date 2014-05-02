@@ -2,6 +2,7 @@ if myHero.charName ~= "Malzahar" or not VIP_USER then return end
 require "VPrediction"
 
 --[[AUTO UPDATE]]--
+
 local version = "0.752"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
