@@ -1,9 +1,9 @@
-Malzahar, A Void Call, 
+Riven, I'm not a Bunny,
 
 Talon,Tail of The Dragon, 
 
-Yorick, The King of Rock'n Roll,
+Malzahar, A Void Call, 
 
-Riven, I'm not a Bunny,
+Yorick, The King of Rock'n Roll,
 
 http://botoflegends.com/forum/user/87175-jus/
