@@ -1,0 +1,98 @@
+Version 2.26 (link):
+-Fix problem with ultimate message.
+-Packet by default is true now.
+-Better auto target.
+
+Version 2.25 (link):
+-Faster combo, if you have problems with triple-q-aa go to "General System" -> "Use Packet" and put it TRUE.
+-Code tweaks
+
+Version 2.24 (link):
+What is new?
+-Added Overkill System: should prevent bad usage of spells. If you don't like just disable it.
+-Re-added "Force Passive" options, i do not recommend use in W and E it will slow down the combo. Let Q as Default.
+-Draw Text in Target (it's depend of Overkill system now)
+-Better orbwalk integration
+-Lane/Jungle will use passive now.
+-Last Hit with use of Shield (E)
+-Triple-Q-AA should be a little more fast now (adjustment in my formula)
+-Tweak to make it more fps friendly.
+
+Version 2.23 pushed (link):
+-New: Auto delay triple-q-aa. If you think that you can handle more fast than automatic value, set it to manual and use your own value.
+-(R) is a toggle now (default key "S")
+-Simple Jump function (default key "T")
+-Code tweaks
+
+Version 2.21 pushed (link):
+-Added:
+-MMA and SAC:Reborn support (not tested) It's automatic, you don't need to turn off my orbwalk to work, but you have the option if you want.
+-Ultimate options:
+-Range, enemy health and number of enemys.
+-Item Usage if cast W out of combo key
+-E range increase by 10.
+-Improved target selector.
+-Tweaks in code to make it more fps friendly.
+-Ks with ultimate.
+
+Version 2.20 pushed (link):
+-Better target selector, you can select, let it auto select or use near mouse.
+
+Version 2.19 pushed (link): 
+-Add value to triple q-aa, should be faster now.
+-Better logic when casting q
+-Better auto target
+[warning]
+Stop to ask about to do this script open source. I will not open it.
+[/warning]
+
+Version  2.16~2.18: (link)
+-Fixed lane/jungle and last hit
+-Added Triple Q delay: i recommend use the default value, more will let the triple Q-AA more slow, but will garantee the usage, low will let it fast but can't garentee the usage.
+-Better logic in Triple Q-AA. Now combo should start with ultimate as requested more early. it will not wait for E and W passives anymore.
+-Added auto target selector: should select the easy target like mid or adc. You call steal use you mouse to select if you want.
+-Removed Smart Combo for now.
+
+Version 2.15:
+A lot of people have problem to configure it, so i rewrite a lot of thing to make it user friendly.
+-New: smart combo
+-Removed for now: Jump function (making a better one)
+-Readded: Jungle clear with orbwalk.
+
+Version 2.14:
+-New: Combo mode: Standard and Custom.
+--Use standard if you don't want to configure ranges. Only thing that you need to configure is ultimate and Auxliary system if need.
+--Use custom to be able to configure all features.
+-Improved formula in Auxiliary system.
+-Fixed a bug.
+
+Version 2.13:
+-Auxiliar System with more values, it goes to number 20 now.
+-Fixed a bug.
+
+Version 2.12 (25/04/2014):
+-More values in Auxiliary System.
+-New Types of packet: you can choose now 4 types. (type 1 is without sound but i can't ensure the Animation Canceling)
+-Fixed bug about: "LIB_PATH"
+-Better update function
+
+Version 2.11:
+-New Auxiliary System in Animation Canceling.
+-New Force Passive in R
+-New Configurable range: Lane clear
+--Now Lane clear have a check to not be casted in enemy turret.
+
+-2.00: https://github.com/Jusbol/scripts/blob/master/Riven200.lua
+
+Version 2.00:
+New Script.
+* you don't need VPrediction anymore.
+
+Old script: https://github.com/Jusbol/scripts/blob/master/SimpleRiven_OLD.lua
+
+Version 1.001
+- Combo Mode: BoxBox or Animation Canceling. You Need to set it.
+* Animation Canceling is not perfect now but you can use it.
+
+Version 1.0
+-Release
