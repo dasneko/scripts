@@ -57,15 +57,15 @@ function Combo(myTarget)
 	OrbWalk(myTarget)
 end
 
-local function heroCanMove()
+function heroCanMove()
     return ( GetTickCount() + GetLatency() / 2 > lastAttack + lastWindUpTime + 20)
 end 
  
-local function timeToShoot()
+function timeToShoot()
     return (GetTickCount() + GetLatency() / 2 > lastAttack + lastAttackCD)
 end 
 
-local function moveToCursor() 
+function moveToCursor() 
 	if GetDistance(mousePos) >= 260 then
  		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized()* 260
 		myPlayer:MoveTo(moveToPos.x, moveToPos.z)
