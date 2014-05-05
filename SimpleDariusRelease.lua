@@ -96,11 +96,11 @@ function OrbWalk(myTarget)
 end
 
 local function GetMyTarget()
-    local selectedTarget  	= GetTarget()
+    local selectedTarget  		= GetTarget()
     local Found 			= false    
     local inimigos 			= nil
     local Enemy 			= nil   
-    local finalTarget		= nil
+    local finalTarget			= nil
     if range_ == 0 then range_ = 850 end
 
     if ValidTarget(selectedTarget) and selectedTarget.type == myPlayer.type then
@@ -115,15 +115,15 @@ local function GetMyTarget()
             if ValidTarget(Enemy) and GetDistance(Enemy) <= 800 then
             	local finalDmg	=	Enemy.health / myDmg
                 if finalDmg < basedmg then
-                	found = true                	
+                	Found = true                	
                     return Enemy
                 end		                
             else
-            	found = false
+            	Found = false
             end		  
         end
     end
-    if not selectedTarget and not found then
+    if not selectedTarget and not Found then
     	local mouseTarget = nil
     	inimigos  = GetEnemyHeroes()
     	for i, Enemy in pairs(inimigos) do
