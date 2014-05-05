@@ -1,4 +1,4 @@
-local version = "1.003"
+local version = "1.004"
 
 if myHero.charName ~= "Yorick" or not VIP_USER then return end
 --SimpleYorickRelease.lua
@@ -95,7 +95,7 @@ local myTrueRange = 0
 
 function OnLoad()
 	Menu()
-	PrintChat("-[ <font color='#000FFF'>Yorick, The King Of Rock'n Roll by Jus loaded !Good Luck!</font> ]-")
+	PrintChat("<font color=\"#6699ff\"><b>Yorick, The King Of Rock'n Roll by Jus loaded !Good Luck!</b></font> ]-")
 end
 
 function Menu()
@@ -241,53 +241,53 @@ function ValidAlly(allytarget, range)
 end
 
 function CastR(myTarget)
-
+if not ValidTarget(myTarget) then return end
 	--if UltimateUsed then
 		--Packet('S_CAST', { spellId = skilllist[4], fromX = myTarget.x, fromY = myTarget.z,toX = myTarget.x, toY = myTarget.z }):send()	
 	--return
 	--end
-	local tick 		= os.clock()
-	local ultTick	= os.clock()
+	--local tick 		 
+	local ultTick	=	GetTickCount() + GetLatency() / 2	
 	updateallys()
 	local packet_	=	menu.system.packet
 	local skillName	=	tostring(skilllist[4])
-	local user_		=	menu.combo["use"..skillName]	
-	for i, aliado in ipairs(Allys) do
+	local user_		=	menu.combo["use"..skillName]
+	local myHp			=	(myPlayer.health / myPlayer.maxHealth * 100)
+	local myHpmenu		=	menu.combo.ultimate["use"..myPlayer.charName]
+	local myHpmenuP		=	menu.combo.ultimate["health"..myPlayer.charName]		
+	for i, aliado in pairs(Allys) do
 		local nomealiado	=	aliado.charName
 		local ValidAlly_	=	ValidAlly(aliado, YorickReviveAlly.range)
 		if nomealiado ~= nil and user_ and SkillReady(skilllist[4]) then		
 			local use_			=	menu.combo.ultimate["use"..nomealiado]
 			local aliadopercem	=	menu.combo.ultimate["health"..nomealiado]
 			local aliadoperceh	=	(aliado.health / aliado.maxHealth * 100)
-			local myHp			=	(myPlayer.health / myPlayer.maxHealth * 100)
-			local myHpmenu		=	menu.combo.ultimate["use"..myPlayer.charName]
-			local myHpmenuP		=	menu.combo.ultimate["health"..myPlayer.charName]								
-			if aliadoperceh <= aliadopercem and use_ and ValidAlly_ and tick ~= nil and os.clock() - tick < 1 then
-				if packet_ then
-					tick = os.clock()
+			
+										
+			if aliadoperceh <= aliadopercem and use_ and ValidAlly_ then
+				if packet_ then				
 					Packet('S_CAST', { spellId = skilllist[4], targetNetworkId = aliado.networkID }):send()
-				else
-					tick = os.clock()
+				else					
 					CastSpell(skilllist[4], aliado)
 				end
-			end
-			if myHp <= myHpmenuP and myHpmenu and tick ~= nil and os.clock() - tick < 1 then
-				if packet_ and not UltimateUsed  then
-					tick = os.clock()
-					Packet('S_CAST', { spellId = skilllist[4], targetNetworkId = myPlayer.networkID }):send()
-				else
-					tick = os.clock()
-					CastSpell(skilllist[4], myPlayer)
-				end
-			end
+			end			
+		end
+	end
+
+	if myHp <= myHpmenuP and myHpmenu then
+		if packet_ and not UltimateUsed then			
+			Packet('S_CAST', { spellId = skilllist[4], targetNetworkId = myPlayer.networkID }):send()
+		else			
+			CastSpell(skilllist[4], myPlayer)
 		end
 	end
 
 	if UltimateUsed then
-		if os.clock + GetLantecy() / 2 > ultTick + GetLantecy() / 2 + 3 then
+		if GetTickCount() + GetLatency() / 2 > ultTick + 3000 and ValidTarget(myTarget) then
 			CastSpell(skilllist[4], myTarget.x, myTarget.z)
+			ultTick	= GetTickCount() + GetLatency() / 2
 		end
-		ultTick	= os.clock()
+		
 	end
 
 
@@ -484,7 +484,7 @@ function timeToShoot()
 end 
  
 function moveToCursor()
-	if GetDistance(mousePos) > 1 or lastAnimation == "Idle1" then
+	if GetDistance(mousePos) > 125 then
 		local moveToPos = myHero + (Vector(mousePos) - myHero):normalized() * 250
 		myHero:MoveTo(moveToPos.x, moveToPos.z)
 	end 
