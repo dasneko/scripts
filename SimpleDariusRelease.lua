@@ -1,12 +1,12 @@
 if myHero.charName ~= "Darius" or not VIP_USER then return end
 
 ------------------- ONLY COMBO WITH ORBWALK
-local version "0.1"
-local myPlayer	=	GetMyHero()
-local Target  	=	nil
+local version 		= "0.1"
+local myPlayer		= GetMyHero()
+local Target  		= nil
 local lastAttack      	= 0
 local lastWindUpTime  	= 0
-local lastAttackCD		= 0  
+local lastAttackCD	= 0  
 -------------------
 local function MenuCombo()
 	menu:addSubMenu("[Combo Settings]", "combo")
