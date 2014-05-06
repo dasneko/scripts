@@ -3,6 +3,7 @@ Version 2.27:
 -Faster combo
 -Tweaks to save more fps.
 -That bug about attack when use Q not in combo should be fixed too.
+Message for everyone: If "Auto" delay is not doing triple-q-aa for you, set it manual, i did a new adjustament in my formula to speed up a lot it and can result in no triple-q-aa for someone.
 
 Version 2.26 (link):
 -Fix problem with ultimate message.
