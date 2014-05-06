@@ -1,3 +1,9 @@
+Version 2.27:
+-Faster Lane/jungle clear
+-Faster combo
+-Tweaks to save more fps.
+-That bug about attack when use Q not in combo should be fixed too.
+
 Version 2.26 (link):
 -Fix problem with ultimate message.
 -Packet by default is true now.
