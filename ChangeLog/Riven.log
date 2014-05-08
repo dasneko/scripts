@@ -1,3 +1,9 @@
+Version 2.28:
+-Improve triple-q-aa speed, from 2.3s to 1.7s.
+-Passive indicator
+-Tweaks
+-Benchmark script: https://github.com/Jusbol/scripts/blob/master/tools/RivenBenchmark.lua
+
 Version 2.27:
 -Faster Lane/jungle clear
 -Faster combo
