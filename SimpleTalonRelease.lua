@@ -1,4 +1,4 @@
-local version = "2.04"
+local version = "2.05"
 
 require "VPrediction"
 
@@ -751,8 +751,8 @@ function timeToShoot()
 end 
  
 function moveToCursor()
-	if GetDistance(mousePos) > myPlayer.range then
-		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 250
+	if GetDistance(mousePos) > 260 then
+		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 260
 		myPlayer:MoveTo(moveToPos.x, moveToPos.z)
 	end 
 end
