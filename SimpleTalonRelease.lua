@@ -1,4 +1,4 @@
-local version = "2.05"
+local version = "2.06"
 
 require "VPrediction"
 
@@ -28,7 +28,7 @@ if AUTOUPDATE then
                 _AutoupdaterMsg("Error downloading version info")
         end
 end
--- Honda
+
 --[[AUTO UPDATE END]]--
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 250, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
@@ -74,7 +74,7 @@ local RespawPoint 			= Vector(cameraPos.x, cameraPos.y, cameraPos.z):normalized(
 function OnLoad()	
 	Menu1()	
 	UpdateVariaveis()
-	PrintChat("-[ <font color='#000FFF'> -- Talon by Jus loaded !Good Luck! -- </font> ]-")	
+	PrintChat("<font color=\"#6699ff\"><b>Talon, Tail of the Dragon by Jus</b></font>")	
 end
 
 function Menu1()
@@ -144,7 +144,8 @@ Menu:addSubMenu("Draw System", "Paint")
 Menu:addSubMenu("General System", "General")
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.General:addParam("LevelSkill", "Auto Level Skills R-W-Q-E", SCRIPT_PARAM_ONOFF, true)		
-		Menu.General:addParam("UseOrb", "Use Orbwalking", SCRIPT_PARAM_ONOFF, true)		
+		Menu.General:addParam("UseOrb", "Use Orbwalking", SCRIPT_PARAM_ONOFF, true)
+		Menu.General:addParam("grab", "Stay in the target", SCRIPT_PARAM_ONOFF, false)	
 		Menu.General:addParam("", "", SCRIPT_PARAM_INFO, "")
 		Menu.General:addParam("UsePacket", "Use Packet to Cast", SCRIPT_PARAM_ONOFF, true)
 		Menu.General:addParam("UseVPred", "Use VPredicion to Cast", SCRIPT_PARAM_ONOFF, true)
@@ -751,8 +752,11 @@ function timeToShoot()
 end 
  
 function moveToCursor()
-	if GetDistance(mousePos) > 260 then
-		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 260
+	local grab =	Menu.General.grab
+	local range = myPlayer.range
+	if grab then range = 550 else range = myPlayer.range end
+	if GetDistance(mousePos) > range then
+		local moveToPos = myPlayer + (Vector(mousePos) - myPlayer):normalized() * 550
 		myPlayer:MoveTo(moveToPos.x, moveToPos.z)
 	end 
 end
