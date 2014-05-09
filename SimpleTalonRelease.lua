@@ -28,7 +28,7 @@ if AUTOUPDATE then
                 _AutoupdaterMsg("Error downloading version info")
         end
 end
-
+-- Honda
 --[[AUTO UPDATE END]]--
 
 local TalonNoxianDiplomacy = 	{spellSlot = _Q, range = 250, width = 0, speed = math.huge, delay = 0.0435, ready = nil}
