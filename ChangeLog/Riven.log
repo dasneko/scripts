@@ -1,3 +1,11 @@
+Version 2.35:
+-Better animation canceling: can choose Laugh or Dance packet emote (it have movement too)
+-Better triple-q-aa
+-Rewrited Auto W
+-Rewrited ultimate usage (still use the same options)
+-Added KS auto of combo option
+-Lane and Jungle farm fixed. (Remember that you need to use the orbwalk in minions to hit)
+
 Version 2.32~2.34:
 -Minor fix.
 
