@@ -1,3 +1,7 @@
+Version 2.36:
+-Ultimate fixed.
+-Added protection to not use (E) in minions under enemy turret.
+
 Version 2.35:
 -Better animation canceling: can choose Laugh or Dance packet emote (it have movement too)
 -Better triple-q-aa
