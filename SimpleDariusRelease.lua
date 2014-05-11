@@ -1,4 +1,4 @@
-if myHero.charName ~= "Darius" or not VIP_USER then return end
+if myHero.charName ~= "Darius" then return end
 
 ------------------- ONLY COMBO WITH ORBWALK
 local version 		= "0.1"
