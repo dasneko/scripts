@@ -1,6 +1,7 @@
 Version 2.41:
 -Added menu to show (R).
 -Added invunarability protection in ultimate ks function.
+-Fixed when you cast first (R) manually and second when holding combo don't cast.
 
 Version 2.38~2.40:
 -Draw jump spots added: There is 120 spots. (fixed in 2.39)
