@@ -1,7 +1,8 @@
-Version 2.43:
--Better jump function
--Better draw spots
--Fixed bug in ultimate (ks)
+Version 2.42~2.44:
+-Better jump function.
+-Better draw spots.
+-Fixed bug in ultimate (ks).
+-Added new Key only to be used to run.
 
 Version 2.41:
 -Added menu to show (R).
