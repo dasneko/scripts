@@ -1,2 +1,11 @@
+Version 1.10:
+-Lane/Jungle
+--Added mode: "Free Walk" and "Auto Walk"
+--Option to disable or enable Q,W and E
+-Harass:
+-Fixed a problem that don't let it work.
+--Added option to enabled or disable Q,W and E
+-Fixed a problem with (W)
+
 Version 1.0:
 -Release
