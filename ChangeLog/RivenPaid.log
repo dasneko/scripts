@@ -1,3 +1,9 @@
+Version 1.11:
+-Triple-q-aa speed improved.
+-Range options: 
+--Now range is a mode: "Q", "E" or Custom.
+-Code tweaks.
+
 Version 1.10:
 -Lane/Jungle
 --Added mode: "Free Walk" and "Auto Walk"
