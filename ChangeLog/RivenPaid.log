@@ -1,3 +1,11 @@
+Version 1.15:
+-Added to "Smart Combo" 3 new combos:
+-- E -> Hydra or Tiamat -> W -> Q
+-- E -> Second R -> Q
+-- E -> Hydra or Tiamat -> Second R -> Q
+-Added to text damage the 3 new combos text.
+-Items usage fixed (tiamat/hydra and others)
+
 Version 1.14:
 -Better (W) and items usage.
 
