@@ -1,3 +1,12 @@
+Riven, Boost My Elo: http://botoflegends.com/forum/topic/22196-scriptpaid-riven-boost-my-elo/
+
+
+
+
+
+
+
+
 Riven, I'm not a Bunny,
 
 Talon,Tail of The Dragon, 
