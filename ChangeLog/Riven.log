@@ -1,3 +1,6 @@
+Version 2.54:
+-"TargetIsValid" error should be fixed.
+
 Version 2.53:
 -Fixed cast items in lane clear.
 
