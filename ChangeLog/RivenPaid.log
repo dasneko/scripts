@@ -1,3 +1,6 @@
+Version 1.24~1.25:
+Removed OnApplyParticle from script as reported the cause of bugsplats.
+
 Versin 1.21~1.23: minor fix.
 
 Version 1.20:
