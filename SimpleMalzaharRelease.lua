@@ -4,7 +4,7 @@ require "VPrediction"
 
 --[[AUTO UPDATE]]--
 
-local version = "0.8"
+local version = "0.9"
 
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
@@ -33,7 +33,7 @@ end
 --[[honda update function]]
 
 --[[SKILLS]]--
-local AlZaharCalloftheVoid = {ready = nil, spellSlot = _Q, range = 900, width = 110, speed = math.huge, delay = .7}
+local AlZaharCalloftheVoid = {ready = nil, spellSlot = _Q, range = 900, width = 110, speed = math.huge, delay = .8}
 local AlZaharNullZone = {ready = nil, spellSlot = _W, range = 800, width = 250, speed = math.huge, delay = .5}
 local AlZaharMaleficVision = {ready = nil, spellSlot = _E, range = 650, width = 0, speed = math.huge, delay = .5}
 local AlZaharNetherGrasp = {ready = nil, spellSlot = _R, range = 700, width = 0, speed = math.huge, delay = .5}
@@ -713,18 +713,25 @@ function OnTick()
 end
 
 function OnSendPacket(packet)
- if UsandoR then
-  if packet.header == 113 then
-   local aux = packet.DecodeF(packet)
-   local type = packet.Decode1(packet)
-   if type == 5 or type == 2 or type == 3 or type == 7 and TargetHaveBuff("alzaharnethergraspsound", MeuAlvo) or TargetHaveBuff("AlzaharNetherGrasp", MeuAlvo) then
-    --if (not (SpellData.Q.ready and SpellData.E.ready and SpellData.R.ready)) then
-     packet:Block()
-   -- end
-   end
-  end
- end
+	if UsandoR then
+		local myPacket = Packet(p)
+		if myPacket:get('S_CAST') or myPacket:get('S_MOVE') then
+			myPacket:Block()
+		end
+	end
 end
+--  if UsandoR then
+--   if packet.header == 113 then
+--    local aux = packet.DecodeF(packet)
+--    local type = packet.Decode1(packet)
+--    if type == 5 or type == 2 or type == 3 or type == 7 and TargetHaveBuff("alzaharnethergraspsound", MeuAlvo) or TargetHaveBuff("AlzaharNetherGrasp", MeuAlvo) then
+--     --if (not (SpellData.Q.ready and SpellData.E.ready and SpellData.R.ready)) then
+--      packet:Block()
+--    -- end
+--    end
+--   end
+--  end
+-- end
 
 
 --[[target]]
@@ -855,13 +862,10 @@ function OnProcessSpell(object, spell)
 			lastAttackCD = spell.animationTime * 1000
 		end 
 		
-		if spell.name:find("AlZaharNetherGrasp") then
-			UsandoR = true
-			--PrintChat("PROCESS SPEL: Usando Ultimate = true")
-		else
-			UsandoR =  false
-			--PrintChat("PROCESS SPELL: Usando Ultimate = false")
-		end
+		-- if spell.name:find("AlZaharNetherGrasp") then
+		-- 	UsandoR = true
+		-- 	--PrintChat("PROCESS SPEL: Usando Ultimate = true")
+		-- end
 		
 	end
 	
