@@ -1,5 +1,9 @@
+Version 1.28:
+-Fixed ultimate damage
+-Harass code tweaked.
+
 Version 1.26~1.27:
--Fixed Korei server auth.
+-Fixed Koreia server auth.
 -Added harass mode.
 -Changed item usage.
 
