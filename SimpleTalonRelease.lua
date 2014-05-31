@@ -1,4 +1,4 @@
-local version = "2.06"
+local version = "2.07"
 
 require "VPrediction"
 
@@ -213,12 +213,11 @@ function CastQ(myTarget)
 	if ValidTarget(myTarget, TalonNoxianDiplomacy.range) and sReady and tick - os.clock() < 1 then	
 		if Menu.General.UsePacket then
 			tick = os.clock()
-			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot, targetNetworkId = myPlayer.networkID }):send()	
+			Packet('S_CAST', { spellId = TalonNoxianDiplomacy.spellSlot}):send()	
 							
 		else
 			tick = os.clock()
-			CastSpell(TalonNoxianDiplomacy.spellSlot)
-							
+			CastSpell(TalonNoxianDiplomacy.spellSlot)							
 		end
 	end
 end
@@ -710,7 +709,7 @@ function KillTextDamage()
 	return DamageText
 end
 
-function AutoSkillLevel()	
+function AutoSkillLevel()
 	if myPlayer:GetSpellData(_Q).level + myPlayer:GetSpellData(_W).level + myPlayer:GetSpellData(_E).level + myPlayer:GetSpellData(_R).level < myPlayer.level then
 	local spellSlot = { SPELL_1, SPELL_2, SPELL_3, SPELL_4, }
 	local level = { 0, 0, 0, 0 }
